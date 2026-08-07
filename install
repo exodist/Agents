@@ -5,14 +5,13 @@ set -euo pipefail
 # AGENTS.md points agents at every tool and procedure by absolute path, and
 # they work from any project as-is.
 #
-# What this adds: Claude Code and Codex only auto-discover skills under
-# ~/.claude/skills and ~/.codex/skills. Linking them there gains `/name`
-# invocation and automatic surfacing. Linking bin/ into ~/.local/bin saves
-# typing the absolute path.
+# What this adds: per-user skill discovery for Claude Code and Codex, plus
+# shorter tool paths. Codex discovers user skills under ~/.agents/skills;
+# Claude Code uses ~/.claude/skills.
 #
-#   ~/.claude/skills   ->  skills/          (whole directory, when free)
-#   ~/.codex/skills/<name> -> skills/<name> (per skill -- .system lives there)
-#   ~/.local/bin/<tool>    -> bin/<tool>
+#   ~/.claude/skills -> skills/          (whole directory, when free)
+#   ~/.agents/skills -> skills/          (whole directory, when free)
+#   ~/.local/bin/<tool> -> bin/<tool>
 #
 # Linking the whole directory is preferred: a skill added later appears
 # without re-running this. It is only done when nothing is already there.
@@ -111,14 +110,33 @@ install_claude_skills() {
     link_each_skill "$target"
 }
 
-# Codex ships its own skills under ~/.codex/skills/.system, so the directory is
-# shared and must never be replaced wholesale.
 install_codex_skills() {
-    local target="$HOME/.codex/skills"
+    local target="$HOME/.agents/skills"
 
-    [[ -d "$HOME/.codex" ]] || { echo "$target: (skipping -- ~/.codex missing)"; return; }
-
+    [[ $DRY_RUN -eq 1 ]] || mkdir -p "$HOME/.agents"
     echo "$target:"
+
+    if [[ ! -e "$target" && ! -L "$target" ]]; then
+        link "$ROOT/skills" "$target"
+        echo "           (whole directory -- new skills appear with no re-run)"
+        return
+    fi
+
+    if [[ -L "$target" ]]; then
+        local current
+        current="$(readlink "$target")"
+        if [[ "$current" == "$ROOT/skills" ]] || is_agents_link "$current"; then
+            link "$ROOT/skills" "$target"
+        elif [[ -d "$target" ]]; then
+            echo "           (user-owned directory symlink -- linking skills individually)"
+            link_each_skill "$target"
+        else
+            echo "  SKIP     $target is a user-owned dangling symlink -- left alone"
+        fi
+        return
+    fi
+
+    echo "           (directory already exists -- linking skills individually)"
     link_each_skill "$target"
 }
 

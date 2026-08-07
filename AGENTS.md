@@ -100,10 +100,11 @@ that kind of work**, the same way you would read a runbook:
 | `~/projects/Agents/skills/perl-project-align/SKILL.md` | Setting up a new project or auditing one for drift. |
 | `~/projects/Agents/CPAN_TESTERS.md` | Querying or analyzing CPAN Testers reports. |
 
-*(These files are also valid Claude Code / Codex skills. `~/projects/Agents/install`
-optionally links them into `~/.claude/skills` and `~/.codex/skills` so they
-gain `/name` invocation and get surfaced automatically. That is a convenience
-only — the procedures are authoritative as files, and everything works without
+*(These files are also valid Claude Code / Codex skills.
+`~/projects/Agents/install` optionally links them into the per-user discovery
+paths `~/.claude/skills` and `~/.agents/skills`. Codex can then select them
+implicitly or through `/skills` and `$skill-name`. That is a convenience only
+— the procedures are authoritative as files, and everything works without
 it.)*
 
 ---

@@ -135,18 +135,21 @@ breaks if it never is.
 git clone git@github.com:exodist/Agents.git ~/projects/Agents
 ```
 
-`./install` is a convenience for one thing only: Claude Code and Codex
-auto-discover skills solely under `~/.claude/skills` and `~/.codex/skills`, so
-linking them there gains `/name` invocation and automatic surfacing. Without
-it the same files are still read as procedures — `AGENTS.md` says when to read
-which. It also links `bin/*` into `~/.local/bin` to save typing.
+`./install` is a convenience for per-user skill discovery. It links skills
+into `~/.claude/skills` for Claude Code and `~/.agents/skills` for Codex.
+Codex also discovers repository-scoped `.agents/skills` directories and can
+select skills implicitly or through `/skills` and `$skill-name`. Without the
+installer, the same files are still read as procedures — `AGENTS.md` says when
+to read which. It also links `bin/*` into `~/.local/bin` to save typing. See
+OpenAI's [current Codex skill documentation](https://developers.openai.com/codex/skills)
+for the discovery and invocation behavior.
 
 ```
 ./install --dry-run
 ./install
 ```
 
-It links `~/.claude/skills` as a whole directory when that path is free, so a
-skill added later needs no re-run. Codex's skills directory holds its own
-`.system` skills, so those are linked one at a time. Idempotent, and it
-refuses to clobber anything that is not a symlink it would have made itself.
+It links each per-user skills directory as a whole when that path is free, so
+a skill added later needs no re-run. When a directory already exists, it links
+each skill separately. It is idempotent and refuses to clobber anything that
+is not a symlink it would have made itself.

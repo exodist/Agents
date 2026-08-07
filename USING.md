@@ -46,10 +46,17 @@ and `~/projects/Agents` is not present, clone it:
 
 **Cloning is the whole setup.** There is no install step: `AGENTS.md` there
 points at every document, tool, auditor, and procedure by absolute path, so
-they work from any project immediately. (`~/projects/Agents/install` is an
-optional convenience that links the procedure files into `~/.claude/skills`
-and `~/.codex/skills` — the only paths those harnesses scan — so they also
-gain `/name` invocation. Skipping it changes nothing else.)
+they work from any project immediately. `~/projects/Agents/install` is an
+optional convenience that links the procedure files into the per-user paths
+`~/.claude/skills` and `~/.agents/skills`. Codex can then discover them and
+select them through `/skills`, `$skill-name`, or implicit matching. Skipping
+it changes nothing else.
+
+A consuming project may instead make the Codex skills repository-scoped by
+pointing its `.agents/skills` at `~/projects/Agents/skills`. Codex scans that
+directory from the working directory up to the repository root and follows
+skill-directory symlinks. This remains optional project wiring, not an Agents
+adoption requirement.
 
 The canonical path may be a checkout or a symlink to one. The checkout is
 read-only from a project's point of view. **Never edit

@@ -39,6 +39,10 @@ subtest 'fresh home' => sub {
     ok(-l $claude, 'whole Claude skill directory is linked');
     is(readlink($claude), "$ROOT/skills", 'Claude link points at this checkout');
 
+    my $codex = File::Spec->catfile($fake_home, '.agents', 'skills');
+    ok(-l $codex, 'whole Codex skill directory is linked');
+    is(readlink($codex), "$ROOT/skills", 'Codex link points at this checkout');
+
     my $tool = File::Spec->catfile($fake_home, '.local', 'bin', 'agent-test-lock');
     ok(-l $tool, 'bin tool is linked');
 };
@@ -62,7 +66,7 @@ subtest 'user-owned Claude symlink' => sub {
 
 subtest 'user-owned individual skill symlink' => sub {
     my $fake_home = tempdir(CLEANUP => 1);
-    my $codex     = File::Spec->catdir($fake_home, '.codex', 'skills');
+    my $codex     = File::Spec->catdir($fake_home, '.agents', 'skills');
     my $foreign   = File::Spec->catdir($fake_home, 'foreign-skill');
     make_path($codex, $foreign);
 

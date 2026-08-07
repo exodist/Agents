@@ -1,5 +1,8 @@
 {{$NEXT}}
 
+    - Use Codex's documented user and repository skill-discovery paths and
+      current explicit invocation forms while retaining optional symlinks.
+
     - Preserve CPAN Testers, test-command, and related-repository knowledge
       when replacing harness entry points, with a shared report procedure.
 
