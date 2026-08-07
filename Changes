@@ -1,2 +1,4 @@
 {{$NEXT}}
 
+    - Make optional installation preserve user-owned skill symlinks and work
+      from a fresh home directory.

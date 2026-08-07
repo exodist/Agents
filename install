@@ -38,6 +38,10 @@ link() {
             echo "  ok       $dest"
             return
         fi
+        if ! is_agents_link "$current"; then
+            echo "  SKIP     $dest is a user-owned symlink to $current -- left alone"
+            return
+        fi
         echo "  relink   $dest (was $current)"
         [[ $DRY_RUN -eq 1 ]] && return
         rm "$dest"
@@ -50,6 +54,16 @@ link() {
 
     [[ $DRY_RUN -eq 1 ]] && return
     ln -s "$src" "$dest"
+}
+
+is_agents_link() {
+    local target="$1"
+
+    [[ "$target" == "$ROOT"/* ]] && return 0
+    [[ "$target" == */Agents/skills ]] && return 0
+    [[ "$target" == */Agents/skills/* ]] && return 0
+    [[ "$target" == */Agents/bin/* ]] && return 0
+    return 1
 }
 
 link_each_skill() {
@@ -70,6 +84,7 @@ link_each_skill() {
 install_claude_skills() {
     local target="$HOME/.claude/skills"
 
+    [[ $DRY_RUN -eq 1 ]] || mkdir -p "$HOME/.claude"
     echo "$target:"
 
     if [[ ! -e "$target" && ! -L "$target" ]]; then
@@ -79,7 +94,16 @@ install_claude_skills() {
     fi
 
     if [[ -L "$target" ]]; then
-        link "$ROOT/skills" "$target"
+        local current
+        current="$(readlink "$target")"
+        if [[ "$current" == "$ROOT/skills" ]] || is_agents_link "$current"; then
+            link "$ROOT/skills" "$target"
+        elif [[ -d "$target" ]]; then
+            echo "           (user-owned directory symlink -- linking skills individually)"
+            link_each_skill "$target"
+        else
+            echo "  SKIP     $target is a user-owned dangling symlink -- left alone"
+        fi
         return
     fi
 
