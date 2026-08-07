@@ -1,37 +1,42 @@
 # AGENTS.md
 
-Universal agent instructions for Chad Granum's ("Exodist") projects. Every
-repository that points here inherits these rules. A project's own
-`AGENTS.md` adds project-specific context; its `AGENTS_OVERRIDE.md` records
-the choices and overrides that apply there.
+Optional shared agent instructions for Chad Granum's ("Exodist") projects.
+A repository inherits these rules only when its own instructions point here.
+No project is required to adopt this repository.
+
+Every document in the consuming project takes priority over shared guidance
+here. `AGENTS_OVERRIDE.md` is a convenient place to collect declarations and
+exceptions, but it is not what grants local documents their authority.
 
 You are an expert Perl developer. Write code following the patterns and
 style of "Exodist" as seen throughout these codebases and codified in
 `PERL_STYLE_GUIDE.md`.
 
-## Read order
+## What to read
 
-Later entries win over earlier ones.
+Start with `CODEX.md` and/or `AGENTS.md` in the project, according to the
+entry points available to the agent harness. Follow the critical references
+those files name for the task at hand. **Do not enumerate and read every
+Markdown file in the repository.** Plans, reviews, historical notes, and
+unrelated procedures are not implicit instructions.
 
-1. **This file** — workflow, pre-review checks, conventions.
-2. **`PERL_STYLE_GUIDE.md`** — style, formatting, language-feature rules.
-3. **`STYLE_GUIDE_AGENT_CHECKLIST.md`** — the self-audit form of the style
-   guide. Walk it before handing work back.
-4. **`TESTING.md`** — test layout, provenance, execution, concurrency lock,
-   `~/dbs` contract.
-5. **`DZIL_GUIDE.md`** — the canonical `dist.ini` / release setup every
-   project is audited against.
-6. **The project's own `AGENTS.md`** — what the project is, its reference
-   trees, its test specifics, its extra gates.
-7. **The project's `AGENTS_OVERRIDE.md`** — its declarations and overrides.
-   **Where it speaks, it wins.**
-8. **The project's `ARCHITECTURE.md`** and other project docs —
-   authoritative for design.
+For a project that opts into this repository:
 
-Three rules here are marked **[project-declared]** and have no universal
-answer: the Perl floor / signature mode, the POD layout, and the test
-layout. `AGENTS_OVERRIDE.md` pins them. If it does not, say so rather than
-guessing silently. `USING.md` describes the whole wiring.
+1. Read the project's complete entry document.
+2. Read this file for shared workflow and safety rules.
+3. Read only the shared documents this file names for the work being done:
+   the Perl guide for Perl edits, `TESTING.md` before test work,
+   `DZIL_GUIDE.md` before packaging work, and the matching procedure under
+   `skills/` before carrying it out.
+4. Read the project documents its entry point names, including its
+   `ARCHITECTURE.md`, test instructions, and declarations.
+
+The shared documents cover separate domains rather than outranking one
+another. If the checklist differs from the Perl style guide, fix the
+checklist. If any shared rule differs from a project-local document, follow
+the project. A project's `ARCHITECTURE.md` is authoritative for its design
+even when it began as a copy of a shared template and even when no
+`AGENTS_OVERRIDE.md` mentions the change.
 
 If you are about to implement something that seems to conflict with a
 project's `ARCHITECTURE.md`, **stop and verify**. The most common cause is
@@ -71,6 +76,7 @@ run the canonical copy from `~/projects/Agents/agent_scripts/`.
 | `find-long-subs` | Subs over 75 lines. |
 | `find-large-modules` | Modules over 10,000 lines. |
 | `audit-dzil` | `dist.ini` against `DZIL_GUIDE.md`. |
+| `audit-project-wiring` | Optional Agents integration and declarations. |
 
 ### Procedures — read the file before doing the thing
 
@@ -366,8 +372,8 @@ sync; fix the canonical one first.
 
 ## Distribution setup
 
-Every project uses Dist::Zilla with the layout in `DZIL_GUIDE.md`. Audit an
-existing project with:
+When a project uses Dist::Zilla and elects to follow the shared packaging
+guidance, audit it with:
 
 ```
 perl ~/projects/Agents/agent_scripts/audit-dzil /path/to/project

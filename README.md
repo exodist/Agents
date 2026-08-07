@@ -1,10 +1,16 @@
 # Agents
 
-Universal agent instructions, style rules, and cross-project tooling for
+Optional shared agent instructions, style rules, and cross-project tooling for
 Chad Granum's ("Exodist") Perl projects.
 
-Every project under `~/projects` points here rather than carrying its own copy
-of the rules. A project's own files hold only what is true of that project.
+Projects may point here when the shared guidance is useful. Nothing under
+`~/projects` is required to adopt it. Employer repositories, third-party
+forks, non-Perl repositories, and any other project that has not opted in are
+outside its scope.
+
+A consuming project's own documents always take priority over this repository.
+The shared files provide defaults and reusable procedures; they do not replace
+project architecture, policy, or context.
 
 - **Clone URL:** `git@github.com:exodist/Agents.git`
 - **Expected location:** `~/projects/Agents`
@@ -33,7 +39,11 @@ project for drift.
 |---|---|
 | `CLAUDE.md` | Points at the project's `AGENTS.md`. Nothing else, ever. |
 | `AGENTS.md` | Bootstrap stanza pointing here, then project-specific context. |
-| `AGENTS_OVERRIDE.md` | The project's declarations and overrides. Where it speaks, it wins. |
+| `AGENTS_OVERRIDE.md` | A ledger for project declarations and explicit shared-rule overrides. |
+
+`CODEX.md` and `CLAUDE.md` are optional harness entry points. When present,
+their job is to direct the agent to the project's `AGENTS.md`; existing useful
+content is harvested into project documents before either file is replaced.
 
 Four rules are deliberately **project-declared** — they have no universal
 answer, and each project's `AGENTS_OVERRIDE.md` must pin them:
@@ -75,6 +85,8 @@ agent_scripts/audit-banned-words            Forbidden terminology.
 agent_scripts/find-long-subs                Subs over 75 lines.
 agent_scripts/find-large-modules            Modules over 10,000 lines.
 agent_scripts/audit-dzil                    dist.ini against DZIL_GUIDE.md.
+agent_scripts/audit-project-wiring          Optional Agents integration and
+                                            project declarations.
 agent_scripts/audit-no-secrets              Credentials and sensitive
                                             material. Mandatory before every
                                             commit HERE (see REPO_RULES.md).
@@ -96,7 +108,7 @@ copy here first, then re-copy — the project copies are expected to match.
 ## Templates
 
 `templates/` holds the files a project copies verbatim or fills in:
-`CLAUDE.md`, an `AGENTS.md` scaffold, an `AGENTS_OVERRIDE.md` scaffold,
+`CODEX.md`, `CLAUDE.md`, an `AGENTS.md` scaffold, an `AGENTS_OVERRIDE.md` scaffold,
 `TEMPLATE.pod`, `perltidyrc`, `dist.ini`, and a `.gitignore`. `USING.md` has
 the copy-in sequence.
 

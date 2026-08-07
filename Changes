@@ -1,5 +1,8 @@
 {{$NEXT}}
 
+    - Define Agents adoption as optional, give project documents unconditional
+      priority, and load only entry-point references relevant to the task.
+
     - Cover quote-like operators, heredocs, POD, and data trailers in scanner
       tests so source-like text is not mistaken for executable code.
 

@@ -2,8 +2,8 @@
 
 ## MANDATORY: read the universal agent rules first
 
-The authoritative agent instructions for this project live in a shared
-repository, not in this file.
+This project opts into shared agent guidance while keeping its own documents
+authoritative for project-specific rules and design.
 
 - Repository: `git@github.com:exodist/Agents.git`
 - Expected location: `~/projects/Agents`
@@ -12,13 +12,12 @@ If `~/projects/Agents` does not exist, clone it before doing anything else:
 
     git clone git@github.com:exodist/Agents.git ~/projects/Agents
 
-Then read `~/projects/Agents/AGENTS.md` and follow it. It is authoritative for
-workflow, pre-review checks, commits, changelog, and worktrees, and it points
-at the Perl style guide, the self-audit checklist, the testing policy, and the
-packaging guide.
+Then read `~/projects/Agents/AGENTS.md` and follow the shared guidance this
+project has adopted. It points at task-specific guides and procedures.
 
-`AGENTS_OVERRIDE.md` in THIS repository records the declarations and overrides
-that apply here. Read it after the universal rules; where it speaks, it wins.
+All documents in THIS repository take priority over the shared repository.
+Read the project documents named below; `AGENTS_OVERRIDE.md` records
+declarations and explicit shared-rule overrides when present.
 
 <!--
   Everything above is verbatim boilerplate -- do not edit it.

@@ -10,8 +10,9 @@ short form.
 
 ## The model
 
-The shared repository is the single copy of the rules. Projects reference it;
-they never copy it.
+The shared repository is an optional common copy of reusable rules. Projects
+that adopt it reference it; no project is required to do so. Project-local
+documents always take priority.
 
 - Clone URL: `git@github.com:exodist/Agents.git`
 - Expected location: `~/projects/Agents`
@@ -26,7 +27,7 @@ Three files per project:
 |---|---|
 | `CLAUDE.md` | Points at the project's `AGENTS.md`. Nothing else, ever. |
 | `AGENTS.md` | Bootstrap stanza (verbatim), then project-specific context. |
-| `AGENTS_OVERRIDE.md` | Declarations and overrides. Where it speaks, it wins. |
+| `AGENTS_OVERRIDE.md` | Ledger for declarations and explicit shared-rule overrides. |
 
 ## The four declarations
 
@@ -46,7 +47,9 @@ styles.
 
 ## Setting up a new project
 
-Copy in: `templates/CLAUDE.md`, `templates/AGENTS.md`,
+Harvest useful instructions from any existing `CLAUDE.md` or `CODEX.md`
+before replacing an entry point. Then copy in: `templates/CODEX.md`,
+`templates/CLAUDE.md`, `templates/AGENTS.md`,
 `templates/AGENTS_OVERRIDE.md`, `templates/perltidyrc` → `.perltidyrc`,
 `templates/TEMPLATE.pod`, `AI_AND_LLM_POLICY.txt`, `templates/dist.ini`,
 `templates/gitignore` → `.gitignore`, and the `agent_scripts/` auditors the
@@ -58,6 +61,7 @@ sequence.
 
 ```
 perl ~/projects/Agents/agent_scripts/audit-dzil .
+perl ~/projects/Agents/agent_scripts/audit-project-wiring .
 perl ~/projects/Agents/agent_scripts/audit-methods-not-functions lib
 perl ~/projects/Agents/agent_scripts/audit-readonly-attrs lib
 perl ~/projects/Agents/agent_scripts/audit-banned-words

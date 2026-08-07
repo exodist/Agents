@@ -4,7 +4,8 @@ This project's answers to the choices the universal agent rules deliberately
 leave open, plus every deliberate departure from them.
 
 Universal rules live in `~/projects/Agents` (see `AGENTS.md` for the clone
-URL). **Where this file speaks, it wins.**
+URL). Every project-local document already takes priority over shared rules;
+this file keeps declarations and explicit overrides easy to find.
 
 ---
 
