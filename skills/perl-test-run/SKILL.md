@@ -13,22 +13,10 @@ Full policy: `~/projects/Agents/TESTING.md`. This is the operating procedure.
 ~/projects/Agents/bin/agent-test-lock -- prove --timer -Ilib -j16 -r t/
 ```
 
-`agent-test-lock` does four things: sets `AUTHOR_TESTING=1`, takes the shared
-lock, applies the timeout, and runs the command in its own process group so a
-timeout kills the whole tree.
-
-Four rules, every run:
-
-1. **`AUTHOR_TESTING=1`** so author-gated tests run instead of silently
-   skipping. The wrapper sets it; `--no-author` opts out for a deliberate
-   check of skip behavior.
-2. **A timeout.** Exceeding it is a failure, not "still going". Defaults are
-   900s for serial and 300s for concurrent runs.
-3. **`-j16`** default concurrency on the primary dev box.
-4. **The shared lock above `-j4`** — `~/projects/.agent-test-lock`. Two agents
-   each running `-j16` against database suites is what OOM'd this machine.
-   The wrapper parses `-jN` out of the command, so it usually needs no
-   `--jobs`.
+Choose the project's documented command and concurrency first. The wrapper
+enforces the author-test state, derives the default timeout, takes the shared
+lock when needed, and kills the whole process group on timeout. Use
+`--no-author` only for a deliberate skip-behavior check.
 
 For a yath project:
 
@@ -42,12 +30,9 @@ checkout, not an installed copy.
 
 ## Ceilings
 
-- Concurrent run: **5 minutes**, unless the project documents otherwise (some
-  database suites legitimately take ~5 minutes at `-j16`; give those 600s).
-- Serial run (`-j1`): **15 minutes**.
-
-Approaching the ceiling with nothing failing means the suite has grown too
-slow — raise that, do not wait longer.
+Use the default serial/concurrent ceilings from `TESTING.md` unless the
+project documents a different expected duration. An overrun is a failure to
+investigate, not a reason to wait indefinitely.
 
 ## The release path
 
@@ -62,12 +47,6 @@ perl Makefile.PL && make && \
 `prove -Ilib` loads `./lib`; `make test` loads `blib/lib`, which is what CPAN
 clients and CPAN Testers do. A test hardcoding `lib` passes the first and
 fails the second. Run them one at a time — the lock enforces that.
-
-## Who runs it
-
-**Only whoever is making the change.** A reviewer who believes a change breaks
-the suite reports that as a finding rather than running it. Otherwise review
-rounds multiply full suites across agents.
 
 ## When a run overruns
 

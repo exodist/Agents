@@ -24,8 +24,9 @@ An unanswered declaration is itself a finding.
 
 - [ ] Read the project's `AGENTS.md`, `AGENTS_OVERRIDE.md`, and
       `ARCHITECTURE.md` this session.
-- [ ] Know which files the branch touched:
-      `git diff --name-only $base...HEAD`.
+- [ ] Established the complete touched set through
+      `skills/perl-pre-review/SKILL.md`, including branch commits, index,
+      working tree, and untracked files.
 - [ ] No emojis anywhere — code, comments, POD, Markdown, commit messages.
 
 ## 0a. Automated gates (hard stops, not judgment calls)
@@ -43,12 +44,13 @@ An unanswered declaration is itself a finding.
       (excluding comments/POD).
 - [ ] `perl agent_scripts/find-large-modules lib` — resolve modules over
       10,000 lines (excluding POD).
-- [ ] `perltidy` with the repository `.perltidyrc` on every touched Perl
+- [ ] `perltidy -b` with the repository `.perltidyrc` on every touched Perl
       file (`.pm`, `.pl`, `.t`, executable scripts).
 - [ ] `perlcritic` with the repository `.perlcriticrc`, **if the project has
       one**.
 - [ ] `podchecker` on every touched `.pm`. Zero errors, zero warnings.
-- [ ] No trailing whitespace in the diff (`git diff --check $base...HEAD`).
+- [ ] No trailing whitespace in branch commits, the index, or the working
+      tree, using all three diff checks from the pre-review procedure.
 
 These audits scan the whole tree, not a touched-file subset, so a partial
 edit set cannot hide a hit.
@@ -200,19 +202,13 @@ Under a `t/AI/` project:
 
 ## 10. Test execution
 
-- [ ] Suite run with `AUTHOR_TESTING=1`.
-- [ ] Run wrapped in a timeout.
-- [ ] Any run above `-j4` went through
-      `~/projects/Agents/bin/agent-test-lock`.
-- [ ] `prove` runs used `--timer`; `yath` runs used `-T`.
-- [ ] `-Ilib` (prove) / `-D` (yath) present so the checkout's `lib/` is what
-      gets exercised.
-- [ ] If the change touched `@INC` / `%INC` / `require` / re-exec / a test
-      asserting on a module path: the `make test` (blib) path was also run.
-- [ ] A file reported over 60 seconds was investigated per `TESTING.md`, not
-      ignored.
-- [ ] No memory cgroup cap was placed around the run.
-- [ ] Debris swept after any crashed or killed run.
+- [ ] Completed the project command through the procedure in
+      `skills/perl-test-run/SKILL.md`.
+- [ ] The run used the author-test state, timeout, lock, timing flag, and local
+      library path required by `TESTING.md` and the project's instructions.
+- [ ] Ran the release-path check when module-loading behavior was touched.
+- [ ] Investigated overruns and cleaned project-specific child processes or
+      debris through their documented procedure.
 
 ## 11. Database projects
 

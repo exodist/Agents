@@ -124,34 +124,10 @@ not act on. When an ask is ambiguous, ask back before guessing.
 
 ## Decision discussion mode
 
-Any time one or more decisions are needed from the user — deferred review
-findings, design questions, API-shape choices, anything an agent cannot rule
-on itself — walk them in **discussion mode**:
-
-- **One item per message.** Never advance until the user says "next" (or
-  equivalent). The user may ask questions, request probes or code reading, or
-  change direction mid-item; answer within the current item until told to
-  move on.
-- **Progress indicator first.** Every item starts with a header like
-  `Item 3 of 10` so the user always knows position and remaining count.
-  Follow-up answers within the same item repeat the indicator.
-- **Grouping.** Items sharing one root cause may be presented together as a
-  single combined item (say so, and count them accordingly, e.g.
-  `Items 5+9+10 of 10`). Do not group items that merely resemble each other.
-- **Format per item** — terse wording, bullet lists preferred over prose:
-  - What the issue is (one or two sentences).
-  - Full context: where it lives (`file:line`), how it arises, measured
-    behavior, prior rulings that bear on it.
-  - Code examples where they clarify (current behavior, or the shapes a fix
-    would take).
-  - Options, when obvious ones exist, each with its cost/consequence.
-  - A recommendation, with the reason.
-- **Plain conversation, not a selector.** Never present the decision through
-  a menu / choice UI; the user decides in free-form discussion.
-- **Record the ruling** where the project tracks such decisions (the active
-  disposition ledger, the relevant doc) before presenting the next item. Do
-  not implement anything mid-walk unless the user says to; collect rulings
-  and implement when asked.
+When one or more owner decisions are needed, stop implementation and read
+`skills/decision-discussion/SKILL.md` completely. That file is the
+authoritative discussion procedure: it governs counting, one-item pacing,
+context, recommendations, and recording each ruling before continuing.
 
 ---
 
@@ -183,79 +159,20 @@ Where a project has one:
 
 ## Pre-review checks
 
-Before handing changes back to the user for review, run these passes against
-every file the branch touched (typically
-`git diff --name-only $base...HEAD`, where `$base` is your merge base —
-`origin/master`, `origin/main`, or whatever branch you cut from). Resolve
-anything they turn up, then re-run the test suite.
-
-### 1. Style-guide pass
-
-Walk `STYLE_GUIDE_AGENT_CHECKLIST.md` against every touched file.
-
-Common slips: `eval` patterns (always check the return value, never raw
-`$@`), `croak` vs `die`, `//=` for defaults, `Time::HiRes::sleep` for
-sub-second waits, `Object::HashBase` slot ordering, read-only attributes
-using `<attr` not `-attr`, trailing whitespace, and calling a module's own
-subs as functions instead of methods.
-
-Run every applicable automated gate and resolve every hit:
-
-```
-perl agent_scripts/audit-methods-not-functions lib
-perl agent_scripts/audit-readonly-attrs lib
-perl agent_scripts/audit-banned-words
-perl agent_scripts/find-long-subs lib
-perl agent_scripts/find-large-modules lib
-perltidy --pro=.perltidyrc <touched files>
-```
-
-**A hit from any of these scripts is a hard stop, not a judgment call.**
-They are automated precisely because the equivalent manual checklist items
-get skipped under pressure.
-
-### 2. POD pass
-
-Verify each touched `.pm` follows the POD layout the project uses (see
-`PERL_STYLE_GUIDE.md` "POD"). Run `podchecker` on every touched `.pm` and
-resolve every error and warning.
-
-### 3. Util / role / base-class reuse pass
-
-Re-scan touched files for logic that already exists as a utility. Look in
-the project's `*::Util`, `*::Util::*`, `*::Role::*`, and the relevant base
-classes. If a file open-codes something a util / role / base class already
-provides, switch to using it. If the same logic appears in **three or more
-places** across the touched files, extract it instead of leaving the
-duplication.
-
-**These three passes are mandatory, not optional.** Land their fixups either
-as cleanup commits or by amending the relevant feature commits. Only after
-they pass should you announce the work as ready for review.
+Before announcing work ready for review, read and follow
+`skills/perl-pre-review/SKILL.md` completely. It is the authoritative ordered
+procedure for establishing the full touched set, running automated gates,
+walking `STYLE_GUIDE_AGENT_CHECKLIST.md`, checking POD and reuse, rerunning
+tests, and reporting results. A gate hit is a hard stop.
 
 ---
 
 ## Testing
 
-Full policy is in `TESTING.md`. The non-negotiables:
-
-- **Always set `AUTHOR_TESTING=1`** so author-gated tests run instead of
-  silently skipping.
-- **Always wrap a run in a timeout.** Never block on a stuck run.
-- **`-j16` is the default concurrency** on the primary dev box.
-- **Hold the shared test lock (`~/projects/.agent-test-lock`) for any run
-  with concurrency above 4.** Multiple agents each running `-j16` will swamp
-  the machine. Use `bin/agent-test-lock`, which takes the lock, enforces the
-  timeout, and releases on exit.
-
-```
-~/projects/Agents/bin/agent-test-lock -- prove --timer -Ilib -j16 -r t/
-```
-
-- **Only whoever is making the change runs the suite.** Reviewers assume it
-  passes — the implementer verifies before handing work over. A reviewer who
-  believes a change breaks the suite reports that as a finding rather than
-  running it. Review rounds otherwise multiply full suites across agents.
+`TESTING.md` is the authoritative policy. Before running or diagnosing a
+suite, read it and `skills/perl-test-run/SKILL.md`; the skill is the ordered
+execution procedure. Project-local test instructions take priority and may
+add commands or tighter limits.
 
 ---
 

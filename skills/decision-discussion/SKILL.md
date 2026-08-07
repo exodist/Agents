@@ -1,9 +1,12 @@
 ---
 name: decision-discussion
-description: Walk a set of pending decisions past the user one item at a time, with progress indicators, full context, options and a recommendation per item. Use when review findings, design questions, API-shape choices, or deferred rulings need the user's judgment — any time there is more than one thing to decide and an agent cannot rule on them itself.
+description: Walk one or more pending decisions past the user one item at a time, with progress indicators, full context, options and a recommendation per item. Use when review findings, design questions, API-shape choices, or deferred rulings need the user's judgment and an agent cannot rule on them itself.
 ---
 
 # Decision discussion mode
+
+This file is the authoritative decision-walk procedure. `AGENTS.md` states
+when it is required and points here rather than duplicating these steps.
 
 Any time one or more decisions are needed from the user — deferred review
 findings, design questions, API-shape choices, anything an agent cannot rule

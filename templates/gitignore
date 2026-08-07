@@ -31,7 +31,6 @@ nytprof.out
 *.swp
 *~
 *.ERR
-*.pm.tdy
 
 # Local-only test trees (see dist.ini exclusions)
 /pt/

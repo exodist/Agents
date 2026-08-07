@@ -17,12 +17,24 @@ may add project-specific gates.
 
 ## 0. Establish the touched set
 
-```
-git diff --name-only $base...HEAD
+Choose the branch this work was cut from, then include branch commits, the
+index, the working tree, and untracked files. Keep the NUL-delimited manifest
+for every later pass:
+
+```sh
+base_ref=origin/main # or origin/master / the actual parent branch
+base=$(git merge-base "$base_ref" HEAD)
+touched_file=$(mktemp)
+{
+    git diff --name-only -z "$base"...HEAD
+    git diff --cached --name-only -z
+    git diff --name-only -z
+    git ls-files --others --exclude-standard -z
+} | sort -zu > "$touched_file"
 ```
 
-`$base` is the merge base — `origin/master`, `origin/main`, or whatever the
-branch was cut from. Everything below applies to that set.
+Do not substitute a branch-only diff: staged, unstaged, and newly created
+files are commonly the work being handed back.
 
 ## 1. Style-guide pass
 
@@ -34,8 +46,10 @@ perl agent_scripts/audit-readonly-attrs lib
 perl agent_scripts/audit-banned-words
 perl agent_scripts/find-long-subs lib
 perl agent_scripts/find-large-modules lib
-perltidy --pro=.perltidyrc <touched perl files>
-git diff --check $base...HEAD
+perltidy -b --pro=.perltidyrc <touched perl files>
+git diff --check "$base"...HEAD
+git diff --cached --check
+git diff --check
 ```
 
 If a project lacks a script, run the canonical copy from
@@ -104,3 +118,5 @@ classes.
 
 Tell the user: gates run and their results, what was fixed, suite counts, and
 anything deferred with the reason. **Do not push. Do not merge.**
+
+Remove the temporary touched-file manifest when the pass is complete.

@@ -1,5 +1,8 @@
 {{$NEXT}}
 
+    - Give each decision, test, and pre-review procedure one authoritative
+      home and include staged, unstaged, and untracked files in handoff gates.
+
     - Move database-specific test operations into an optional guide and align
       test commands, timeouts, author-test state, and debris safety wording.
 

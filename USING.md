@@ -252,16 +252,12 @@ decide, rather than applying them as part of adopting the repository.
 
 ## Auditing an existing project
 
-Run packaging and optional wiring audits separately, then run the code gates:
+Run packaging and optional wiring audits separately. Then read
+`skills/perl-pre-review/SKILL.md` and run its applicable whole-tree code gates:
 
 ```
 perl ~/projects/Agents/agent_scripts/audit-dzil .
 perl ~/projects/Agents/agent_scripts/audit-project-wiring .
-perl ~/projects/Agents/agent_scripts/audit-methods-not-functions lib
-perl ~/projects/Agents/agent_scripts/audit-readonly-attrs lib
-perl ~/projects/Agents/agent_scripts/audit-banned-words
-perl ~/projects/Agents/agent_scripts/find-long-subs lib
-perl ~/projects/Agents/agent_scripts/find-large-modules lib
 ```
 
 By hand:

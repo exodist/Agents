@@ -63,12 +63,10 @@ sequence.
 ```
 perl ~/projects/Agents/agent_scripts/audit-dzil .
 perl ~/projects/Agents/agent_scripts/audit-project-wiring .
-perl ~/projects/Agents/agent_scripts/audit-methods-not-functions lib
-perl ~/projects/Agents/agent_scripts/audit-readonly-attrs lib
-perl ~/projects/Agents/agent_scripts/audit-banned-words
-perl ~/projects/Agents/agent_scripts/find-long-subs lib
-perl ~/projects/Agents/agent_scripts/find-large-modules lib
 ```
+
+Then read `skills/perl-pre-review/SKILL.md` and run its applicable whole-tree
+code gates. Do not maintain a second command list here.
 
 Then by hand:
 
