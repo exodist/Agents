@@ -110,7 +110,7 @@ for my $file (sort @files) {
 }
 
 if ($found) {
-    print STDERR "\n$found sub(s) exceed the $threshold-line threshold (PERL_STYLE_GUIDE.md).\n";
+    print STDERR "\n$found sub(s) exceed the shared $threshold-line threshold.\n";
     exit 1;
 }
 exit 0;

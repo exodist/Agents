@@ -83,7 +83,7 @@ if (@findings) {
     exit 1;
 }
 
-print "OK: dist.ini matches DZIL_GUIDE.md.\n" unless $quiet;
+print "OK: dist.ini matches the shared packaging profile.\n" unless $quiet;
 exit 0;
 
 # {{{ Parsing

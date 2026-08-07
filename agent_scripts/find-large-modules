@@ -75,7 +75,7 @@ for my $file (sort @files) {
 }
 
 if ($found) {
-    print STDERR "\n$found module(s) exceed the $threshold-line threshold (PERL_STYLE_GUIDE.md).\n";
+    print STDERR "\n$found module(s) exceed the shared $threshold-line threshold.\n";
     print STDERR "Flag these for human review -- do not split them silently.\n";
     exit 1;
 }

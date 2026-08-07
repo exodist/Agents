@@ -63,7 +63,7 @@ for my $target (@targets) {
 }
 
 if (@hits) {
-    print "Forbidden terminology (PERL_STYLE_GUIDE.md \"Terminology\"):\n";
+    print "Forbidden terminology from the shared style policy:\n";
     print "  $_\n" for @hits;
     print "\nReplacements:\n";
     printf("  %-14s %s\n", $_, $BANNED{$_}) for sort keys %BANNED;

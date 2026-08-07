@@ -1,5 +1,8 @@
 {{$NEXT}}
 
+    - Keep auditor diagnostics self-contained instead of referring users to
+      internal Markdown filenames.
+
     - Leave dependency classification, prerequisite tiers, and load behavior
       entirely to each project's own architecture and packaging policy.
 
