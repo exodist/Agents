@@ -12,6 +12,7 @@ use warnings;
 #
 # Findings are advisory. Exits 1 when anything is reported, 0 when clean.
 
+use File::Find ();
 use File::Spec ();
 use Getopt::Long qw/GetOptions/;
 
@@ -38,6 +39,7 @@ for my $file (sort keys %required) {
 }
 
 check_agents($root);
+check_declarations($root);
 check_entry_point($root, 'CLAUDE.md');
 check_entry_point($root, 'CODEX.md');
 
@@ -58,6 +60,132 @@ sub check_agents {
     note('WIR100', 'AGENTS.md does not point at the shared Agents repository')
         unless $content =~ m{projects/Agents};
     return;
+}
+
+sub check_declarations {
+    my ($project) = @_;
+    my $content = read_file(File::Spec->catfile($project, 'AGENTS_OVERRIDE.md'));
+    return unless defined $content;
+
+    my %values;
+    for my $spec (
+        ['Minimum Perl version',       'Minimum'],
+        ['Subroutine signatures',      'Policy'],
+        ['POD placement',              'Layout'],
+        ['Test layout and provenance', 'Scheme'],
+        ['perltidy',                   'Config'],
+        )
+    {
+        my ($heading, $field) = @$spec;
+        my $value = declaration_value($content, $heading, $field);
+        if (!defined($value) || $value =~ /_____/ || $value =~ m{\s/\s}) {
+            note('WIR103', "$heading declaration is missing or unanswered");
+            next;
+        }
+        $values{$heading} = $value;
+    }
+
+    check_signature_declaration($content, $values{'Subroutine signatures'});
+    check_perl_floor($project, $values{'Minimum Perl version'});
+    return;
+}
+
+sub declaration_value {
+    my ($content, $heading, $field) = @_;
+    return unless $content =~ m{^###\s+\Q$heading\E[^\S\r\n]*\r?\n(.*?)(?=^###\s+|^##\s+|\z)}ms;
+    my $section = $1;
+    return unless $section =~ m{^>\s+\*\*\Q$field\E:\s*(.*?)\*\*\s*$}m;
+    return $1;
+}
+
+sub check_signature_declaration {
+    my ($content, $policy) = @_;
+    return unless defined $policy && $policy =~ /required/i;
+    my $pragma = declaration_value($content, 'Subroutine signatures', 'Enabling pragma');
+    note('WIR104', 'required signature policy does not name its enabling pragma')
+        if !defined($pragma) || $pragma =~ /_____/ || $pragma =~ /not applicable/i;
+    return;
+}
+
+sub check_perl_floor {
+    my ($project, $declared) = @_;
+    return unless defined $declared;
+    return if $declared =~ /(?:no\s+minimum|no\s+promise|none)/i;
+
+    my $declared_version = parse_perl_version($declared);
+    unless (defined $declared_version) {
+        note('WIR105', "minimum Perl declaration is not an exact version or an explicit no-promise statement: '$declared'");
+        return;
+    }
+
+    my $dist_floor = dist_perl_floor(File::Spec->catfile($project, 'dist.ini'));
+    if (defined($dist_floor) && $dist_floor != $declared_version) {
+        note('WIR106', "minimum Perl declaration '$declared' does not match the dist.ini perl prerequisite");
+    }
+
+    check_module_pragmas($project, $declared_version, $declared);
+    return;
+}
+
+sub dist_perl_floor {
+    my ($path) = @_;
+    my $content = read_file($path);
+    return unless defined $content;
+
+    my $in_runtime = 0;
+    for my $line (split(/\n/, $content)) {
+        $in_runtime = $line =~ /^\s*\[Prereqs\]\s*(?:;.*)?$/ ? 1 : 0
+            if $line =~ /^\s*\[/;
+        next unless $in_runtime;
+        next unless $line =~ /^\s*perl\s*=\s*([^\s;]+)/;
+        return parse_perl_version($1);
+    }
+    return;
+}
+
+sub check_module_pragmas {
+    my ($project, $declared_version, $declared) = @_;
+    my $lib = File::Spec->catdir($project, 'lib');
+    return unless -d $lib;
+
+    my @modules;
+    File::Find::find(
+        {
+            no_chdir => 1,
+            wanted   => sub { push @modules => $File::Find::name if -f $File::Find::name && /\.pm$/ },
+        },
+        $lib,
+    );
+
+    for my $module (sort @modules) {
+        my $content = read_file($module);
+        next unless defined $content;
+        while ($content =~ /^\s*use\s+(v?5(?:\.\d+)+)\s*;/mg) {
+            my $required = parse_perl_version($1);
+            next unless defined($required) && $required > $declared_version;
+            my $relative = File::Spec->abs2rel($module, $project);
+            note('WIR107', "$relative uses $1, above the declared minimum Perl '$declared'");
+        }
+    }
+    return;
+}
+
+sub parse_perl_version {
+    my ($value) = @_;
+    return unless defined $value;
+    $value =~ s/^\s*v//;
+    $value =~ s/\s+$//;
+
+    if ($value =~ /^(\d+)\.(\d+)\.(\d+)$/) {
+        return ($1 * 1_000_000) + ($2 * 1_000) + $3;
+    }
+    return unless $value =~ /^(\d+)\.(\d+)$/;
+    my ($major, $fraction) = ($1, $2);
+    if (length($fraction) > 3) {
+        $fraction .= '0' while length($fraction) < 6;
+        return ($major * 1_000_000) + (substr($fraction, 0, 3) * 1_000) + substr($fraction, 3, 3);
+    }
+    return ($major * 1_000_000) + ($fraction * 1_000);
 }
 
 sub check_entry_point {

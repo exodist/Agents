@@ -28,6 +28,8 @@ Reason: _____
 
 > **Policy: disabled / required where expressible**
 
+> **Enabling pragma: not applicable / _____**
+
 If required, name the version/feature pragma that enables signatures. If
 disabled, argument handling follows the surrounding code using `@_`.
 

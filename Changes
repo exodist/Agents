@@ -1,5 +1,8 @@
 {{$NEXT}}
 
+    - Verify adopted projects' Perl-floor declarations against packaging and
+      shipped module pragmas without coupling them to signature policy.
+
     - Add a parameterized test-layout auditor for projects that select the
       category-and-origin profile, without imposing it on other layouts.
 
