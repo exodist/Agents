@@ -19,7 +19,8 @@ use warnings;
 #   --jobs N        Concurrency this run will use. Default: parsed from the
 #                   command's -jN / -j N / --jobs N / --jobs=N, else 16.
 #                   A run at 4 or below skips the lock entirely.
-#   --timeout SECS  Kill the command after this long. Default 600. 0 disables.
+#   --timeout SECS  Kill the command after this long. Defaults to 900 for a
+#                   serial run and 300 for a concurrent run. 0 disables.
 #   --wait SECS     Give up waiting for the lock after this long. Default 3600.
 #   --no-lock       Run without taking the lock.
 #   --no-author     Do not set AUTHOR_TESTING=1 (for checking skip behavior).
@@ -27,8 +28,8 @@ use warnings;
 #                   ~/projects/.agent-test-lock).
 #   --quiet         Do not narrate lock acquisition.
 #
-# AUTHOR_TESTING=1 is set unless --no-author is given or the caller already
-# set it -- author-gated tests must run, not silently skip.
+# AUTHOR_TESTING=1 is forced unless --no-author is given. The explicit flag
+# forces AUTHOR_TESTING=0 for a deliberate check of skip behavior.
 #
 # Exit status is the command's own. A timeout exits 124, matching timeout(1).
 # Failure to acquire the lock within --wait exits 125.
@@ -44,13 +45,13 @@ my $EXIT_TIMEOUT  = 124;
 my $EXIT_NO_LOCK  = 125;
 
 my %opt = (
-    timeout     => 600,
+    timeout     => undef,
     wait        => 3600,
     'no-lock'   => 0,
     'no-author' => 0,
     quiet       => 0,
     jobs        => undef,
-    lock_file => $ENV{AGENT_TEST_LOCK} || join('/', $ENV{HOME} // '', 'projects', '.agent-test-lock'),
+    lock_file   => $ENV{AGENT_TEST_LOCK} || join('/', $ENV{HOME} // '', 'projects', '.agent-test-lock'),
 );
 
 my @cmd;
@@ -60,32 +61,30 @@ my @cmd;
         my $arg = shift @args;
         if ($arg eq '--') { @cmd = @args; last }
 
-        if    ($arg eq '--jobs')      { $opt{jobs}      = shift @args }
-        elsif ($arg eq '--timeout')   { $opt{timeout}   = shift @args }
-        elsif ($arg eq '--wait')      { $opt{wait}      = shift @args }
-        elsif ($arg eq '--lock-file') { $opt{lock_file} = shift @args }
-        elsif ($arg eq '--no-lock')   { $opt{'no-lock'}   = 1 }
-        elsif ($arg eq '--no-author') { $opt{'no-author'} = 1 }
-        elsif ($arg eq '--quiet')     { $opt{quiet}       = 1 }
+        if    ($arg eq '--jobs')                 { $opt{jobs}        = shift @args }
+        elsif ($arg eq '--timeout')              { $opt{timeout}     = shift @args }
+        elsif ($arg eq '--wait')                 { $opt{wait}        = shift @args }
+        elsif ($arg eq '--lock-file')            { $opt{lock_file}   = shift @args }
+        elsif ($arg eq '--no-lock')              { $opt{'no-lock'}   = 1 }
+        elsif ($arg eq '--no-author')            { $opt{'no-author'} = 1 }
+        elsif ($arg eq '--quiet')                { $opt{quiet}       = 1 }
         elsif ($arg eq '--help' || $arg eq '-h') { usage(0) }
-        elsif ($arg =~ /^--jobs=(.+)$/)      { $opt{jobs}      = $1 }
-        elsif ($arg =~ /^--timeout=(.+)$/)   { $opt{timeout}   = $1 }
-        elsif ($arg =~ /^--wait=(.+)$/)      { $opt{wait}      = $1 }
-        elsif ($arg =~ /^--lock-file=(.+)$/) { $opt{lock_file} = $1 }
-        else { die "Unknown option '$arg'. Put the command after '--'.\n" }
+        elsif ($arg =~ /^--jobs=(.+)$/)          { $opt{jobs}      = $1 }
+        elsif ($arg =~ /^--timeout=(.+)$/)       { $opt{timeout}   = $1 }
+        elsif ($arg =~ /^--wait=(.+)$/)          { $opt{wait}      = $1 }
+        elsif ($arg =~ /^--lock-file=(.+)$/)     { $opt{lock_file} = $1 }
+        else                                     { die "Unknown option '$arg'. Put the command after '--'.\n" }
     }
 }
 
 usage(1) unless @cmd;
 
-my $jobs = defined $opt{jobs} ? $opt{jobs} : jobs_from_command(@cmd);
+my $jobs    = defined $opt{jobs}    ? $opt{jobs}    : jobs_from_command(@cmd);
+my $timeout = defined $opt{timeout} ? $opt{timeout} : $jobs <= 1 ? 900 : 300;
 
-# Author-gated tests must run, not silently skip. An explicit setting from the
-# caller always wins -- including AUTHOR_TESTING=0 for a deliberate check of
-# skip behavior.
-unless ($opt{'no-author'} || defined $ENV{AUTHOR_TESTING}) {
-    $ENV{AUTHOR_TESTING} = 1;
-}
+# The wrapper's command line is the source of truth. Inherited environment
+# cannot silently change which suite the caller requested.
+$ENV{AUTHOR_TESTING} = $opt{'no-author'} ? 0 : 1;
 
 my $lock_fh;
 if (!$opt{'no-lock'} && $jobs > $JOB_THRESHOLD) {
@@ -100,7 +99,7 @@ elsif (!$opt{quiet}) {
     print STDERR "agent-test-lock: running without the shared lock ($why)\n";
 }
 
-exit(run_command($opt{timeout}, @cmd));
+exit(run_command($timeout, @cmd));
 
 # {{{ Lock handling
 
@@ -196,7 +195,7 @@ sub run_command {
     alarm(0) if $timeout;
 
     return $EXIT_TIMEOUT if $timed_out;
-    return $status >> 8 if ($status & 127) == 0;
+    return $status >> 8  if ($status & 127) == 0;
     return 128 + ($status & 127);
 }
 
@@ -236,15 +235,16 @@ Usage: agent-test-lock [options] -- <command...>
 
   --jobs N        Concurrency this run will use (default: parsed from the
                   command, else 16). At or below $JOB_THRESHOLD the lock is skipped.
-  --timeout SECS  Kill the command after this long (default 600, 0 disables).
+  --timeout SECS  Kill the command after this long (default 900 for serial,
+                  300 for concurrent; 0 disables).
   --wait SECS     Give up waiting for the lock after this long (default 3600).
   --no-lock       Run without taking the lock.
   --no-author     Do not set AUTHOR_TESTING=1.
   --lock-file P   Override the lock path.
   --quiet         Do not narrate lock acquisition.
 
-AUTHOR_TESTING=1 is set unless --no-author is given or the caller already
-set it.
+AUTHOR_TESTING=1 is forced unless --no-author is given. --no-author forces
+AUTHOR_TESTING=0.
 
 Example:
   agent-test-lock -- prove --timer -Ilib -j16 -r t/

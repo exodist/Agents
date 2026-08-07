@@ -1,5 +1,8 @@
 {{$NEXT}}
 
+    - Make the test wrapper force author-test state from its command line and
+      derive default timeouts from serial versus concurrent execution.
+
     - Stop treating relative project paths as possible high-entropy secrets.
 
     - Count executable lines rather than comments and blank lines when
