@@ -153,3 +153,8 @@ It links each per-user skills directory as a whole when that path is free, so
 a skill added later needs no re-run. When a directory already exists, it links
 each skill separately. It is idempotent and refuses to clobber anything that
 is not a symlink it would have made itself.
+
+## License
+
+This repository is available under the same terms as Perl 5. See
+[`LICENSE`](LICENSE).

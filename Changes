@@ -1,5 +1,7 @@
 {{$NEXT}}
 
+    - State the repository's Perl 5 license explicitly.
+
     - Use Codex's documented user and repository skill-discovery paths and
       current explicit invocation forms while retaining optional symlinks.
 
