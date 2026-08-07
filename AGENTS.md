@@ -64,7 +64,7 @@ they live.
 | `~/projects/Agents/bin/agent-test-lock` | Every test run. Takes the shared concurrency lock, sets `AUTHOR_TESTING=1`, enforces a timeout. |
 | `~/projects/Agents/bin/sweep-test-debris` | Finding and removing database test debris left in `/tmp` by a crashed run. |
 
-### Auditors — the pre-review gates
+### Code auditors — pre-review gates when applicable
 
 Projects keep copies in their own `agent_scripts/`. When a project lacks one,
 run the canonical copy from `~/projects/Agents/agent_scripts/`.
@@ -76,7 +76,13 @@ run the canonical copy from `~/projects/Agents/agent_scripts/`.
 | `audit-banned-words` | Forbidden terminology. |
 | `find-long-subs` | Subs over 75 lines. |
 | `find-large-modules` | Modules over 10,000 lines. |
-| `audit-dzil` | `dist.ini` against `DZIL_GUIDE.md`. |
+
+Packaging and adoption checks are advisory and run only when the task calls
+for them:
+
+| Auditor | Catches |
+|---|---|
+| `audit-dzil` | `dist.ini` against the optional `DZIL_GUIDE.md` profile. |
 | `audit-project-wiring` | Optional Agents integration and declarations. |
 
 ### Procedures — read the file before doing the thing
@@ -297,9 +303,10 @@ guidance, audit it with:
 perl ~/projects/Agents/agent_scripts/audit-dzil /path/to/project
 ```
 
-Never hand-edit `Makefile.PL`, `README`, `README.md`, `cpanfile`, `LICENSE`,
-or `MANIFEST` — Dist::Zilla generates them and copies them back into the
-tree. Edit `dist.ini` and the main module's POD instead.
+Never hand-edit `Makefile.PL`, `README`, `README.md`, `cpanfile`, or `LICENSE`
+— Dist::Zilla generates them and copies them back into the tree. `MANIFEST`
+is generated only in the build tree. Edit `dist.ini` and the main module's
+POD instead.
 
 ---
 

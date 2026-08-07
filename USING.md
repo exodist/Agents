@@ -204,6 +204,8 @@ cp ~/projects/Agents/templates/perltidyrc           .perltidyrc
 cp ~/projects/Agents/templates/TEMPLATE.pod         TEMPLATE.pod
 cp ~/projects/Agents/AI_AND_LLM_POLICY.txt          AI_AND_LLM_POLICY.txt
 cp ~/projects/Agents/templates/dist.ini             dist.ini
+cp ~/projects/Agents/templates/Changes              Changes
+cp ~/projects/Agents/templates/MANIFEST.SKIP        MANIFEST.SKIP
 cp ~/projects/Agents/templates/gitignore            .gitignore
 
 mkdir -p agent_scripts
@@ -216,8 +218,8 @@ cp ~/projects/Agents/agent_scripts/find-large-modules          agent_scripts/
 
 Then fill in `AGENTS.md` (project content), `AGENTS_OVERRIDE.md` (the five
 declarations), `dist.ini` (name, main module, repo URL, prereqs),
-`TEMPLATE.pod` (dist name, repo URL), and `.gitignore` (dist name). Create
-`Changes` with a `{{$NEXT}}` section.
+`TEMPLATE.pod` (dist name, repo URL), `.gitignore` (dist name), and any
+project-specific `MANIFEST.SKIP` patterns.
 
 Before copying either harness entry point, harvest useful content from the
 existing file. Verify packaging and optional Agents wiring separately:

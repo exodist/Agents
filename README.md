@@ -29,7 +29,7 @@ project for drift.
 | [`STYLE_GUIDE_AGENT_CHECKLIST.md`](STYLE_GUIDE_AGENT_CHECKLIST.md) | The self-audit form of the style guide. Walk it before handing work back. |
 | [`TESTING.md`](TESTING.md) | Test execution, the shared concurrency lock, memory traps, test layout and provenance. |
 | [`DATABASES.md`](DATABASES.md) | Optional database-test operations, developer installs, and per-install isolation. |
-| [`DZIL_GUIDE.md`](DZIL_GUIDE.md) | The canonical `dist.ini` skeleton and packaging rules every distribution is audited against. |
+| [`DZIL_GUIDE.md`](DZIL_GUIDE.md) | An optional shared `dist.ini` profile and manual release procedure. |
 | [`AI_AND_LLM_POLICY.txt`](AI_AND_LLM_POLICY.txt) | Contributor-facing AI/LLM policy. Ships with each distribution. |
 | [`REPO_RULES.md`](REPO_RULES.md) | Rules for editing **this** repository. Consuming projects do not inherit them. |
 | [`CLAUDE.md`](CLAUDE.md) | Points at `AGENTS.md`. That is its entire job. |
@@ -76,7 +76,8 @@ the machine. It is agent-side only — nothing in any project knows about it.
 
 ## Auditors
 
-Cross-project gates, all exiting non-zero on a hit:
+Code auditors exit non-zero on a hit and are used as project-applicable
+pre-review gates:
 
 ```
 agent_scripts/audit-methods-not-functions   Subs defined in an object module
@@ -86,12 +87,19 @@ agent_scripts/audit-readonly-attrs          Read-only HashBase slots using
 agent_scripts/audit-banned-words            Forbidden terminology.
 agent_scripts/find-long-subs                Subs over 75 lines.
 agent_scripts/find-large-modules            Modules over 10,000 lines.
-agent_scripts/audit-dzil                    dist.ini against DZIL_GUIDE.md.
-agent_scripts/audit-project-wiring          Optional Agents integration and
-                                            project declarations.
 agent_scripts/audit-no-secrets              Credentials and sensitive
                                             material. Mandatory before every
                                             commit HERE (see REPO_RULES.md).
+```
+
+Packaging and adoption auditors also exit non-zero on findings, but their
+findings are advisory and only relevant when a project elects to use the
+corresponding shared profile:
+
+```
+agent_scripts/audit-dzil                    dist.ini against DZIL_GUIDE.md.
+agent_scripts/audit-project-wiring          Optional Agents integration and
+                                            project declarations.
 ```
 
 Copy the ones a project needs into its own `agent_scripts/`. Fix the canonical
@@ -110,9 +118,9 @@ copy here first, then re-copy — the project copies are expected to match.
 ## Templates
 
 `templates/` holds the files a project copies verbatim or fills in:
-`CODEX.md`, `CLAUDE.md`, an `AGENTS.md` scaffold, an `AGENTS_OVERRIDE.md` scaffold,
-`TEMPLATE.pod`, `perltidyrc`, `dist.ini`, and a `.gitignore`. `USING.md` has
-the copy-in sequence.
+`CODEX.md`, `CLAUDE.md`, an `AGENTS.md` scaffold, an `AGENTS_OVERRIDE.md`
+scaffold, `TEMPLATE.pod`, `perltidyrc`, `dist.ini`, `Changes`,
+`MANIFEST.SKIP`, and a `.gitignore`. `USING.md` has the copy-in sequence.
 
 ## Installing — not required
 

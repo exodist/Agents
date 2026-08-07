@@ -1,6 +1,6 @@
 ---
 name: dzil-audit
-description: Audit a Perl distribution's Dist::Zilla setup against the canonical dist.ini spec — plugin set, what ships, generated-file round trip, optional-vs-hard prereqs, release wiring. Use when asked to check or align a project's dist.ini, packaging, or release setup, when adding a dependency, or when setting up a new distribution.
+description: Audit a Perl distribution's Dist::Zilla setup against the optional shared dist.ini profile — plugin set, what ships, generated-file round trip, and release wiring. Use when asked to check or align a project's dist.ini, packaging, or release setup, when adding a dependency, or when setting up a new distribution.
 ---
 
 # Dist::Zilla audit
@@ -15,9 +15,9 @@ perl ~/projects/Agents/agent_scripts/audit-dzil /path/to/project
 ```
 
 It reports missing or out-of-order plugins, dev-only trees that would ship,
-generated files missing from the round trip, optional database drivers sitting
-in `[Prereqs]` as hard requires, a missing NJH smoker guard, a non-canonical
-author string, and `[UploadToCPAN]` where `[FakeRelease]` belongs.
+generated files missing from the round trip, a missing NJH smoker guard, a
+non-canonical author string, and `[UploadToCPAN]` where `[FakeRelease]`
+belongs. It does not classify individual dependencies; that is project-local.
 
 ## Findings are advisory
 
@@ -32,30 +32,28 @@ changing it.
 ## The two rules that matter most
 
 **Dist::Zilla owns the generated files.** `Makefile.PL`, `README`,
-`README.md`, `cpanfile`, `LICENSE`, `MANIFEST` are built during `dzil build`
-and copied back by `[CopyFilesFromBuild]`. **Never hand-edit them** — the next
-build overwrites the edit. Change `dist.ini`, or the main module's POD.
+`README.md`, `cpanfile`, `LICENSE`, and `MANIFEST` are built during
+`dzil build`. The first five are copied back by `[CopyFilesFromBuild]`;
+`MANIFEST` remains in the build tree. **Never hand-edit generated files** —
+the next build overwrites the edit. Change `dist.ini`, or the main module's
+POD.
 
-**Releases are manual.** Every project uses `[FakeRelease]`: build, test, tag,
-commit, bump — but no upload. Do not swap in `[UploadToCPAN]`, and do not run
-`dzil release` unless asked.
+**Releases are manual in this profile.** `[FakeRelease]` builds, tests, tags,
+commits, and bumps, but does not upload. Do not swap in `[UploadToCPAN]`, and
+do not run `dzil release` unless asked.
 
 ## Adding a dependency
 
-1. Add it to the right `[Prereqs / ...]` section in `dist.ini`.
+1. Follow the project's dependency policy and add it to the chosen
+   `[Prereqs / ...]` section in `dist.ini`.
    - **`[Prereqs]`** — loaded unconditionally.
    - **`RuntimeSuggests`** — nothing breaks without it; a feature is absent.
-     Every non-default DB driver (`DBD::Pg`, `DBD::mysql`, `DBD::MariaDB`,
-     Percona, `DBD::DuckDB`) and flavor helper (`DateTime::Format::*`) lives
-     here. `DBD::SQLite` is the exception — it is the default backend and may
-     be a hard require.
    - **`RuntimeRecommends`** — wanted when available (an XS accelerator), but
      the pure-Perl path is complete.
-   - **`DevelopRequires`** — author tooling *plus* every optional driver, so a
-     dev box installs the full matrix.
-2. If optional, make the load site `require` it lazily with an actionable
-   error naming what to install. Nothing always-loaded may `use` an optional
-   module at compile time.
+   - **`DevelopRequires`** — author tooling and optional integrations needed
+     by the project's author-test matrix.
+2. If the project classifies it as optional, keep load behavior consistent
+   with that classification.
 3. `dzil build` — regenerates `Makefile.PL` and `cpanfile` and copies them
    back.
 4. Commit `dist.ini`, `Makefile.PL`, and `cpanfile` together.

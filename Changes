@@ -1,5 +1,9 @@
 {{$NEXT}}
 
+    - Keep dependency classification and continuous-integration policy local
+      to each project while making the optional packaging profile internally
+      consistent and documenting the manual release boundary.
+
     - Give each decision, test, and pre-review procedure one authoritative
       home and include staged, unstaged, and untracked files in handoff gates.
 

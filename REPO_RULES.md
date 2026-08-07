@@ -110,3 +110,8 @@ rule and judged under another.
 `agent_scripts/` here is canonical. Projects hold copies. When an auditor needs
 fixing, fix it here first, then re-copy into the projects that carry it — never
 the reverse, and never only in the project.
+
+A mechanical bug fix may be copied after its canonical tests pass. A semantic
+change to what an auditor accepts or rejects requires review against each
+consumer's local policy before it is copied; do not silently turn a new shared
+opinion into a project gate.

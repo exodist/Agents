@@ -1,9 +1,9 @@
 # DZIL_GUIDE.md
 
-Canonical Dist::Zilla setup. Every Perl distribution in this account uses the
-same `dist.ini` skeleton, in the same order, with the same generated-file
-round trip. This document is what `agent_scripts/audit-dzil` checks projects
-against.
+Optional shared Dist::Zilla setup. A Perl distribution may adopt this
+`dist.ini` skeleton when it is useful; project-local packaging documents and
+release decisions always take priority. This document is what
+`agent_scripts/audit-dzil` checks projects against when asked.
 
 ```
 perl ~/projects/Agents/agent_scripts/audit-dzil /path/to/project
@@ -15,13 +15,14 @@ perl ~/projects/Agents/agent_scripts/audit-dzil /path/to/project
 
 **Dist::Zilla owns the generated files.** `Makefile.PL`, `README`,
 `README.md`, `cpanfile`, `LICENSE`, and `MANIFEST` are built during
-`dzil build` and copied back into the working tree by `[CopyFilesFromBuild]`.
+`dzil build`. The first five are copied back into the working tree by
+`[CopyFilesFromBuild]`; `MANIFEST` exists only in the build tree.
 
 **Never hand-edit any of them.** Editing `Makefile.PL` to add a dependency is
 the classic mistake: the next build overwrites it. Change `dist.ini`
 instead. Change the main module's POD to change `README` / `README.md`.
 
-**Releases are manual.** Every project uses `[FakeRelease]`, so `dzil
+**Releases are manual in this profile.** It uses `[FakeRelease]`, so `dzil
 release` builds, tests, tags, commits and bumps but does **not** upload.
 Uploading to PAUSE is a deliberate separate step by the user. Do not swap in
 `[UploadToCPAN]`, and do not run `dzil release` unless asked.
@@ -91,6 +92,10 @@ run = release-scripts/generate_command_pod.pl %d
 
 [PodSyntaxTests]
 [TestRelease]
+[Test::ChangesHasContent]
+
+; Add when xt/ exists.
+;[RunExtraTests]
 
 [MetaResources]
 bugtracker.web  = https://github.com/<org>/<Dist-Name>/issues
@@ -108,7 +113,7 @@ Test2::V0 = 0.000060
 ExtUtils::MakeMaker = 0
 
 [Prereqs / DevelopRequires]
-; Author-only tooling and every optional driver, so a dev box installs them all.
+; Author-only tooling and optional integrations exercised by the author suite.
 
 [Prereqs / RuntimeSuggests]
 ; Optional, lazily loaded. Nothing breaks without them; a feature is absent.
@@ -116,20 +121,7 @@ ExtUtils::MakeMaker = 0
 [Prereqs / RuntimeRecommends]
 ; Optional, but you want it if you can have it (e.g. an XS accelerator).
 
-[MakeMaker::Awesome]
-:version  = 0.26
-delimiter = |
-header    = |use Config qw/%Config/;
-header    = |if ($ENV{AUTOMATED_TESTING}) {
-header    = |    my $is_njh = 0;
-header    = |    $is_njh ||= -d '/export/home/njh';
-header    = |    $is_njh ||= -d '/home/njh';
-header    = |    $is_njh ||= lc($ENV{USER} // 'na') eq 'njh';
-header    = |    $is_njh ||= lc($ENV{HOME} // 'na') =~ m{njh$};
-header    = |    $is_njh ||= lc($ENV{PATH} // 'na') =~ m{/njh/};
-header    = |    die "OS unsupported\nNJH smokers are broken, aborting tests.\n"
-header    = |        if $is_njh;
-header    = |}
+[MakeMaker]
 
 [CPANFile]
 [MetaYAML]
@@ -278,8 +270,8 @@ What changes:
 - The **directory name differs from the distribution name** — `Test-More/` on
   disk, `Test-Simple` on CPAN. The project's `AGENTS.md` says so.
 
-If a project is dual-life, its `AGENTS_OVERRIDE.md` records that, because it
-overrides several universal rules at once.
+If a project is dual-life and has adopted this repository, its local
+packaging documents or `AGENTS_OVERRIDE.md` record the differences.
 
 ---
 
@@ -300,7 +292,7 @@ overrides several universal rules at once.
 
 - `[RewriteVersion]` + `[BumpVersionAfterRelease]`: the main module's
   `$VERSION` is the source of truth, and the post-release commit bumps it.
-  **That pair is the canonical arrangement.**
+  **That pair is the shared profile's arrangement.**
 - `[VersionFromModule]` appears in a handful of older distributions. It reads
   the version but does not bump it, so the version has to be raised by hand
   every release. Move to `[RewriteVersion]` + `[BumpVersionAfterRelease]` when
@@ -309,11 +301,10 @@ overrides several universal rules at once.
 
 ### Cruft, manifest, and extra tests
 
-- **`[PruneCruft]` is mandatory in every project.** It drops build droppings
+- **`[PruneCruft]` is part of this shared profile.** It drops build droppings
   and editor leftovers that `[GatherDir]` would otherwise sweep into the
-  tarball. **Add it when a project adopts this repository** — several existing
-  distributions are missing it, and a missing `[PruneCruft]` is a finding, not
-  a preference.
+  tarball. `audit-dzil` reports it when checking a project against this
+  profile.
 - `[ManifestSkip]` reads a hand-written `MANIFEST.SKIP` when the project has
   one. Most do. Keep patterns there specific; `[PruneCruft]` already handles
   the generic cases, so `MANIFEST.SKIP` is for this distribution's own
@@ -322,7 +313,7 @@ overrides several universal rules at once.
   directory.** Without it those author tests never run at release time, which
   is the only time they were meant to run. A project with `xt/` and no
   `[RunExtraTests]` has author tests that have never executed.
-- **`[Test::ChangesHasContent]` is recommended.** It fails the release when
+- **`[Test::ChangesHasContent]` is part of the template.** It fails the release when
   the `{{$NEXT}}` section of `Changes` is empty — the exact failure the
   changelog rule exists to prevent, caught at the last possible moment.
   Releases have shipped with empty changelogs; this is the safeguard.
@@ -348,20 +339,17 @@ overrides several universal rules at once.
 
 - **Hard requires go in `[Prereqs]`.** Only modules the distribution loads
   unconditionally.
-- **Optional drivers and flavor helpers are Suggests or Recommends** — never
-  hard requires. That covers `DBD::Pg`, `DBD::mysql`, `DBD::MariaDB`,
-  Percona drivers, `DBD::DuckDB`, and `DateTime::Format::*`. `DBD::SQLite`
-  is the one database driver that may be a hard require, because it is the
-  default backend.
-  - **Suggests** — nothing breaks without it; a feature is simply absent.
-  - **Recommends** — you want it if you can have it (an XS accelerator, a
-    faster JSON backend), but the pure-Perl path is complete.
+- **Each project classifies its own dependencies.** The shared repository does
+  not decide whether a named module is required or optional for another
+  project.
+- **Suggests** means nothing breaks without the module; a feature is simply
+  absent. **Recommends** means the module is wanted when available, but a
+  complete fallback remains.
 - Every optional module is `require`d **lazily at its point of use**, with an
   actionable error naming what to install. Nothing always-loaded may `use` an
   optional module at compile time.
-- **`[Prereqs / DevelopRequires]` lists every optional driver too**, so a
-  developer box installs the full matrix and the author suite actually
-  exercises it.
+- **`[Prereqs / DevelopRequires]` may include optional integrations** needed
+  for the project's documented author-test matrix.
 - Keep the `=` column aligned within a section. It is scanned by eye
   constantly.
 - A comment above a non-obvious dependency explaining *why* it is optional,
@@ -385,49 +373,42 @@ overrides several universal rules at once.
 - `[Git::Commit / Commit_Changes]` with `munge_makefile_pl = true` lands the
   version bump as "Automated Version Bump".
 
-### CI
+### Continuous integration
 
-GitHub Actions, in `.github/workflows/`. Two shapes are in use:
-
-- **`testsuite.yml`** — the current one. A cheap `ubuntu` job runs first
-  (`perl Makefile.PL && make && make test`), then a `perl-versions` job
-  computes the matrix via `perl-actions/perl-versions` (`since-perl` /
-  `until-perl`), then the matrix job runs only if the cheap job passed. Deps
-  install with `perl-actions/install-with-cpm` from `.github/cpanfile.ci`
-  first, then `cpanfile`. `local/` is cached, keyed on the cpanfile hashes
-  plus a week number so the cache rolls over.
-- **`linux.yml` / `macos.yml` / `windows.yml`** — the older per-platform
-  shape with a hand-listed `perl-version` matrix. Fine where it exists; do not
-  add new ones.
-
-Standard job environment:
-
-```yaml
-PERL_USE_UNSAFE_INC: 0
-AUTOMATED_TESTING: 1
-RELEASE_TESTING: 1
-AUTHOR_TESTING: 0      # 1 only where author tests are meant to run in CI
-```
-
-`AUTHOR_TESTING` in CI is the opposite of the local rule: locally it is always
-on so nothing silently skips, in CI it is off unless the author suite is cheap
-and portable enough to belong there.
-
-`cpanfile.ci` (at the root or under `.github/`) lists modules CI needs that
-Dist::Zilla cannot see. It is excluded from the distribution.
+Continuous-integration providers, workflow files, matrices, and credentials
+are project-local concerns. This repository does not prescribe or audit them.
 
 ---
 
 ## Adding a dependency (the whole procedure)
 
-1. Add it to the right `[Prereqs / ...]` section in `dist.ini`.
-2. If it is optional, make the load site `require` it lazily with an
-   actionable error.
+1. Use the project's dependency policy to choose the right
+   `[Prereqs / ...]` section in `dist.ini`.
+2. If the project classifies it as optional, keep the load behavior consistent
+   with that classification.
 3. `dzil build` — this regenerates `Makefile.PL` and `cpanfile` and
    `[CopyFilesFromBuild]` copies them back into the tree.
 4. Commit `dist.ini`, `Makefile.PL`, and `cpanfile` together.
 
 Do not skip step 3 and hand-edit `Makefile.PL`. It will be reverted.
+
+---
+
+## Manual release procedure
+
+1. Confirm that the next-release section in `Changes` has content, the working
+   tree contains only intended changes, and the project's pre-review and test
+   procedures pass.
+2. Run `dzil build`, inspect the built distribution, and test the built
+   artifact using the project's documented commands.
+3. Only the owner, or an agent explicitly authorized for that release, runs
+   `dzil release`. With `[FakeRelease]` this performs the configured release
+   checks, tags, commits, and version bump without uploading to PAUSE.
+4. The owner uploads the inspected artifact separately with the PAUSE client
+   chosen for that project.
+
+Never infer authorization to release or upload from permission to edit or
+test a repository.
 
 ---
 
@@ -443,12 +424,11 @@ It reports, per project:
 - Dev-only trees that are not excluded from `[GatherDir]`.
 - Generated files missing from `[CopyFilesFromBuild]`, `[Git::Check]`, or
   `[Git::Commit]`.
-- Optional database drivers or flavor helpers sitting in `[Prereqs]` as hard
-  requires.
 - A missing NJH smoker guard.
 - An author string that is not the canonical one.
 - `[UploadToCPAN]` where `[FakeRelease]` is expected.
 
-Findings are advisory: a project may have a good reason to differ. Report
+Findings are advisory compatibility checks against this optional profile, not
+universal pre-review gates. A project may have a good reason to differ. Report
 them to the user rather than silently "fixing" a distribution's release
 wiring.

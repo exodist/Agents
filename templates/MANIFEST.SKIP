@@ -1,0 +1,3 @@
+# Project-specific omissions not already handled by [PruneCruft] or [GatherDir].
+^MANIFEST\.SKIP$
+^Dist-Name-[\d._]+

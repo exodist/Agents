@@ -46,7 +46,7 @@ subtest 'repository-wide Git gather' => sub {
 subtest 'plugin ordering and MakeMaker presence' => sub {
     my $ini = template_text();
     $ini =~ s/\[RewriteVersion\](.*?)\n\[License\]/[License]$1\n[RewriteVersion]/s;
-    $ini =~ s/^\[MakeMaker::Awesome\].*?(?=^\[CPANFile\])//ms;
+    $ini =~ s/^\[MakeMaker\]\n//m;
     my $dir = project_with_ini($ini);
     my ($exit, $output) = run_cmd({}, $^X, $AUDIT, $dir);
     is($exit, 1, 'invalid plugin structure fails');

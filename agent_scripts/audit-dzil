@@ -79,7 +79,7 @@ check_shape($ini, $root);
 if (@findings) {
     printf("dist.ini audit: %s\n\n", File::Spec->rel2abs($ini_path));
     print "  $_\n" for @findings;
-    printf("\n%d finding(s). See ~/projects/Agents/DZIL_GUIDE.md.\n", scalar(@findings));
+    printf("\n%d finding(s). Consult the shared packaging guidance.\n", scalar(@findings));
     exit 1;
 }
 
