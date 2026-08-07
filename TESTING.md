@@ -128,6 +128,33 @@ shared lock enforces.
 
 ---
 
+## Non-Perl test suites
+
+A project that ships or maintains JavaScript, browser, shell, compiled, or
+other non-Perl components records every applicable suite and its exact command
+in project-local instructions. The shared repository does not choose its
+package manager, dependency versions, test runner, browser matrix, or coverage
+threshold.
+
+Do not treat a passing Perl suite as coverage for another runtime. When a
+change touches a non-Perl component, run the project-documented suite for that
+component as well. During adoption, harvest these commands from existing
+entry-point and developer documents before replacing anything.
+
+`agent-test-lock` can wrap an arbitrary command to provide timeout, process
+group cleanup, and optional machine-wide serialization. Pass `--jobs`
+explicitly when the wrapper cannot infer the command's concurrency. For
+example, a project might document:
+
+```
+~/projects/Agents/bin/agent-test-lock --jobs 1 --timeout 900 -- ./project-test-command
+```
+
+This is local test execution guidance only. Continuous-integration services
+and workflow files remain project-local concerns.
+
+---
+
 ## Test libraries
 
 **`Test2::V0`** for everything new. Avoid `Test::More` and `Test::Simple` in

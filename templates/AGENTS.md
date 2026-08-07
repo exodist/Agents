@@ -76,7 +76,7 @@ is stale — follow `ARCHITECTURE.md` and flag the inconsistency.
 
 <!-- Project specifics only: extra environment variables, a second command
      that must also pass, expected suite duration, the right timeout, known
-     slow files, database flavors exercised. -->
+     slow files, database flavors exercised, and every non-Perl suite. -->
 
 ---
 

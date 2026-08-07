@@ -1,5 +1,8 @@
 {{$NEXT}}
 
+    - Require projects to inventory their own non-Perl test suites without
+      prescribing dependencies, runners, coverage thresholds, or CI.
+
     - State the repository's Perl 5 license explicitly.
 
     - Use Codex's documented user and repository skill-discovery paths and
