@@ -22,16 +22,34 @@ sub debris_dir {
     return $dir;
 }
 
+sub controlled_path {
+    my ($root, $exit) = @_;
+    my $fake_bin = File::Spec->catdir($root, 'controlled-bin');
+    make_path($fake_bin);
+    my $ps = File::Spec->catfile($fake_bin, 'ps');
+    write_file($ps, "#!/bin/sh\nexit $exit\n");
+    chmod(0755, $ps) or die "chmod '$ps': $!";
+    return join(':', $fake_bin, $ENV{PATH});
+}
+
 subtest 'default safety age' => sub {
     my $tmp    = tempdir(CLEANUP => 1);
     my $debris = debris_dir($tmp, 'fresh');
 
-    my ($exit, $output) = run_cmd({}, $^X, $SWEEP, '--tmpdir', $tmp);
+    my ($exit, $output) = run_cmd({env => {PATH => controlled_path($tmp, 0)}}, $^X, $SWEEP, '--tmpdir', $tmp);
     is($exit, 0, 'report succeeds');
     like($output, qr/^No database test debris/, 'fresh marker is ignored by default');
     ok(-d $debris, 'fresh directory remains');
 
-    ($exit, $output) = run_cmd({}, $^X, $SWEEP, '--tmpdir', $tmp, '--min-age', 0);
+    ($exit, $output) = run_cmd(
+        {env => {PATH => controlled_path($tmp, 0)}},
+        $^X,
+        $SWEEP,
+        '--tmpdir',
+        $tmp,
+        '--min-age',
+        0,
+    );
     is($exit, 0, 'explicit all-age report succeeds');
     like($output, qr/1 abandoned dir/, 'all-age report finds the fixture');
 };
@@ -42,7 +60,14 @@ subtest 'delete mode' => sub {
     my $old    = time - 7200;
     utime($old, $old, $debris) or die "utime '$debris': $!";
 
-    my ($exit, $output) = run_cmd({}, $^X, $SWEEP, '--delete', '--tmpdir', $tmp);
+    my ($exit, $output) = run_cmd(
+        {env => {PATH => controlled_path($tmp, 0)}},
+        $^X,
+        $SWEEP,
+        '--delete',
+        '--tmpdir',
+        $tmp,
+    );
     is($exit, 0, 'old debris is removed');
     like($output, qr/Removed 1 of 1 dir/, 'removal is reported');
     ok(!-e $debris, 'directory was deleted');
