@@ -214,21 +214,16 @@ Under a `t/AI/` project:
 - [ ] No memory cgroup cap was placed around the run.
 - [ ] Debris swept after any crashed or killed run.
 
-## 11. Databases
+## 11. Database projects
 
-- [ ] No `DBIx::Class`.
-- [ ] Default backend stays SQLite via `DBD::SQLite` directly — *not*
-      `DBIx::QuickDB`.
-- [ ] `DBIx::QuickDB` appears only in test setup or non-default-flavor
-      spin-up; ephemeral instances point at `~/dbs/` installs when relevant.
-- [ ] Nothing in `lib/` references `~/dbs` or any developer-only path.
-- [ ] Non-default DB drivers (`DBD::Pg`, `DBD::mysql`, `DBD::MariaDB`,
-      Percona, `DBD::DuckDB`) and flavor-specific helpers
-      (`DateTime::Format::*`) are Suggests/Recommends in `dist.ini`, never
-      hard requires.
-- [ ] Per-install test machinery: the parent process of a per-install test
-      file loads no `DBIx::QuickDB` code (drivers cache `$PATH` at load
-      time and a forked child inherits the cache).
+Skip this section unless the project's entry documents opt into
+`DATABASES.md`.
+
+- [ ] Backend and dependency choices follow the project's architecture and
+      packaging documents, not assumptions from another repository.
+- [ ] Developer-only installation paths do not leak into shipped code.
+- [ ] Per-install test children establish their environment before loading
+      drivers or helpers that may cache it.
 
 ## 12. UUIDs
 

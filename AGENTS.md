@@ -26,7 +26,8 @@ For a project that opts into this repository:
 2. Read this file for shared workflow and safety rules.
 3. Read only the shared documents this file names for the work being done:
    the Perl guide for Perl edits, `TESTING.md` before test work,
-   `DZIL_GUIDE.md` before packaging work, and the matching procedure under
+   `DZIL_GUIDE.md` before packaging work, `DATABASES.md` only when a database
+   project's entry documents opt into it, and the matching procedure under
    `skills/` before carrying it out.
 4. Read the project documents its entry point names, including its
    `ARCHITECTURE.md`, test instructions, and declarations.

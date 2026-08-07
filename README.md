@@ -27,7 +27,8 @@ project for drift.
 | [`AGENTS.md`](AGENTS.md) | Agent workflow: how work happens, decision discussion mode, reference trees, the three mandatory pre-review passes, AI docs, commits, changelog, worktrees. |
 | [`PERL_STYLE_GUIDE.md`](PERL_STYLE_GUIDE.md) | Perl style: object orientation, error handling, filehandles, conditionals, naming, comments, terminology, perltidy, POD, sizes. |
 | [`STYLE_GUIDE_AGENT_CHECKLIST.md`](STYLE_GUIDE_AGENT_CHECKLIST.md) | The self-audit form of the style guide. Walk it before handing work back. |
-| [`TESTING.md`](TESTING.md) | Test execution, the shared concurrency lock, memory traps, the `~/dbs` contract, test layout and provenance. |
+| [`TESTING.md`](TESTING.md) | Test execution, the shared concurrency lock, memory traps, test layout and provenance. |
+| [`DATABASES.md`](DATABASES.md) | Optional database-test operations, developer installs, and per-install isolation. |
 | [`DZIL_GUIDE.md`](DZIL_GUIDE.md) | The canonical `dist.ini` skeleton and packaging rules every distribution is audited against. |
 | [`AI_AND_LLM_POLICY.txt`](AI_AND_LLM_POLICY.txt) | Contributor-facing AI/LLM policy. Ships with each distribution. |
 | [`REPO_RULES.md`](REPO_RULES.md) | Rules for editing **this** repository. Consuming projects do not inherit them. |

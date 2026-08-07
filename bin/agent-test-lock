@@ -23,7 +23,7 @@ use warnings;
 #                   serial run and 300 for a concurrent run. 0 disables.
 #   --wait SECS     Give up waiting for the lock after this long. Default 3600.
 #   --no-lock       Run without taking the lock.
-#   --no-author     Do not set AUTHOR_TESTING=1 (for checking skip behavior).
+#   --no-author     Force AUTHOR_TESTING=0 (for checking skip behavior).
 #   --lock-file P   Override the lock path (default $AGENT_TEST_LOCK or
 #                   ~/projects/.agent-test-lock).
 #   --quiet         Do not narrate lock acquisition.
@@ -239,7 +239,7 @@ Usage: agent-test-lock [options] -- <command...>
                   300 for concurrent; 0 disables).
   --wait SECS     Give up waiting for the lock after this long (default 3600).
   --no-lock       Run without taking the lock.
-  --no-author     Do not set AUTHOR_TESTING=1.
+  --no-author     Force AUTHOR_TESTING=0.
   --lock-file P   Override the lock path.
   --quiet         Do not narrate lock acquisition.
 

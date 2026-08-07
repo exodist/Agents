@@ -1,5 +1,8 @@
 {{$NEXT}}
 
+    - Move database-specific test operations into an optional guide and align
+      test commands, timeouts, author-test state, and debris safety wording.
+
     - Separate Perl compatibility from signature policy, standardize five
       project declarations, and limit terminology rules to maintained code and
       user-facing documentation.

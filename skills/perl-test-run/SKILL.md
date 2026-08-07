@@ -22,7 +22,8 @@ Four rules, every run:
 1. **`AUTHOR_TESTING=1`** so author-gated tests run instead of silently
    skipping. The wrapper sets it; `--no-author` opts out for a deliberate
    check of skip behavior.
-2. **A timeout.** Exceeding it is a failure, not "still going". Default 600s.
+2. **A timeout.** Exceeding it is a failure, not "still going". Defaults are
+   900s for serial and 300s for concurrent runs.
 3. **`-j16`** default concurrency on the primary dev box.
 4. **The shared lock above `-j4`** — `~/projects/.agent-test-lock`. Two agents
    each running `-j16` against database suites is what OOM'd this machine.
@@ -73,45 +74,24 @@ rounds multiply full suites across agents.
 Almost always a hung test or a leaked process, not slowness.
 
 1. Kill the run.
-2. Hunt orphans: `ps -eo args | grep -E 'db-quick-watcher|runner|Preload=launch'`.
-   Note `pgrep -f` matches its own command line.
-3. Signal the **watcher**, not the server: `kill -TERM <watcher pid>`. The
-   watcher stops its server and removes its data dir the normal way.
-4. Sweep debris:
+2. Inspect the process tree for children the project is known to launch.
+3. Stop those children through their documented supervisor or cleanup path.
+4. Fix the leak.
 
-   ```
-   ~/projects/Agents/bin/sweep-test-debris
-   ~/projects/Agents/bin/sweep-test-debris --delete
-   ```
-
-5. Fix the leak.
+For an opted-in database project, follow `DATABASES.md` for watcher and
+debris cleanup rather than applying those operations to every project.
 
 ## Memory
 
-**Do not wrap runs in a memory cgroup cap.** `MemoryMax` counts tmpfs pages,
-so it caps the tests' *storage*, not their processes; a 12G cap OOM-killed
-`mysqld` mid-run and presented as an ordinary test failure. Only
-`journalctl --user | grep oom-kill` identifies that.
+Do not improvise a memory cgroup or relocate temporary storage without first
+identifying which project resource is exhausted. For opted-in database
+projects, the measured constraints and controls are in `DATABASES.md`.
 
-**Do not move `TMPDIR` off tmpfs.** Measured: one suite went from ~103s to
-past a 900s timeout on disk.
+## Database projects
 
-The actual controls are the shared lock, lower fan-out on a loaded box
-(`-j8`, `QDB_INSTALL_JOBS=2`), and sweeping debris after a crash. Check
-`df -h /tmp` when a run behaves strangely.
-
-## Databases
-
-- Default backend: SQLite via `DBD::SQLite`, used directly.
-- Ephemeral and non-default flavors: `DBIx::QuickDB`, usually via
-  `Test2::Tools::QuickDB`.
-- With `AUTHOR_TESTING=1`, helpers scan `~/dbs/*/bin` and run every applicable
-  test once per developer install, each in a subprocess with that install's
-  bin dir prepended to `$PATH`. The scan is live — drop an install in and it
-  is picked up.
-- Fan-out is `QDB_INSTALL_JOBS` (default 4) × `-j`, so `-j16` is ~64 install
-  children each with a server and watcher.
-- Nothing in `lib/` may know about `~/dbs`.
+Read `~/projects/Agents/DATABASES.md` only when the project's entry documents
+opt into that database-testing guidance. Backend choice and dependency
+classification remain project decisions.
 
 ## A slow file
 

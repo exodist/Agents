@@ -1,7 +1,7 @@
 # TESTING.md
 
-Universal testing policy. A project's own `TESTING.md` adds its specifics and
-may override anything here by saying so explicitly.
+Shared testing policy for projects that opt into it. A project's own test
+instructions take priority.
 
 Test-code formatting and Perl conventions live in `PERL_STYLE_GUIDE.md`.
 
@@ -9,7 +9,7 @@ Test-code formatting and Perl conventions live in `PERL_STYLE_GUIDE.md`.
 
 ## Running tests
 
-Four rules apply to every run, every project:
+Four rules apply to every run governed by this guide:
 
 1. **Always `AUTHOR_TESTING=1`.** Author-gated tests must run, not silently
    skip. A run without it is a deliberate check of skip behavior, not the
@@ -17,7 +17,8 @@ Four rules apply to every run, every project:
 2. **Always a timeout.** Never sit on a run that may be stuck. Exceeding the
    ceiling is a *failure*, not "still going".
 3. **`-j16` is the default concurrency** on the primary dev box. Lower it on
-   a loaded or smaller machine.
+   a loaded or smaller machine, and use the concurrency appropriate to a
+   deliberately verbose or serial diagnostic.
 4. **Hold the shared test lock for any concurrency above 4.** See below.
 
 The canonical command:
@@ -31,7 +32,7 @@ timeout, runs the command in its own process group, and releases on exit —
 including on signal. Where the project uses `yath`:
 
 ```
-~/projects/Agents/bin/agent-test-lock -- yath test -T -j16
+~/projects/Agents/bin/agent-test-lock -- yath test -D -T -j16
 ```
 
 `--timer` (`prove`) / `-T` (`yath`) are mandatory for agent-run suites: a
@@ -50,8 +51,8 @@ checkout's `lib/`, not an installed copy.
 Raise the timeout only for a suite genuinely known to be slower (some
 database suites run ~5 minutes at `-j16`, so a 600s ceiling is right for
 them). If a run approaches its ceiling *without* any failing or stuck test,
-that is a signal the suite itself has grown too slow — raise it, do not just
-wait longer.
+that is a signal the suite itself has grown too slow — speed up the suite
+rather than raising the ceiling by default.
 
 A run that blows past its ceiling is almost always a **hung test or a leaked
 process**. Kill the run, hunt the orphans, kill them, then fix the leak. Do
@@ -78,53 +79,23 @@ agent-test-lock [options] -- <command...>
   --jobs N        Concurrency this run will use. Default: parsed from the
                   command's -jN / --jobs N, else 16. Runs at 4 or below skip
                   the lock entirely.
-  --timeout SECS  Kill the command after this long. Default 600.
+  --timeout SECS  Kill the command after this long. Default 900 for serial,
+                  300 for concurrent.
   --wait SECS     Give up waiting for the lock after this long. Default 3600.
   --no-lock       Run without taking the lock. For a genuinely serial run.
-  --no-author     Do not set AUTHOR_TESTING=1. For deliberately checking
-                  that author-gated tests skip.
+  --no-author     Force AUTHOR_TESTING=0. The sole opt-out, for deliberately
+                  checking that author-gated tests skip.
 ```
 
 While waiting, it reports who holds the lock (pid, working directory,
 command, held-since) so a stale holder is obvious.
 
-### Memory
+### Resource failures
 
-**Do not wrap test runs in a memory cgroup cap.** It looks like the obvious
-guard and it is the wrong tool: `MemoryMax` counts tmpfs pages, so it caps
-the tests' *storage*, not their processes. A 12G cap was tried and the kernel
-OOM-killed `mysqld` mid-run. It presents as an ordinary test failure, and
-only `journalctl --user | grep oom-kill` identifies it.
-
-The real controls are, in order: the shared lock (one high-concurrency run at
-a time), lowering fan-out on a loaded box (`-j8`, `QDB_INSTALL_JOBS=2`), and
-sweeping debris after a crashed run.
-
-**Do not move `TMPDIR` off tmpfs.** Data dirs live in `/tmp`, which is RAM,
-deliberately — it is what makes database suites fast. Measured: on disk one
-suite went from ~103s to past a 900s timeout. Do not hammer the disk to save
-memory that is not actually scarce.
-
-**After any crashed or killed run, sweep the debris.** That is the real
-memory sink: a run that dies never cleans up, and its data dirs stay resident
-in RAM for every later run to work around. 644 abandoned dirs holding 19G
-were found after one crash — a healthy suite peaks around 16G and returns
-`/tmp` to a few hundred MB when it exits normally.
-
-```
-~/projects/Agents/bin/sweep-test-debris          # report only
-~/projects/Agents/bin/sweep-test-debris --delete # remove it
-```
-
-It looks for QuickDB fingerprints (`server-exit-status`, `*.READY`,
-`my.cfg`, `data/`, `cmd-log-*`, `DB-QUICK*`) before deleting anything. Check
-`df -h /tmp` when a run behaves strangely.
-
-If a run is killed part way, its watchers can be left holding live servers.
-Signal the **watcher** (`kill -TERM <db-quick-watcher pid>`), not the server:
-the watcher then stops the server and removes the data dir the normal way.
-`ps -eo args | grep '^db-quick-watcher'` finds them — note `pgrep -f` matches
-its own command line.
+Investigate the processes and storage the project actually uses rather than
+adding an arbitrary memory cap or relocating temporary storage. Database
+suites have measured tmpfs, fan-out, watcher, and debris-cleanup constraints;
+those live in `DATABASES.md` and apply only when the project opts in.
 
 ### Who runs the suite
 
@@ -164,49 +135,13 @@ new code; existing imports may stay until the file is touched substantively.
 
 ---
 
-## Databases in tests
+## Database projects
 
-- **Default backend: SQLite via `DBD::SQLite`, used directly.** Not through
-  `DBIx::QuickDB`.
-- **Ephemeral and non-default flavors: `DBIx::QuickDB`**, normally via
-  `Test2::Tools::QuickDB`.
-- Tests stand up whatever schema they need against an ephemeral database.
-- Tests for unavailable non-default flavors **skip themselves**.
-
-### The `~/dbs` developer installs
-
-`~/dbs/<name>/bin` holds developer installs of MariaDB / MySQL / Percona /
-PostgreSQL. Any project that touches databases should be able to test against
-them.
-
-- With `AUTHOR_TESTING=1`, test helpers **scan `~/dbs/*/bin`** and run every
-  applicable test once per install, each in an isolated subprocess with that
-  install's bin dir prepended to `$PATH`.
-- **The scan is live.** Drop a new install under `~/dbs/<name>/bin` and it is
-  picked up automatically; delete one and it disappears. Nothing is
-  hardcoded.
-- Without `AUTHOR_TESTING`, only the system-installed servers are exercised.
-- Unix uses real forks. MSWin32 launches a fresh Perl process instead,
-  because Test2 does not support Windows' thread-based pseudo-fork.
-- **Nothing in `lib/` may know about `~/dbs`.** It is a developer-only
-  convention that must never leak into shipped code.
-
-**Concurrency math (Unix).** Each test file runs up to `QDB_INSTALL_JOBS`
-(default 4) install subprocesses at once, and `prove -j16` runs 16 files at
-once, so worst-case fan-out is ~64 install children, each with its own server
-and watcher. That is measured-fine on the primary dev box; on a smaller
-machine lower one or both knobs (`QDB_INSTALL_JOBS=2` and/or `-j8`). System V
-IPC (PostgreSQL semaphores) and RAM are the limits that bite first. The
-MSWin32 external-process path runs a file's installs sequentially and ignores
-`QDB_INSTALL_JOBS`.
-
-**Editing per-install test machinery.** The parent process of a per-install
-test file must **never** load `DBIx::QuickDB`, its drivers, or
-`Test2::Tools::QuickDB`. The drivers capture `$PATH` at load time (BEGIN
-blocks in the PostgreSQL driver) and in private lexical caches
-(`%PROVIDER_CACHE` in the MySQL driver) that a forked child inherits, which
-silently defeats the per-install `$PATH`. All QuickDB code loads inside the
-isolated children only, after their `$PATH` is set.
+Database backend selection, dependency classification, developer server
+installs, and per-install fan-out are not universal test policy. A database
+project may opt into `DATABASES.md`; its own architecture and test documents
+still take priority. Projects that do not name that guide do not read or audit
+against it.
 
 ---
 

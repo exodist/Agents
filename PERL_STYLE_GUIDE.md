@@ -635,22 +635,12 @@ Whichever layout a project uses, every file in it uses the same one.
 
 ---
 
-## Databases
+## Database guidance
 
-- **No `DBIx::Class`.** Either hand-written SQL on `DBI` (with
-  `SQL::Abstract` where it helps) or `DBIx::QuickORM`, per the project.
-- **`DBD::SQLite` directly for the default backend.** `DBIx::QuickDB` is for
-  ephemeral test setups and non-default flavors — never for the default
-  SQLite path.
-- **`DBIx::QuickDB` (usually via `Test2::Tools::QuickDB`) for ephemeral test
-  databases**, pointed at the developer installs under `~/dbs/` when
-  available. See `TESTING.md` for the `~/dbs` contract.
-- **Nothing in `lib/` may know about `~/dbs`.** It is a developer-only
-  convention and must never leak into shipped code.
-- Non-default drivers (`DBD::Pg`, `DBD::mysql`, `DBD::MariaDB`, Percona,
-  `DBD::DuckDB`) and flavor-specific helpers (`DateTime::Format::*`) are
-  loaded only when a caller points at a matching DSN. They are Suggests /
-  Recommends in `dist.ini`, never hard requires. See `DZIL_GUIDE.md`.
+Database framework, backend, dependency, and developer-install choices are
+project architecture rather than Perl style. Database projects may reference
+`DATABASES.md` for optional shared testing operations. Projects that do not
+name it ignore it.
 
 ---
 
