@@ -17,18 +17,19 @@ use warnings;
 #   sweep-test-debris                 # report only
 #   sweep-test-debris --delete        # remove what it found
 #   sweep-test-debris --tmpdir /tmp   # somewhere other than $TMPDIR
-#   sweep-test-debris --min-age 3600  # only touch dirs older than N seconds
+#   sweep-test-debris --min-age 3600  # override the default one-hour age
 
 use File::Path qw/remove_tree/;
 use File::Spec ();
 use Getopt::Long qw/GetOptions/;
 
-my %opt = (delete => 0, tmpdir => $ENV{TMPDIR} || '/tmp', 'min-age' => 0);
+my %opt = (delete => 0, tmpdir => $ENV{TMPDIR} || '/tmp', 'min-age' => 3600);
 GetOptions(\%opt, 'delete', 'tmpdir=s', 'min-age=i', 'help')
     or die "bad arguments\n";
 
 if ($opt{help}) {
     print "Usage: sweep-test-debris [--delete] [--tmpdir DIR] [--min-age SECS]\n";
+    print "Default minimum age: 3600 seconds. Use --min-age 0 to inspect everything.\n";
     exit 0;
 }
 
@@ -152,11 +153,13 @@ sub glob_to_regex {
     return qr/\A$re\z/;
 }
 
-# A killed run can leave watchers holding live servers. Signal the WATCHER,
-# not the server: it then stops the server and removes the data dir the
-# normal way. Note pgrep -f would match its own command line.
+# QuickDB deliberately sets the watcher's process title to begin with the
+# exact string below. If that contract changes, update this detector with it.
+# Signal the watcher, not the server: it removes its own data directory.
 sub live_watchers {
     my @out = `ps -eo pid,args 2>/dev/null`;
+    die "could not enumerate QuickDB watchers with ps\n" if $? != 0;
+
     my @found;
     for my $line (@out) {
         next unless $line =~ /^\s*(\d+)\s+(db-quick-watcher.*)$/;
@@ -188,8 +191,8 @@ sub dir_size {
 
 sub human {
     my ($bytes) = @_;
-    my @units = qw/B K M G T/;
-    my $i     = 0;
+    my @units   = qw/B K M G T/;
+    my $i       = 0;
     while ($bytes >= 1024 && $i < $#units) {
         $bytes /= 1024;
         $i++;

@@ -1,5 +1,8 @@
 {{$NEXT}}
 
+    - Give database-debris cleanup a one-hour safety age and refuse to proceed
+      when live-watcher enumeration fails.
+
     - Make the test wrapper force author-test state from its command line and
       derive default timeouts from serial versus concurrent execution.
 
