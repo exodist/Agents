@@ -1,5 +1,9 @@
 {{$NEXT}}
 
+    - Separate Perl compatibility from signature policy, standardize five
+      project declarations, and limit terminology rules to maintained code and
+      user-facing documentation.
+
     - Define Agents adoption as optional, give project documents unconditional
       priority, and load only entry-point references relevant to the task.
 

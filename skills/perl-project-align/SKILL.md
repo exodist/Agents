@@ -29,20 +29,21 @@ Three files per project:
 | `AGENTS.md` | Bootstrap stanza (verbatim), then project-specific context. |
 | `AGENTS_OVERRIDE.md` | Ledger for declarations and explicit shared-rule overrides. |
 
-## The four declarations
+## The five declarations
 
-`AGENTS_OVERRIDE.md` **must** answer all four, each with a reason. An
+`AGENTS_OVERRIDE.md` **must** answer all five, each with a reason. An
 unanswered declaration is how two files in one repository end up in different
 styles.
 
-1. **Perl floor / signatures** — Mode A (portable: `use strict; use
-   warnings;`, no signatures) or Mode B (modern: `use v5.38;`, signatures
-   everywhere). Unstated means Mode A; say it explicitly anyway.
-2. **POD placement** — all POD under `__END__` (default) or the split layout.
-3. **Test layout** — category directories (`t/unit`, `t/acceptance`,
+1. **Minimum Perl version** — the exact compatibility promise, or an explicit
+   statement that there is no minimum-version promise.
+2. **Signature policy** — disabled, or required where the declared
+   version/feature pragma can express the call shape.
+3. **POD placement** — all POD under `__END__` (default) or the split layout.
+4. **Test layout** — category directories (`t/unit`, `t/acceptance`,
    `t/regression`, `t/integration`) plus `# Test origin:` headers (default for
    new projects), or a mirrored `t/AI/` tree.
-4. **perltidy** — the shared `templates/perltidyrc` copied to `.perltidyrc`,
+5. **perltidy** — the shared `templates/perltidyrc` copied to `.perltidyrc`,
    or a project-local variant with what differs and why.
 
 ## Setting up a new project
@@ -79,7 +80,7 @@ Then by hand:
   universal text, that drift is either a real override — move it to
   `AGENTS_OVERRIDE.md` with its reason — or rot, and gets deleted. Decide
   which; do not leave it ambiguous.
-- Does `AGENTS_OVERRIDE.md` exist and answer all four declarations?
+- Does `AGENTS_OVERRIDE.md` exist and answer all five declarations?
 - Do the project's `agent_scripts/` copies match `~/projects/Agents/`? Fix the
   canonical copy first, then re-copy.
 

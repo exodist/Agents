@@ -166,9 +166,10 @@ Two jobs.
 leave some rules open because there is no right answer for all projects. Each
 must be pinned, with a reason:
 
-- **Perl floor / signatures** — Mode A (portable: `use strict; use warnings;`,
-  no signatures) or Mode B (modern: `use v5.38;`, signatures everywhere).
-  Unstated means Mode A.
+- **Minimum Perl version** — an exact compatibility promise, or an explicit
+  statement that the project makes no minimum-version promise.
+- **Signature policy** — disabled, or required where the project's declared
+  version/feature pragma can express the call shape.
 - **POD placement** — all POD under `__END__` (default) or the split layout.
 - **Test layout** — category directories (`t/unit`, `t/acceptance`,
   `t/regression`, `t/integration`) plus `# Test origin:` headers (default for
@@ -213,7 +214,7 @@ cp ~/projects/Agents/agent_scripts/find-long-subs              agent_scripts/
 cp ~/projects/Agents/agent_scripts/find-large-modules          agent_scripts/
 ```
 
-Then fill in `AGENTS.md` (project content), `AGENTS_OVERRIDE.md` (the four
+Then fill in `AGENTS.md` (project content), `AGENTS_OVERRIDE.md` (the five
 declarations), `dist.ini` (name, main module, repo URL, prereqs),
 `TEMPLATE.pod` (dist name, repo URL), and `.gitignore` (dist name). Create
 `Changes` with a `{{$NEXT}}` section.
@@ -273,7 +274,7 @@ By hand:
   each copy with a pointer, keeping only the project-specific parts. If a copy
   has drifted from the universal text, that drift is either a real override —
   move it to `AGENTS_OVERRIDE.md` — or rot, and gets deleted.
-- Does `AGENTS_OVERRIDE.md` exist, and answer all four declarations?
+- Does `AGENTS_OVERRIDE.md` exist, and answer all five declarations?
 - Do the project's `agent_scripts/` copies match `~/projects/Agents/`? Fix the
   canonical copy first, then re-copy.
 

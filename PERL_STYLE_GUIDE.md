@@ -356,40 +356,32 @@ fat comma makes the destination visually distinct from the values.
 
 ---
 
-## Perl floor and subroutine signatures **[project-declared]**
+## Minimum Perl version **[project-declared]**
 
-There is **no universal minimum Perl version and no universal signature
-requirement.** Each project declares which mode it is in, in its own
-`AGENTS_OVERRIDE.md`. Do not import one project's answer into another.
+There is no universal Perl floor. Each project records its actual minimum as
+an exact version, or explicitly states that it makes no minimum-version
+promise. The declaration must agree with `dist.ini` and with version pragmas
+in shipped modules.
 
-### Mode A — portable
+Do not raise a project's minimum as a cleanup. Compatibility is a release and
+architecture decision owned by that project.
 
-```perl
-use strict;
-use warnings;
-```
+## Subroutine signatures **[project-declared]**
 
-No enforced minimum Perl version. Argument handling follows the surrounding
-code: `my $self = shift;`, `my ($self, @args) = @_;`, `$_[0]`, whichever
-reads best beside its neighbours. Signatures are not used.
+Signature policy is independent of the minimum Perl version. Each project
+declares either:
 
-Pick this for distributions that want a low CPAN floor and broad smoker
-coverage.
+- **Disabled.** Use `use strict; use warnings;` and ordinary `@_` argument
+  handling consistent with the surrounding code.
+- **Required where expressible.** Declare the version/feature pragma that
+  enables signatures in that project, then use signatures for all named subs,
+  methods, and anonymous subs whose call shape they can express.
 
-### Mode B — modern
+For a project using `use v5.38`, that one line enables `strict`, `warnings`,
+and stable signatures. Do not add a separate experimental-signature
+incantation at that floor.
 
-```perl
-use v5.38;
-```
-
-Minimum supported Perl is **5.38.0**. That one line enables `strict`,
-`warnings`, and stable `signatures`. Add `use strict;` / `use warnings;`
-only when you also need to override the bundle (rare). No
-`use feature 'signatures';` + `no warnings 'experimental::signatures';`
-incantations — unnecessary at this floor.
-
-Use signatures for **all** named subs, methods, and anonymous subs whose
-argument handling fits what signatures support:
+Under a required-signatures declaration:
 
 - Methods: `sub method ($self, $arg, $other = undef) { ... }`
 - Class methods: `sub new ($class, %params) { ... }`
@@ -418,9 +410,8 @@ one and be consistent within a file.
 
 ### If a project has not declared
 
-Assume **Mode A (portable)**, and say so when you touch the project's
-`AGENTS_OVERRIDE.md`. A low floor is the safer default for a CPAN distribution: it is
-easy to raise later and disruptive to lower.
+Preserve the existing minimum-version promise and do not introduce
+signatures. Report the missing declarations instead of guessing new values.
 
 ---
 
@@ -431,7 +422,7 @@ easy to raise later and disruptive to lower.
 - Run **perlcritic** with the repository `.perlcriticrc` when the project has
   one. Not every project does; do not invent one unasked.
 
-### perltidy
+### perltidy **[project-declared]**
 
 **Every new or edited Perl file is run through perltidy** — `.pm`, `.pl`,
 `.t`, and executable scripts alike.
@@ -442,7 +433,7 @@ it up automatically:
 
 ```
 perltidy -b <file>              # uses the project's ./.perltidyrc
-perltidy --pro=.perltidyrc <file>
+perltidy -b --pro=.perltidyrc <file>
 ```
 
 Copy it in when a project lacks one:
@@ -547,9 +538,11 @@ reasoning stays in a short comment inside the sub.
 
 ## Terminology
 
-Some words are forbidden anywhere in the repository — code, comments, POD,
-user-facing strings, and tracked Markdown docs. Do not introduce them; if
-you touch a line that already has one, replace it.
+Some words are forbidden in code, code comments, POD, user-facing strings,
+and user documentation. Internal Markdown such as agent instructions, plans,
+reviews, and decision records may use them when discussing the concepts
+precisely. Do not introduce them into maintained code or user documentation;
+if you touch a line there that already has one, replace it.
 
 - **`backstop`** — use `fallback` for a mechanism that fires when the
   primary path fails, or `safeguard` for a protective limit.
@@ -559,10 +552,10 @@ you touch a line that already has one, replace it.
 - **`load-bearing`** — name the actual constraint instead (e.g. "the runner
   relies on this", "required for X to work").
 
-Audit: `agent_scripts/audit-banned-words`. It exempts the style guide and the
-checklist by name — they have to spell the words out to forbid them. Anywhere
-else, a line carrying the literal token `banned-words-ok` is skipped; use that
-only when quoting an external name you cannot change.
+Audit: `agent_scripts/audit-banned-words`. Its default scope is maintained
+code plus specifically named user documents, not every Markdown file. A line
+carrying the literal token `banned-words-ok` is skipped; use that only when
+quoting an external name you cannot change.
 
 ---
 
@@ -598,7 +591,7 @@ Within that document, keep the `TEMPLATE.pod` order:
 Method and export entries are still ordered to match code appearance, just
 gathered under their heading at the bottom rather than interleaved.
 
-### Placement — split layout **[project override]**
+### Placement — split layout **[project-declared]**
 
 A project may instead declare the split layout in its `AGENTS_OVERRIDE.md`.
 Under it:

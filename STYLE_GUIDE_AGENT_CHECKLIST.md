@@ -13,8 +13,8 @@ Sources this mirrors:
 - The project's `AGENTS_OVERRIDE.md` — declarations and overrides, which win.
 - The project's `ARCHITECTURE.md` / `AGENTS.md` — project context and design.
 
-Three items are **[project-declared]**: the Perl floor / signature mode
-(§5a), the test layout (§9), and the POD placement layout (§16). Read the
+Five items are **[project-declared]**: minimum Perl and signature policy
+(§5a), perltidy (§7), test layout (§9), and POD placement (§16). Read the
 project's `AGENTS_OVERRIDE.md` for its declarations before auditing those.
 An unanswered declaration is itself a finding.
 
@@ -134,27 +134,21 @@ edit set cannot hide a hit.
       variable.
 - [ ] `push` uses `=>` before the values: `push @items => $thing`.
 
-## 5a. Perl floor and signatures **[project-declared]**
+## 5a. Minimum Perl and signatures **[project-declared]**
 
-Check `AGENTS_OVERRIDE.md` for the declared mode first. Unanswered means
-Mode A, and the missing declaration is itself a finding.
+Check both declarations first. A missing declaration is itself a finding;
+preserve existing compatibility and do not introduce signatures while it is
+unresolved.
 
-**Mode A (portable):**
-
-- [ ] Module starts `use strict; use warnings;`.
-- [ ] No signatures introduced; argument handling matches the surrounding
-      code.
-
-**Mode B (modern):**
-
-- [ ] Every shipped `.pm` starts with `use v5.38;` (enables `strict`,
-      `warnings`, stable `signatures` in one line). No
-      `use feature 'signatures';` + `no warnings 'experimental::signatures';`
-      incantations.
-- [ ] Every named sub / method / anonymous sub uses a signature unless its
-      argument shape genuinely cannot be expressed by one. Preference for
-      `my $self = shift;` is not a reason to skip it. Methods declare
-      `$self` / `$class` as the first parameter.
+- [ ] The declared minimum is exact (or explicitly absent) and agrees with
+      `dist.ini` and shipped module version pragmas.
+- [ ] The signature policy is explicitly disabled or required where the
+      declared feature set can express the call shape.
+- [ ] Under a disabled policy, no signatures were introduced and `@_`
+      handling matches the surrounding code.
+- [ ] Under a required policy, every named sub / method / anonymous sub uses
+      a signature unless its argument shape genuinely cannot be expressed.
+      Methods declare `$self` / `$class` first.
 - [ ] Default-value form matches intent: `$x = $default` (missing only),
       `$x //= $default` (missing or undef), `$x ||= $default` (missing or
       falsy — used sparingly, never where `0` / `""` must survive).
@@ -169,7 +163,7 @@ Mode A, and the missing declaration is itself a finding.
       any encountered was replaced.
 - [ ] No `tinysleep`-style helper reintroduced.
 
-## 7. Whitespace and formatting
+## 7. Whitespace and formatting **[project-declared perltidy config]**
 
 - [ ] No trailing whitespace.
 - [ ] No emojis.
@@ -300,7 +294,7 @@ Under a `t/AI/` project:
       `PRIVATE METHODS`, `SOURCE`, `MAINTAINERS`, `AUTHORS`, `COPYRIGHT`.
 - [ ] Method/export entries ordered to match code appearance.
 
-**Split layout (project override):**
+**Split layout (project-declared):**
 
 - [ ] `NAME` / `DESCRIPTION` / `SYNOPSIS` at the top of the file.
 - [ ] `EXPORTS` / `PUBLIC METHODS` / `PRIVATE METHODS` inline, immediately

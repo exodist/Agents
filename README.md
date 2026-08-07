@@ -45,15 +45,16 @@ project for drift.
 their job is to direct the agent to the project's `AGENTS.md`; existing useful
 content is harvested into project documents before either file is replaced.
 
-Four rules are deliberately **project-declared** — they have no universal
+Five rules are deliberately **project-declared** — they have no universal
 answer, and each project's `AGENTS_OVERRIDE.md` must pin them:
 
-1. **Perl floor / signatures** — portable (`use strict; use warnings;`) or
-   modern (`use v5.38;` with signatures everywhere).
-2. **POD placement** — all POD under `__END__` (default), or the split layout.
-3. **Test layout** — category directories plus origin headers (default for new
+1. **Minimum Perl version** — the project's exact compatibility promise.
+2. **Signature policy** — disabled, or required where the declared feature
+   set can express the call shape.
+3. **POD placement** — all POD under `__END__` (default), or the split layout.
+4. **Test layout** — category directories plus origin headers (default for new
    projects), or a `t/AI/` mirror tree.
-4. **perltidy** — the shared `templates/perltidyrc`, or a project-local one.
+5. **perltidy** — the shared `templates/perltidyrc`, or a project-local one.
 
 ## Tools
 

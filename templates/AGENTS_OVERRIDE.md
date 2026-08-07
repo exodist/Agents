@@ -14,20 +14,24 @@ this file keeps declarations and explicit overrides easy to find.
 Every one of these must be answered. An unanswered declaration is how two
 files in one repository end up in different styles.
 
-### Perl floor and subroutine signatures
+### Minimum Perl version
 
-> **Mode: _____**
+> **Minimum: _____**
 
-- **Mode A — portable.** `use strict; use warnings;`. No enforced minimum Perl
-  version, no signatures; argument handling follows the surrounding code
-  (`my $self = shift;`, `my ($self, @args) = @_;`).
-- **Mode B — modern.** `use v5.38;` at the top of every shipped `.pm`, which
-  enables `strict`, `warnings`, and stable signatures. Signatures on every
-  named sub, method, and anonymous sub whose call shape allows one.
+Give the exact version promised by the distribution, matching `dist.ini` and
+shipped module pragmas, or explicitly state that the project makes no
+minimum-version promise.
 
 Reason: _____
 
-*(No declaration means Mode A. Say it explicitly anyway.)*
+### Subroutine signatures
+
+> **Policy: disabled / required where expressible**
+
+If required, name the version/feature pragma that enables signatures. If
+disabled, argument handling follows the surrounding code using `@_`.
+
+Reason: _____
 
 ### POD placement
 
