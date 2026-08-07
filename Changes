@@ -1,5 +1,8 @@
 {{$NEXT}}
 
+    - Count executable lines rather than comments and blank lines when
+      enforcing the subroutine-size limit.
+
     - Audit private inlined HashBase classes and detect read-only attributes
       on single-line and closing-line imports.
 

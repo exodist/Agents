@@ -3,9 +3,9 @@ use strict;
 use warnings;
 
 # Walk lib/**.pm and report any sub whose body exceeds the line threshold
-# (see PERL_STYLE_GUIDE.md "Subroutine size"). POD blocks and __END__
-# trailers are stripped before counting; the limit applies to executable
-# Perl only.
+# (see PERL_STYLE_GUIDE.md "Subroutine size"). POD blocks, __END__ trailers,
+# blank lines, and comment-only lines are excluded; the limit applies to
+# executable Perl only.
 #
 # Usage:
 #   perl agent_scripts/find-long-subs                   # threshold = 75, walks lib
@@ -72,18 +72,19 @@ for my $file (sort @files) {
             my $depth  = 0;
             my $j      = $i;
             my $opened = 0;
+            my $len    = 0;
             while ($j < @lines) {
                 my $stripped = $lines[$j];
-                $stripped =~ s/#.*//;
-                $stripped =~ s/'(?:\\.|[^'\\])*'//g;
-                $stripped =~ s/"(?:\\.|[^"\\])*"//g;
+                $stripped           =~ s/'(?:\\.|[^'\\])*'//g;
+                $stripped           =~ s/"(?:\\.|[^"\\])*"//g;
+                $stripped           =~ s/#.*//;
+                $len++ if $stripped =~ /\S/;
                 my $o = () = $stripped =~ /\{/g;
                 my $c = () = $stripped =~ /\}/g;
                 $depth += $o - $c;
                 $opened ||= $o > 0;
 
                 if ($opened && $depth <= 0) {
-                    my $len = $j - $start + 1;
                     if ($len > $threshold) {
                         printf("%s:%d  %s  (%d lines)\n", $file, $start + 1, $name, $len);
                         $found++;
