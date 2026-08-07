@@ -107,6 +107,19 @@ an existing `CLAUDE.md` or `CODEX.md`, inventory its useful content and move
 that content into `AGENTS.md` or another appropriate project document. Never
 overwrite an existing entry file blindly.
 
+The inventory explicitly includes:
+
+- The CPAN distribution name and any CPAN Testers notes. Keep the name in the
+  project `AGENTS.md`; the reusable query procedure lives in
+  `~/projects/Agents/CPAN_TESTERS.md`.
+- Every test command, environment setting, timeout, alternate harness path,
+  and project-specific audit gate.
+- Related-repository contracts: paths or distribution names, interfaces and
+  prerequisite versions that propagate, and when the related repository must
+  be checked.
+- Architecture, release, platform, and compatibility facts that are truly
+  local to the project.
+
 For a new pointer-only `CLAUDE.md`, use the template above. A `CODEX.md` may
 use the same short direction to `AGENTS.md` when the project wants that entry
 point. Once harvested, anything you are tempted to put in the pointer belongs
@@ -147,6 +160,7 @@ After the stanza, `AGENTS.md` carries **only what is true of this project**:
 - Project test specifics — extra environment variables, a second command that
   must also pass, expected suite duration, the right timeout, known slow files.
 - Project-specific pre-review gates (extra `agent_scripts/` auditors).
+- Related repositories and the exact changes that require checking them.
 - An architecture quick-reference: the foundational rules an agent must
   internalise before writing code here.
 - **Only if the project has one:** its reference tree, and what each subtree
@@ -227,7 +241,9 @@ declarations), `dist.ini` (name, main module, repo URL, prereqs),
 project-specific `MANIFEST.SKIP` patterns.
 
 Before copying either harness entry point, harvest useful content from the
-existing file. Verify packaging and optional Agents wiring separately:
+existing file, including CPAN Testers names, all test commands and gates, and
+related-repository propagation rules. Verify packaging and optional Agents
+wiring separately:
 
 ```
 perl ~/projects/Agents/agent_scripts/audit-dzil .

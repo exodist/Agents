@@ -49,7 +49,9 @@ styles.
 ## Setting up a new project
 
 Harvest useful instructions from any existing `CLAUDE.md` or `CODEX.md`
-before replacing an entry point. Then copy in: `templates/CODEX.md`,
+before replacing an entry point. The inventory includes CPAN Testers names,
+every test command and local gate, and related-repository propagation
+contracts. Then copy in: `templates/CODEX.md`,
 `templates/CLAUDE.md`, `templates/AGENTS.md`,
 `templates/AGENTS_OVERRIDE.md`, `templates/perltidyrc` → `.perltidyrc`,
 `templates/TEMPLATE.pod`, `AI_AND_LLM_POLICY.txt`, `templates/dist.ini`,

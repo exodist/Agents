@@ -30,6 +30,7 @@ project for drift.
 | [`TESTING.md`](TESTING.md) | Test execution, the shared concurrency lock, memory traps, test layout and provenance. |
 | [`DATABASES.md`](DATABASES.md) | Optional database-test operations, developer installs, and per-install isolation. |
 | [`DZIL_GUIDE.md`](DZIL_GUIDE.md) | An optional shared `dist.ini` profile and manual release procedure. |
+| [`CPAN_TESTERS.md`](CPAN_TESTERS.md) | Task-specific procedure for querying and analyzing public CPAN Testers reports. |
 | [`AI_AND_LLM_POLICY.txt`](AI_AND_LLM_POLICY.txt) | Contributor-facing AI/LLM policy. Ships with each distribution. |
 | [`REPO_RULES.md`](REPO_RULES.md) | Rules for editing **this** repository. Consuming projects do not inherit them. |
 | [`CLAUDE.md`](CLAUDE.md) | Points at `AGENTS.md`. That is its entire job. |

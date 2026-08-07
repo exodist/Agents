@@ -98,6 +98,7 @@ that kind of work**, the same way you would read a runbook:
 | `~/projects/Agents/skills/decision-discussion/SKILL.md` | Walking pending decisions past the user. |
 | `~/projects/Agents/skills/dzil-audit/SKILL.md` | Touching `dist.ini`, packaging, or adding a dependency. |
 | `~/projects/Agents/skills/perl-project-align/SKILL.md` | Setting up a new project or auditing one for drift. |
+| `~/projects/Agents/CPAN_TESTERS.md` | Querying or analyzing CPAN Testers reports. |
 
 *(These files are also valid Claude Code / Codex skills. `~/projects/Agents/install`
 optionally links them into `~/.claude/skills` and `~/.codex/skills` so they

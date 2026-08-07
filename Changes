@@ -1,5 +1,8 @@
 {{$NEXT}}
 
+    - Preserve CPAN Testers, test-command, and related-repository knowledge
+      when replacing harness entry points, with a shared report procedure.
+
     - Verify adopted projects' Perl-floor declarations against packaging and
       shipped module pragmas without coupling them to signature policy.
 

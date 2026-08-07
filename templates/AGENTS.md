@@ -80,6 +80,17 @@ is stale — follow `ARCHITECTURE.md` and flag the inconsistency.
 
 ---
 
+<!--
+## Related repositories
+
+- Path or distribution name, the shared interface or prerequisite contract,
+  and exactly which changes require checking the related repository.
+
+Delete this section when the project has no such relationship.
+-->
+
+---
+
 ## Project-specific pre-review gates
 
 Beyond the three universal passes in `~/projects/Agents/AGENTS.md`, this
