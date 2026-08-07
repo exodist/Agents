@@ -1,5 +1,8 @@
 {{$NEXT}}
 
+    - Separate Dist::Zilla packaging checks from optional Agents project
+      wiring, with stable diagnostic codes for both audits.
+
     - Give database-debris cleanup a one-hour safety age and refuse to proceed
       when live-watcher enumeration fails.
 
