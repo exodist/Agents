@@ -114,7 +114,6 @@ sub audit_file {
     for my $i (0 .. $#code) {
         my $line = $code[$i];
         next unless length $line;
-        next if $line =~ /^\s*sub\s+[A-Za-z_]/;
 
         for my $name (sort keys %declared) {
             next unless bare_call($line, $name);
@@ -131,7 +130,7 @@ sub audit_file {
 # -- so a plain function library that does either stays exempt.
 sub is_object_module {
     my ($src) = @_;
-    return 1 if $src =~ /^use\s+Object::HashBase\s+qw/m;
+    return 1 if $src =~ /^use\s+(?:[A-Za-z_][A-Za-z0-9_]*::)*HashBase\b/m;
     return 1 if $src =~ /^use\s+Role::Tiny\s*;/m;
     return 1 if $src =~ /^with\s+['"q]/m;
     return 0;
@@ -144,17 +143,17 @@ sub bare_call {
     my ($line, $name) = @_;
 
     while ($line =~ /(?<![-\w:>\$\@\%])(&?)\Q$name\E\s*\(/g) {
-        my $amp   = $1;
-        my $start = $-[0];
+        my $amp    = $1;
+        my $start  = $-[0];
         my $before = substr($line, 0, $start);
 
-        next if $before =~ /\\\s*$/;          # \&name
-        next if $before =~ /\bgoto\s+$/;      # goto &name
-        next if $before =~ /\bsub\s+$/;       # declaration
-        next if $before =~ /->\s*$/;          # $obj->name(
-        next if $before =~ /::\s*$/;          # Pkg::name(
+        next if $before =~ /\\\s*$/;         # \&name
+        next if $before =~ /\bgoto\s+$/;     # goto &name
+        next if $before =~ /\bsub\s+$/;      # declaration
+        next if $before =~ /->\s*$/;         # $obj->name(
+        next if $before =~ /::\s*$/;         # Pkg::name(
         next if !$amp && $before =~ /[\$\@\%\&]\s*$/;
-        next if !$amp && $BUILTIN{$name};     # the builtin wins, not the sub
+        next if !$amp && $BUILTIN{$name};    # the builtin wins, not the sub
 
         return 1;
     }

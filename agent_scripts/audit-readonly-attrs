@@ -23,47 +23,10 @@ use warnings;
 
 use File::Find ();
 
-my @dirs = @ARGV ? @ARGV : ('lib');
+my @roots = @ARGV ? @ARGV : ('lib');
 
 my @hits;
-File::Find::find(
-    {
-        no_chdir => 1,
-        wanted   => sub {
-            return unless /\.pm\z/ && -f $_;
-            my $file = $_;
-
-            open(my $fh, '<', $file) or die "Could not open $file: $!";
-            my @lines = <$fh>;
-
-            my $in_hashbase = 0;
-            for my $i (0 .. $#lines) {
-                my $line = $lines[$i];
-
-                unless ($in_hashbase) {
-                    next unless $line =~ /^\s*use\s+Object::HashBase\s+qw[\{\(\[]/;
-                    $in_hashbase = 1;
-                    next;
-                }
-
-                # End of the attribute list.
-                if ($line =~ /[\}\)\]]/) {
-                    $in_hashbase = 0;
-                    next;
-                }
-
-                # A `-`-prefixed read-only slot. An explicit `-attr-ok` marker
-                # is the only thing that exempts it.
-                next unless $line =~ /^\s*-\w/;
-                next if $line =~ /-attr-ok/;
-
-                (my $trimmed = $line) =~ s/^\s+|\s+$//g;
-                push @hits => sprintf('%s:%d: %s', $file, $i + 1, $trimmed);
-            }
-        },
-    },
-    @dirs,
-);
+audit_file($_) for collect_files(@roots);
 
 if (@hits) {
     print "Read-only HashBase attributes using '-' (use '<' instead; if the throwing setter is intentional, add a '-attr-ok' comment):\n";
@@ -73,3 +36,59 @@ if (@hits) {
 
 print "OK: no unjustified '-' read-only HashBase attributes.\n";
 exit 0;
+
+sub collect_files {
+    my @out;
+    for my $root (@_) {
+        if (-d $root) {
+            File::Find::find(
+                {
+                    no_chdir => 1,
+                    wanted   => sub { push @out => $_ if /\.pm\z/ && -f $_ },
+                },
+                $root,
+            );
+            next;
+        }
+        die "'$root' is not a file or directory\n" unless -f $root;
+        push @out => $root;
+    }
+    return sort @out;
+}
+
+sub audit_file {
+    my ($file) = @_;
+
+    open(my $fh, '<', $file) or die "Could not open $file: $!";
+    my @lines = <$fh>;
+
+    my $in_hashbase = 0;
+    my $in_pod      = 0;
+    for my $i (0 .. $#lines) {
+        my $line = $lines[$i];
+
+        last if $line =~ /^__(?:END|DATA)__\s*$/;
+        if ($line =~ /^=cut\b/) {
+            $in_pod = 0;
+            next;
+        }
+        $in_pod = 1 if !$in_pod && $line =~ /^=[A-Za-z]/;
+        next        if $in_pod;
+
+        unless ($in_hashbase) {
+            next unless $line =~ /^\s*use\s+(?:[A-Za-z_][A-Za-z0-9_]*::)*HashBase\b\s+qw\b/;
+            $in_hashbase = 1;
+        }
+
+        my $code = $line;
+        $code =~ s/#.*$//;
+        if ($code =~ /(?:^|[\s\{\(\[\/])-[A-Za-z_][A-Za-z0-9_]*/ && $line !~ /-attr-ok/) {
+            (my $trimmed = $line) =~ s/^\s+|\s+$//g;
+            push @hits => sprintf('%s:%d: %s', $file, $i + 1, $trimmed);
+        }
+
+        $in_hashbase = 0 if $code =~ /;/;
+    }
+
+    return;
+}

@@ -1,5 +1,8 @@
 {{$NEXT}}
 
+    - Audit private inlined HashBase classes and detect read-only attributes
+      on single-line and closing-line imports.
+
     - Limit terminology checks to maintained code and identified user
       documentation while excluding internal history and worktrees.
 
