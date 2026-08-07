@@ -1,0 +1,347 @@
+#!/usr/bin/env perl
+use strict;
+use warnings;
+
+# Audit a distribution's Dist::Zilla setup against DZIL_GUIDE.md.
+#
+# Findings are advisory. A project may have a good reason to differ -- report
+# them to the user rather than silently rewriting release wiring.
+#
+# Usage:
+#   perl agent_scripts/audit-dzil               # audit the current directory
+#   perl agent_scripts/audit-dzil ../Some-Dist  # audit elsewhere
+#
+# Exits 1 when anything was reported, 0 on a clean audit.
+
+use File::Spec ();
+use Getopt::Long qw/GetOptions/;
+
+my $CANONICAL_AUTHOR = 'Chad Granum <exodist7@gmail.com>';
+
+my @REQUIRED_PLUGINS = qw{
+    RewriteVersion License ManifestSkip Manifest NextRelease GatherDir
+    PruneCruft PodSyntaxTests TestRelease MetaResources CPANFile MetaYAML
+    MetaJSON ReadmeFromPod CopyFilesFromBuild Git::Check Git::Commit
+    Git::Tag FakeRelease BumpVersionAfterRelease
+};
+
+my @GENERATED_FILES = qw{LICENSE cpanfile README README.md Makefile.PL};
+
+# Dev-only trees that must never ship. Only reported when they exist.
+my @DEV_TREES = qw{
+    agent_scripts AI_DOCS worktrees reference release-scripts demo
+    cover_db nyt test-logs pt tt data old old1 old2 old3 old4
+};
+
+# Loaded only when the caller points at a matching DSN, so they belong in
+# Suggests/Recommends -- never as hard requires. DBD::SQLite is exempt: it is
+# the default backend.
+my @OPTIONAL_DB_MODULES = qw{
+    DBD::Pg DBD::mysql DBD::MariaDB DBD::DuckDB
+    DateTime::Format::Pg DateTime::Format::MySQL DateTime::Format::SQLite
+};
+
+my $quiet = 0;
+GetOptions('quiet' => \$quiet) or die "bad arguments\n";
+
+my $root = shift(@ARGV) // '.';
+die "'$root' is not a directory\n" unless -d $root;
+
+my $ini_path = File::Spec->catfile($root, 'dist.ini');
+die "No dist.ini in '$root'\n" unless -f $ini_path;
+
+my $ini = parse_ini($ini_path);
+
+my @findings;
+check_identity($ini);
+check_plugins($ini);
+check_gather($ini, $root);
+check_generated($ini);
+check_prereqs($ini);
+check_makemaker($ini);
+check_shape($ini, $root);
+check_project_files($root);
+
+if (@findings) {
+    printf("dist.ini audit: %s\n\n", File::Spec->rel2abs($ini_path));
+    print "  $_\n" for @findings;
+    printf("\n%d finding(s). See ~/projects/Agents/DZIL_GUIDE.md.\n", scalar(@findings));
+    exit 1;
+}
+
+print "OK: dist.ini matches DZIL_GUIDE.md.\n" unless $quiet;
+exit 0;
+
+# {{{ Parsing
+
+# Returns { root => {key => [values]}, sections => [{plugin, name, keys}] }.
+sub parse_ini {
+    my ($path) = @_;
+
+    open(my $fh, '<', $path) or die "open '$path': $!\n";
+
+    my %out     = (root => {}, sections => []);
+    my $current = $out{root};
+
+    while (my $line = <$fh>) {
+        chomp $line;
+        $line =~ s/(?<!\\);.*$//;
+        $line =~ s/^\s+|\s+$//g;
+        next unless length $line;
+
+        if ($line =~ /^\[([^\]]+)\]$/) {
+            my ($plugin, $name) = split(m{\s*/\s*}, $1, 2);
+            my $section = {plugin => $plugin, name => $name // $plugin, keys => {}};
+            push @{$out{sections}} => $section;
+            $current = $section->{keys};
+            next;
+        }
+
+        next unless $line =~ /^([^=]+?)\s*=\s*(.*)$/;
+        push @{$current->{$1}} => $2;
+    }
+
+    return \%out;
+}
+
+sub has_plugin {
+    my ($ini, $plugin) = @_;
+    return scalar grep { $_->{plugin} eq $plugin } @{$ini->{sections}};
+}
+
+sub plugin_values {
+    my ($ini, $plugin, $key) = @_;
+    my @out;
+    for my $section (@{$ini->{sections}}) {
+        next unless $section->{plugin} eq $plugin;
+        push @out => @{$section->{keys}{$key} // []};
+    }
+    return @out;
+}
+
+sub note { push @findings => $_[0]; return }
+
+# }}} Parsing
+
+# {{{ Checks
+
+sub check_identity {
+    my ($ini) = @_;
+
+    my $author = ($ini->{root}{author} // [])->[0];
+    note("author is not the canonical '$CANONICAL_AUTHOR' (found: " . ($author // 'none') . ')')
+        if !defined $author || $author ne $CANONICAL_AUTHOR;
+
+    my $license = ($ini->{root}{license} // [])->[0] // '';
+    note("license should be 'Perl_5' (found: '$license')") unless $license eq 'Perl_5';
+
+    note('copyright_holder is not set') unless ($ini->{root}{copyright_holder} // [])->[0];
+    note('name is not set') unless ($ini->{root}{name} // [])->[0];
+
+    note('version is pinned in dist.ini -- RewriteVersion/BumpVersionAfterRelease own it')
+        if $ini->{root}{version};
+
+    return;
+}
+
+sub check_plugins {
+    my ($ini) = @_;
+
+    for my $plugin (@REQUIRED_PLUGINS) {
+        next if $plugin eq 'RewriteVersion' && has_plugin($ini, 'VersionFromModule');
+        note("missing [$plugin]") unless has_plugin($ini, $plugin);
+    }
+
+    note('[VersionFromModule] is the legacy arrangement -- it reads the version but never bumps it; move to [RewriteVersion] + [BumpVersionAfterRelease]')
+        if has_plugin($ini, 'VersionFromModule');
+
+    my @readme = grep { $_->{plugin} eq 'ReadmeFromPod' } @{$ini->{sections}};
+    note('expected two [ReadmeFromPod] blocks (markdown and text), found ' . scalar(@readme))
+        if @readme && @readme != 2;
+
+    note('[UploadToCPAN] present -- releases are manual, use [FakeRelease]')
+        if has_plugin($ini, 'UploadToCPAN');
+
+    my ($bump) = grep { ($_->{name} // '') eq 'Commit_Changes' } @{$ini->{sections}};
+    if (!$bump) {
+        note('missing [Git::Commit / Commit_Changes] (the post-release version bump commit)');
+    }
+    elsif (!grep { $_ eq 'true' } @{$bump->{keys}{munge_makefile_pl} // []}) {
+        note('[Git::Commit / Commit_Changes] should set munge_makefile_pl = true');
+    }
+
+    return;
+}
+
+sub check_gather {
+    my ($ini, $root) = @_;
+
+    my %excluded = map { $_ => 1 } plugin_values($ini, 'GatherDir', 'exclude_match');
+
+    # exclude_match values are anchored regexes with an optional trailing
+    # slash ('^agent_scripts/'); the tree names are bare ('agent_scripts').
+    # Normalize both ends before comparing, or every excluded tree reports
+    # as missing.
+    my @prefixes = map { my $p = $_; $p =~ s{^\^}{}; $p =~ s{/$}{}; $p } keys %excluded;
+
+    for my $tree (@DEV_TREES) {
+        next unless -d File::Spec->catdir($root, $tree);
+        next if grep { $tree =~ /^\Q$_\E/ } @prefixes;
+        note("dev-only tree '$tree/' exists but is not excluded from [GatherDir]");
+    }
+
+    # A dual-life dist deliberately ships the tree as-is; the core tarball
+    # comparison expects it.
+    unless (has_plugin($ini, 'DualLife')) {
+        my @root_md = grep { !m{/README\.md$} } glob(File::Spec->catfile($root, '*.md'));
+        note('internal .md files at the root are not excluded from [GatherDir] (add exclude_match = \\.md$)')
+            if @root_md && !grep { /\\\.md/ } keys %excluded;
+    }
+
+    my $t_excluded = grep { m{^\^t/} } keys %excluded;
+    my $t_gathered = grep { m{^t/?$} } plugin_values($ini, 'Git::GatherDir', 'root');
+    note('t/ is excluded from [GatherDir] but no [Git::GatherDir] re-gathers it (t/ dotfiles will not ship)')
+        if $t_excluded && !$t_gathered;
+
+    for my $section (@{$ini->{sections}}) {
+        next unless $section->{plugin} eq 'Git::GatherDir';
+        next if grep { $_ eq '1' } @{$section->{keys}{include_dotfiles} // []};
+        note("[Git::GatherDir / $section->{name}] should set include_dotfiles = 1 (that is why it exists)");
+    }
+
+    return;
+}
+
+sub check_generated {
+    my ($ini) = @_;
+
+    my %copied = map { $_ => 1 } plugin_values($ini, 'CopyFilesFromBuild', 'copy');
+    for my $file (@GENERATED_FILES) {
+        note("[CopyFilesFromBuild] does not copy $file back into the tree") unless $copied{$file};
+    }
+
+    for my $plugin (qw/Git::Check Git::Commit/) {
+        next unless has_plugin($ini, $plugin);
+        my %dirty = map { $_ => 1 } plugin_values($ini, $plugin, 'allow_dirty');
+        for my $file (@GENERATED_FILES, 'Changes') {
+            note("[$plugin] does not allow_dirty $file") unless $dirty{$file};
+        }
+    }
+
+    return;
+}
+
+sub check_prereqs {
+    my ($ini) = @_;
+
+    my ($hard) = grep { $_->{plugin} eq 'Prereqs' && $_->{name} eq 'Prereqs' } @{$ini->{sections}};
+    return unless $hard;
+
+    for my $module (@OPTIONAL_DB_MODULES) {
+        next unless $hard->{keys}{$module};
+        note("$module is a hard require in [Prereqs] -- it is loaded only for a matching DSN, so it belongs in RuntimeSuggests/RuntimeRecommends");
+    }
+
+    return;
+}
+
+sub check_makemaker {
+    my ($ini) = @_;
+
+    # A dual-life distribution must generate a Makefile.PL the core build can
+    # consume, so it uses plain [MakeMaker] with no custom header -- the NJH
+    # guard included.
+    if (has_plugin($ini, 'DualLife')) {
+        note('[DualLife] with [MakeMaker::Awesome] -- a dual-life dist needs plain [MakeMaker] so the core build can consume the generated Makefile.PL')
+            if has_plugin($ini, 'MakeMaker::Awesome');
+        note('[DualLife] without [OnlyCorePrereqs] -- nothing stops a non-core prerequisite from creeping in')
+            unless has_plugin($ini, 'OnlyCorePrereqs');
+        return;
+    }
+
+    return unless has_plugin($ini, 'MakeMaker::Awesome');
+
+    my @header = plugin_values($ini, 'MakeMaker::Awesome', 'header');
+    note('[MakeMaker::Awesome] has no NJH smoker guard (those smokers report broken results under AUTOMATED_TESTING)')
+        unless grep { /njh/i } @header;
+
+    return;
+}
+
+# Directories whose presence implies a plugin. Each is only reported when the
+# directory is really there, so an ordinary pure-Perl dist sees none of them.
+sub check_shape {
+    my ($ini, $root) = @_;
+
+    note('xt/ exists but there is no [RunExtraTests] -- those author tests never run at release, which is the only time they were meant to')
+        if -d File::Spec->catdir($root, 'xt') && !has_plugin($ini, 'RunExtraTests');
+
+    note('scripts/ exists but there is no [ExecDir] -- the programs will not be installed')
+        if -d File::Spec->catdir($root, 'scripts') && !has_plugin($ini, 'ExecDir');
+
+    note('share/ exists but there is no [ShareDir] -- the shared files will not ship')
+        if -d File::Spec->catdir($root, 'share') && !has_plugin($ini, 'ShareDir');
+
+    my @xs = glob(File::Spec->catfile($root, '*.xs'));
+    if (@xs) {
+        my ($hard) = grep { $_->{plugin} eq 'Prereqs' && $_->{name} eq 'Prereqs' } @{$ini->{sections}};
+        note('XS sources present but XSLoader is not in [Prereqs]')
+            if $hard && !$hard->{keys}{XSLoader};
+    }
+
+    return;
+}
+
+sub check_project_files {
+    my ($root) = @_;
+
+    my %want = (
+        'Changes'               => 'no Changes file -- every behavior change needs a changelog entry',
+        'AGENTS.md'             => 'no AGENTS.md -- agents have no project instructions to read',
+        'AGENTS_OVERRIDE.md'    => 'no AGENTS_OVERRIDE.md -- the project-declared choices are unanswered (see ~/projects/Agents/USING.md)',
+        'CLAUDE.md'             => 'no CLAUDE.md pointing at AGENTS.md',
+        '.perltidyrc'           => 'no .perltidyrc (copy templates/perltidyrc from ~/projects/Agents)',
+        'AI_AND_LLM_POLICY.txt' => 'no AI_AND_LLM_POLICY.txt',
+        'TEMPLATE.pod'          => 'no TEMPLATE.pod (copy templates/TEMPLATE.pod from ~/projects/Agents)',
+    );
+
+    for my $file (sort keys %want) {
+        note($want{$file}) unless -e File::Spec->catfile($root, $file);
+    }
+
+    check_agents_wiring($root);
+
+    return;
+}
+
+# AGENTS.md must send the reader to the shared repository, and CLAUDE.md must
+# do nothing but point at AGENTS.md. A CLAUDE.md carrying real content is the
+# common drift: it gets read first, so whatever is in it silently outranks the
+# instructions that were meant to be authoritative.
+sub check_agents_wiring {
+    my ($root) = @_;
+
+    my $agents = read_file(File::Spec->catfile($root, 'AGENTS.md'));
+    if (defined $agents && $agents !~ m{projects/Agents}) {
+        note('AGENTS.md does not point at ~/projects/Agents -- add the bootstrap stanza from templates/AGENTS.md');
+    }
+
+    my $claude = read_file(File::Spec->catfile($root, 'CLAUDE.md'));
+    return unless defined $claude;
+
+    my @lines = grep { /\S/ && !/^#/ } split(/\n/, $claude);
+    note('CLAUDE.md carries project content -- it should only point at AGENTS.md; move the content there')
+        if @lines > 8 || $claude !~ /AGENTS\.md/;
+
+    return;
+}
+
+sub read_file {
+    my ($path) = @_;
+    open(my $fh, '<', $path) or return undef;
+    local $/;
+    my $content = <$fh>;
+    return $content;
+}
+
+# }}} Checks

@@ -1,0 +1,254 @@
+#!/usr/bin/env perl
+use strict;
+use warnings;
+
+# Serialize high-concurrency test runs across every agent and every project
+# on this machine, and put a hard wall-clock ceiling on them.
+#
+# Two agents each running `prove -j16` against database-backed suites fan out
+# to well over a hundred servers and OOM the box. This wrapper takes an
+# advisory flock on ~/projects/.agent-test-lock for the duration of any run
+# above --jobs 4, so only one such run happens at a time.
+#
+# This is agent-side tooling. Nothing in any project's lib/ or t/ knows about
+# it, and it never ships. See ~/projects/Agents/TESTING.md.
+#
+# Usage:
+#   agent-test-lock [options] -- <command...>
+#
+#   --jobs N        Concurrency this run will use. Default: parsed from the
+#                   command's -jN / -j N / --jobs N / --jobs=N, else 16.
+#                   A run at 4 or below skips the lock entirely.
+#   --timeout SECS  Kill the command after this long. Default 600. 0 disables.
+#   --wait SECS     Give up waiting for the lock after this long. Default 3600.
+#   --no-lock       Run without taking the lock.
+#   --no-author     Do not set AUTHOR_TESTING=1 (for checking skip behavior).
+#   --lock-file P   Override the lock path (default $AGENT_TEST_LOCK or
+#                   ~/projects/.agent-test-lock).
+#   --quiet         Do not narrate lock acquisition.
+#
+# AUTHOR_TESTING=1 is set unless --no-author is given or the caller already
+# set it -- author-gated tests must run, not silently skip.
+#
+# Exit status is the command's own. A timeout exits 124, matching timeout(1).
+# Failure to acquire the lock within --wait exits 125.
+
+use Fcntl qw/:flock O_RDWR O_CREAT/;
+use IO::Handle ();
+use POSIX qw/:sys_wait_h strftime/;
+use Sys::Hostname qw/hostname/;
+use Cwd qw/getcwd/;
+
+my $JOB_THRESHOLD = 4;
+my $EXIT_TIMEOUT  = 124;
+my $EXIT_NO_LOCK  = 125;
+
+my %opt = (
+    timeout     => 600,
+    wait        => 3600,
+    'no-lock'   => 0,
+    'no-author' => 0,
+    quiet       => 0,
+    jobs        => undef,
+    lock_file => $ENV{AGENT_TEST_LOCK} || join('/', $ENV{HOME} // '', 'projects', '.agent-test-lock'),
+);
+
+my @cmd;
+{
+    my @args = @ARGV;
+    while (@args) {
+        my $arg = shift @args;
+        if ($arg eq '--') { @cmd = @args; last }
+
+        if    ($arg eq '--jobs')      { $opt{jobs}      = shift @args }
+        elsif ($arg eq '--timeout')   { $opt{timeout}   = shift @args }
+        elsif ($arg eq '--wait')      { $opt{wait}      = shift @args }
+        elsif ($arg eq '--lock-file') { $opt{lock_file} = shift @args }
+        elsif ($arg eq '--no-lock')   { $opt{'no-lock'}   = 1 }
+        elsif ($arg eq '--no-author') { $opt{'no-author'} = 1 }
+        elsif ($arg eq '--quiet')     { $opt{quiet}       = 1 }
+        elsif ($arg eq '--help' || $arg eq '-h') { usage(0) }
+        elsif ($arg =~ /^--jobs=(.+)$/)      { $opt{jobs}      = $1 }
+        elsif ($arg =~ /^--timeout=(.+)$/)   { $opt{timeout}   = $1 }
+        elsif ($arg =~ /^--wait=(.+)$/)      { $opt{wait}      = $1 }
+        elsif ($arg =~ /^--lock-file=(.+)$/) { $opt{lock_file} = $1 }
+        else { die "Unknown option '$arg'. Put the command after '--'.\n" }
+    }
+}
+
+usage(1) unless @cmd;
+
+my $jobs = defined $opt{jobs} ? $opt{jobs} : jobs_from_command(@cmd);
+
+# Author-gated tests must run, not silently skip. An explicit setting from the
+# caller always wins -- including AUTHOR_TESTING=0 for a deliberate check of
+# skip behavior.
+unless ($opt{'no-author'} || defined $ENV{AUTHOR_TESTING}) {
+    $ENV{AUTHOR_TESTING} = 1;
+}
+
+my $lock_fh;
+if (!$opt{'no-lock'} && $jobs > $JOB_THRESHOLD) {
+    $lock_fh = acquire_lock($opt{lock_file}, $opt{wait});
+    unless ($lock_fh) {
+        print STDERR "agent-test-lock: gave up waiting for $opt{lock_file} after $opt{wait}s\n";
+        exit($EXIT_NO_LOCK);
+    }
+}
+elsif (!$opt{quiet}) {
+    my $why = $opt{'no-lock'} ? '--no-lock' : "concurrency $jobs is at or below $JOB_THRESHOLD";
+    print STDERR "agent-test-lock: running without the shared lock ($why)\n";
+}
+
+exit(run_command($opt{timeout}, @cmd));
+
+# {{{ Lock handling
+
+sub acquire_lock {
+    my ($path, $max_wait) = @_;
+
+    sysopen(my $fh, $path, O_RDWR | O_CREAT, 0644)
+        or die "agent-test-lock: cannot open '$path': $!\n";
+
+    my $start    = time;
+    my $reported = -1;
+
+    while (1) {
+        if (flock($fh, LOCK_EX | LOCK_NB)) {
+            write_holder($fh);
+            print STDERR "agent-test-lock: holding $path (jobs=$jobs)\n" unless $opt{quiet};
+            return $fh;
+        }
+
+        my $waited = time - $start;
+        return undef if $max_wait && $waited >= $max_wait;
+
+        if (!$opt{quiet} && ($reported < 0 || $waited - $reported >= 30)) {
+            $reported = $waited;
+            my $holder = read_holder($path) // 'unknown holder';
+            printf STDERR "agent-test-lock: waiting on %s (%ds)\n  held by: %s\n", $path, $waited, $holder;
+        }
+
+        sleep 2;
+    }
+}
+
+sub write_holder {
+    my ($fh) = @_;
+
+    my $info = sprintf(
+        "pid=%d host=%s since=%s cwd=%s jobs=%s cmd=%s\n",
+        $$, hostname(), strftime('%Y-%m-%d %H:%M:%S', localtime), getcwd(), $jobs, join(' ', @cmd),
+    );
+
+    $fh->autoflush(1);
+    seek($fh, 0, 0);
+    truncate($fh, 0);
+    print {$fh} $info;
+    return;
+}
+
+sub read_holder {
+    my ($path) = @_;
+    open(my $fh, '<', $path) or return undef;
+    my $line = <$fh>;
+    return undef unless defined $line;
+    chomp $line;
+    return length($line) ? $line : undef;
+}
+
+# }}} Lock handling
+
+# {{{ Command execution
+
+# Runs the command in its own process group so a timeout can take out the
+# whole tree -- a stuck suite usually has children (servers, watchers,
+# nested runners) that outlive the harness itself.
+sub run_command {
+    my ($timeout, @command) = @_;
+
+    my $pid = fork // die "agent-test-lock: fork failed: $!\n";
+
+    unless ($pid) {
+        setpgrp(0, 0);
+        no warnings 'exec';
+        exec {$command[0]} @command;
+        print STDERR "agent-test-lock: exec '$command[0]' failed: $!\n";
+        POSIX::_exit(127);
+    }
+
+    my $timed_out = 0;
+    local $SIG{ALRM} = sub {
+        $timed_out = 1;
+        print STDERR "agent-test-lock: timeout after ${timeout}s, killing process group $pid\n";
+        kill('TERM', -$pid);
+        sleep 5;
+        kill('KILL', -$pid);
+    };
+
+    for my $sig (qw/INT TERM HUP/) {
+        $SIG{$sig} = sub { kill($sig, -$pid) };
+    }
+
+    alarm($timeout) if $timeout;
+    waitpid($pid, 0);
+    my $status = $?;
+    alarm(0) if $timeout;
+
+    return $EXIT_TIMEOUT if $timed_out;
+    return $status >> 8 if ($status & 127) == 0;
+    return 128 + ($status & 127);
+}
+
+# }}} Command execution
+
+# {{{ Argument inspection
+
+# Pull the concurrency out of a prove/yath/make command line so callers do
+# not have to repeat it. Anything unrecognised is treated as high-concurrency
+# (safer to over-lock than to swamp the box).
+sub jobs_from_command {
+    my @command = @_;
+
+    for (my $i = 0; $i < @command; $i++) {
+        my $arg = $command[$i];
+
+        return $1 if $arg =~ /^-j(\d+)$/;
+        return $1 if $arg =~ /^--jobs=(\d+)$/;
+        return $1 if $arg =~ /^-j=(\d+)$/;
+
+        if ($arg eq '-j' || $arg eq '--jobs') {
+            my $next = $command[$i + 1];
+            return $next if defined $next && $next =~ /^\d+$/;
+        }
+    }
+
+    return 16;
+}
+
+# }}} Argument inspection
+
+sub usage {
+    my ($code) = @_;
+
+    print STDERR <<"EOT";
+Usage: agent-test-lock [options] -- <command...>
+
+  --jobs N        Concurrency this run will use (default: parsed from the
+                  command, else 16). At or below $JOB_THRESHOLD the lock is skipped.
+  --timeout SECS  Kill the command after this long (default 600, 0 disables).
+  --wait SECS     Give up waiting for the lock after this long (default 3600).
+  --no-lock       Run without taking the lock.
+  --no-author     Do not set AUTHOR_TESTING=1.
+  --lock-file P   Override the lock path.
+  --quiet         Do not narrate lock acquisition.
+
+AUTHOR_TESTING=1 is set unless --no-author is given or the caller already
+set it.
+
+Example:
+  agent-test-lock -- prove --timer -Ilib -j16 -r t/
+EOT
+
+    exit($code);
+}

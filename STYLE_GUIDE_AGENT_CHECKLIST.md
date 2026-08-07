@@ -1,0 +1,369 @@
+# STYLE_GUIDE_AGENT_CHECKLIST.md
+
+Self-audit checklist. Walk it against **every file the branch touched**
+before declaring work ready for review. This is the operational form of
+`PERL_STYLE_GUIDE.md`; where the two disagree, the style guide wins and this
+file gets fixed.
+
+Sources this mirrors:
+
+- **`PERL_STYLE_GUIDE.md`** — style, formatting, language-feature rules.
+- **`AGENTS.md`** — workflow, pre-review checks, conventions.
+- **`TESTING.md`** — test layout, provenance, execution policy.
+- The project's `AGENTS_OVERRIDE.md` — declarations and overrides, which win.
+- The project's `ARCHITECTURE.md` / `AGENTS.md` — project context and design.
+
+Three items are **[project-declared]**: the Perl floor / signature mode
+(§5a), the test layout (§9), and the POD placement layout (§16). Read the
+project's `AGENTS_OVERRIDE.md` for its declarations before auditing those.
+An unanswered declaration is itself a finding.
+
+---
+
+## 0. Before you start
+
+- [ ] Read the project's `AGENTS.md`, `AGENTS_OVERRIDE.md`, and
+      `ARCHITECTURE.md` this session.
+- [ ] Know which files the branch touched:
+      `git diff --name-only $base...HEAD`.
+- [ ] No emojis anywhere — code, comments, POD, Markdown, commit messages.
+
+## 0a. Automated gates (hard stops, not judgment calls)
+
+- [ ] `perl agent_scripts/audit-methods-not-functions lib` — every hit is a
+      sub the module defines being **called** as a bare function instead of
+      through an invocant. Fix the call site.
+- [ ] `perl agent_scripts/audit-readonly-attrs lib` — every hit is a
+      read-only `Object::HashBase` attribute declared with `-` instead of
+      `<` (a dead throwing setter). Convert to `<`, or add a `-attr-ok`
+      comment if the throwing setter is genuinely intended.
+- [ ] `perl agent_scripts/audit-banned-words` — every hit is a forbidden
+      term (§14a).
+- [ ] `perl agent_scripts/find-long-subs lib` — resolve subs over 75 lines
+      (excluding comments/POD).
+- [ ] `perl agent_scripts/find-large-modules lib` — resolve modules over
+      10,000 lines (excluding POD).
+- [ ] `perltidy` with the repository `.perltidyrc` on every touched Perl
+      file (`.pm`, `.pl`, `.t`, executable scripts).
+- [ ] `perlcritic` with the repository `.perlcriticrc`, **if the project has
+      one**.
+- [ ] `podchecker` on every touched `.pm`. Zero errors, zero warnings.
+- [ ] No trailing whitespace in the diff (`git diff --check $base...HEAD`).
+
+These audits scan the whole tree, not a touched-file subset, so a partial
+edit set cannot hide a hit.
+
+---
+
+## 1. Object orientation
+
+- [ ] Uses `Object::HashBase` for object attributes (not Moose, Moo,
+      Class::Accessor, or hand-rolled accessors).
+- [ ] Uses `Role::Tiny` / `Role::Tiny::With` for roles (not `Moo::Role`,
+      `Moose::Role`).
+- [ ] Uses `parent` for inheritance, never `base`.
+- [ ] Does not work around an imagined `Object::HashBase` + `Role::Tiny`
+      incompatibility — they compose; use them together as needed.
+- [ ] `Object::HashBase` slot ordering is intentional — additions go at the
+      end unless the existing order has a documented reason.
+- [ ] Read-only attributes use `<attr`, not `-attr`. Grep the touched files'
+      HashBase blocks for a line matching `^\s*-` and convert each, unless a
+      `-attr-ok` comment explains why the throwing setter is needed.
+
+## 2. Naming and structure — helpers are called as methods
+
+- [ ] No sub **defined in an object module** is **called** as a bare
+      function from inside that module. Every such call goes through an
+      invocant: `$self->helper(...)` / `$class->helper(...)`.
+- [ ] No sub gained a `my $self = shift;` it does not use. Empty and no-op
+      methods (`sub cache { }`, `sub uncache { return }`) stay empty — the
+      rule is about the call site, not the declaration.
+- [ ] Argless declarative-metadata methods (`sub TABLE { 'users' }`) left
+      as-is.
+- [ ] Imported functions (`croak`, `blessed`, `first`, …) still called as
+      functions — the rule covers only subs the file itself defines.
+- [ ] Perl specials (`BEGIN`, `DESTROY`, `import`, `AUTOLOAD`, …) untouched.
+- [ ] One Perl namespace per file. `package Foo::Bar::Baz;` lives in
+      `lib/Foo/Bar/Baz.pm`, not inline in `lib/Foo/Bar.pm`.
+- [ ] Subs grouped exports → public → private; 1-line subs near the top of
+      their group; folds used for coherent feature groups. No reordering
+      across groups to hoist a 1-liner.
+
+## 3. Error handling
+
+- [ ] `croak` where the caller is at fault (bad arguments, missing required
+      parameters, caller-supplied data that turns out invalid).
+- [ ] `die` where the failure is internal (a file the code itself created,
+      a violated invariant the caller could not control, a re-throw).
+- [ ] No exception is silently suppressed. Every caught error is rethrown or
+      warned — except `viable()`-style feature detection and optional module
+      loading where failure is expected.
+- [ ] Every `eval` decides success by its **return value**
+      (`my $ok = eval { ...; 1 };`), never by the truthiness of `$@`.
+- [ ] Multi-line `eval` blocks are never inside the parens of a conditional
+      — three-step form (`$ok`, `$err`, `if`) instead.
+- [ ] Where `$@` is used inside a conditional block after any other
+      statement, it was saved to a lexical on the block's first statement.
+- [ ] `fork` handled inline: `my $pid = fork // die "reason: $!"`. Never a
+      separate conditional. Fork failure is `die`, never `croak`.
+- [ ] No error *value* is tested for truthiness (exception objects may
+      overload boolean to false).
+
+## 3a. Filehandles
+
+- [ ] No redundant `close($fh)` immediately before the enclosing scope ends —
+      a lexical handle closes itself.
+- [ ] Where a `close` is present, it earns its place: a long-lived scope, a
+      checked result (`close($fh) or die ...`), `$?` from a pipe, required
+      ordering, or freeing the descriptor for reuse.
+- [ ] Any handle whose written data must actually land has a **checked**
+      close, not a bare one — `close` is where a failed flush surfaces.
+
+## 4. Conditionals
+
+- [ ] Single-statement conditionals use postfix form (`do_thing() if $cond`).
+- [ ] No multi-line conditional expression inside `if`/`unless`/`while`/
+      `until` parens — step-accumulated boolean or an extracted predicate
+      helper instead.
+
+## 5. Language-feature defaults
+
+- [ ] `//=` used for defaults where the intent is "if undef".
+- [ ] "Is module installed" gating uses a constant
+      (`use constant HAVE_FOO => eval { require Foo; 1 };`), not a package
+      variable.
+- [ ] `push` uses `=>` before the values: `push @items => $thing`.
+
+## 5a. Perl floor and signatures **[project-declared]**
+
+Check `AGENTS_OVERRIDE.md` for the declared mode first. Unanswered means
+Mode A, and the missing declaration is itself a finding.
+
+**Mode A (portable):**
+
+- [ ] Module starts `use strict; use warnings;`.
+- [ ] No signatures introduced; argument handling matches the surrounding
+      code.
+
+**Mode B (modern):**
+
+- [ ] Every shipped `.pm` starts with `use v5.38;` (enables `strict`,
+      `warnings`, stable `signatures` in one line). No
+      `use feature 'signatures';` + `no warnings 'experimental::signatures';`
+      incantations.
+- [ ] Every named sub / method / anonymous sub uses a signature unless its
+      argument shape genuinely cannot be expressed by one. Preference for
+      `my $self = shift;` is not a reason to skip it. Methods declare
+      `$self` / `$class` as the first parameter.
+- [ ] Default-value form matches intent: `$x = $default` (missing only),
+      `$x //= $default` (missing or undef), `$x ||= $default` (missing or
+      falsy — used sparingly, never where `0` / `""` must survive).
+- [ ] `@_` only for genuine cases: re-dispatch (`goto &other`,
+      `$other->(@_)`), shapes signatures cannot describe, or subs that peek
+      at `wantarray` / `caller` before forwarding.
+
+## 6. Sub-second sleeps
+
+- [ ] Every sub-second sleep is `Time::HiRes::sleep($secs)`.
+- [ ] No 4-arg `select(undef, undef, undef, $secs)` as a sleep primitive;
+      any encountered was replaced.
+- [ ] No `tinysleep`-style helper reintroduced.
+
+## 7. Whitespace and formatting
+
+- [ ] No trailing whitespace.
+- [ ] No emojis.
+- [ ] perltidy run on every touched Perl file with the repository
+      `.perltidyrc` (a copy of `~/projects/Agents/templates/perltidyrc`
+      unless `AGENTS_OVERRIDE.md` declares a project-local one).
+- [ ] No file was reformatted that the change did not otherwise touch.
+
+## 8. Testing libraries
+
+- [ ] New tests use `Test2::V0`, not `Test::More` / `Test::Simple`.
+- [ ] Existing `Test::More` files may stay until touched substantively; once
+      touched, migrated to `Test2::V0`.
+
+## 9. Test layout and provenance **[project-declared]**
+
+Under the default scheme:
+
+- [ ] Test sits in the right category directory (`unit` / `acceptance` /
+      `regression` / `integration`) by *why it exists*, using the documented
+      precedence.
+- [ ] Unit tests mirror the implementation path (exact or suffixed).
+- [ ] Fixtures live in `<test>.fixtures/` beside the test, or `t/fixtures/`
+      when shared.
+- [ ] Every `.t` has an origin header (`human` / `AI` / `mixed`) as its
+      first substantive line; AI sections of 15+ lines inside a mixed file
+      are marked at their boundary.
+- [ ] No test was split merely to disguise its runtime.
+
+Under a `t/AI/` project:
+
+- [ ] AI-generated tests live under `t/AI/` mirroring `t/`'s subdirectory
+      layout.
+
+## 10. Test execution
+
+- [ ] Suite run with `AUTHOR_TESTING=1`.
+- [ ] Run wrapped in a timeout.
+- [ ] Any run above `-j4` went through
+      `~/projects/Agents/bin/agent-test-lock`.
+- [ ] `prove` runs used `--timer`; `yath` runs used `-T`.
+- [ ] `-Ilib` (prove) / `-D` (yath) present so the checkout's `lib/` is what
+      gets exercised.
+- [ ] If the change touched `@INC` / `%INC` / `require` / re-exec / a test
+      asserting on a module path: the `make test` (blib) path was also run.
+- [ ] A file reported over 60 seconds was investigated per `TESTING.md`, not
+      ignored.
+- [ ] No memory cgroup cap was placed around the run.
+- [ ] Debris swept after any crashed or killed run.
+
+## 11. Databases
+
+- [ ] No `DBIx::Class`.
+- [ ] Default backend stays SQLite via `DBD::SQLite` directly — *not*
+      `DBIx::QuickDB`.
+- [ ] `DBIx::QuickDB` appears only in test setup or non-default-flavor
+      spin-up; ephemeral instances point at `~/dbs/` installs when relevant.
+- [ ] Nothing in `lib/` references `~/dbs` or any developer-only path.
+- [ ] Non-default DB drivers (`DBD::Pg`, `DBD::mysql`, `DBD::MariaDB`,
+      Percona, `DBD::DuckDB`) and flavor-specific helpers
+      (`DateTime::Format::*`) are Suggests/Recommends in `dist.ini`, never
+      hard requires.
+- [ ] Per-install test machinery: the parent process of a per-install test
+      file loads no `DBIx::QuickDB` code (drivers cache `$PATH` at load
+      time and a forked child inherits the cache).
+
+## 12. UUIDs
+
+- [ ] UUID generation happens in Perl, not in SQL.
+- [ ] v7 UUIDs are not bit-reordered for "index locality" — v7 is already
+      time-ordered.
+
+## 13. Module and subroutine size
+
+- [ ] No `.pm` exceeds **10,000 lines of code** (blank lines and comments
+      count; POD does not — POD = anything between `=pod`/`=head*` and
+      `=cut`, plus everything after `__END__`).
+- [ ] If a file crossed the limit, it was **flagged for human review**, not
+      silently split, and not gamed via long POD or `do`/`require` tricks.
+- [ ] No subroutine exceeds **75 lines** (signature through closing brace).
+      Comments and POD inside the sub do not count.
+- [ ] Where the narrow exception was invoked (packed-binary encoders, bit
+      twiddling, table-driven dispatch of one-liners), a short comment says
+      why splitting would do more harm than good.
+
+## 14. Comments
+
+- [ ] Default is **no comment**. Every comment in the diff earns its place:
+      a non-obvious *why*, a hidden constraint, a subtle invariant, a
+      workaround, or genuinely surprising behavior.
+- [ ] No comment restates the code.
+- [ ] No comment references another comment ("as above", "see below").
+- [ ] No multi-paragraph comment blocks; that content belongs in POD or
+      `ARCHITECTURE.md`.
+- [ ] No changelog-style comments ("added for X", "removed Z", "fixes
+      issue 123", "TODO before merge").
+- [ ] Comments that cite `ARCHITECTURE.md` or a style guide use the **full
+      path plus a specific section identifier**. Bare tokens like `D6` or
+      `step 4+5` are not acceptable.
+- [ ] Comments do not reference `AI_DOCS/*` or other Markdown unless
+      genuinely unavoidable.
+- [ ] `Agent Note:` prefix used for context aimed at a future agent.
+
+## 14a. Terminology
+
+- [ ] No `backstop` — `fallback` or `safeguard`.
+- [ ] No `iff` — `if and only if`, or `only when` / `only if`.
+- [ ] No `kwarg` / `kwargs` — `named argument` / `key/value argument`.
+- [ ] No `load-bearing` — name the actual constraint.
+
+## 15. POD content
+
+- [ ] Every shipped `.pm` has POD, started from `TEMPLATE.pod` and trimmed.
+- [ ] Brief: describes what the reader cannot infer from the signature, in
+      one or two sentences.
+- [ ] No repetition — shared explanation lives once in `DESCRIPTION`.
+- [ ] `ATTRIBUTES` section present for `Object::HashBase`-style classes.
+- [ ] `podchecker` clean.
+
+## 16. POD placement **[project-declared]**
+
+**Default (all POD at bottom):**
+
+- [ ] All POD is under `__END__`, as one continuous document. No POD at the
+      top of the file, none inline between subs.
+- [ ] Section order matches `TEMPLATE.pod`: `NAME`, `DESCRIPTION`,
+      `SYNOPSIS`, `ATTRIBUTES`, `EXPORTS`, `PUBLIC METHODS`,
+      `PRIVATE METHODS`, `SOURCE`, `MAINTAINERS`, `AUTHORS`, `COPYRIGHT`.
+- [ ] Method/export entries ordered to match code appearance.
+
+**Split layout (project override):**
+
+- [ ] `NAME` / `DESCRIPTION` / `SYNOPSIS` at the top of the file.
+- [ ] `EXPORTS` / `PUBLIC METHODS` / `PRIVATE METHODS` inline, immediately
+      above the sub each documents.
+- [ ] `SOURCE` / `MAINTAINERS` / `AUTHORS` / `COPYRIGHT` under `__END__`.
+- [ ] Sub order follows POD grouping (exports, then public, then private).
+
+- [ ] Whichever layout applies, **every file in the project uses the same
+      one** — the diff did not mix them.
+
+## 17. User-facing strings (POD, help, diagnostics)
+
+Applies to POD, command `description` / `summary` / help output, and strings
+passed to `die` / `warn` / `croak` / `print` that a user might see.
+
+- [ ] No reference to any `.md` file — `ARCHITECTURE.md`, a style guide,
+      `AI_DOCS/*`, `AGENTS.md`, or anything else.
+- [ ] If the rule or behavior matters, it is restated in plain prose; if it
+      does not, the reference is dropped entirely.
+
+## 18. Dependencies and distribution
+
+- [ ] New runtime dependencies are declared in `dist.ini`, in the right
+      section (`Prereqs`, `TestRequires`, `RuntimeSuggests`,
+      `RuntimeRecommends`, `DevelopRequires`).
+- [ ] Optional / lazily-loaded modules are Suggests or Recommends, never
+      hard requires, and their load sites `require` them lazily with an
+      actionable error.
+- [ ] `Makefile.PL`, `README`, `README.md`, `cpanfile`, `LICENSE`,
+      `MANIFEST` were **not** hand-edited — they are Dist::Zilla output.
+- [ ] `perl ~/projects/Agents/agent_scripts/audit-dzil .` passes, or its
+      findings are explained.
+
+## 19. Commits and changelog
+
+- [ ] One distinct commit per change (or an amend to an unpushed commit that
+      introduced the bug being fixed).
+- [ ] Commit messages are self-explanatory: no plan/review document
+      references, no finding numbers, no `#` followed by digits.
+- [ ] Every commit changing shipped behavior added its own bullet under
+      `{{$NEXT}}` in `Changes`, **in that same commit**. One line, one
+      sentence where possible.
+- [ ] No literal `{{` or `}}` inside a `Changes` bullet.
+- [ ] Nothing was pushed or merged without the user asking.
+
+## 20. Reference trees — only if the project has one
+
+Skip unless the project's `AGENTS.md` names a reference tree. Most do not.
+
+- [ ] Nothing under it was modified in place. Borrowed code was copied out
+      first.
+
+---
+
+## Handoff
+
+- [ ] All three `AGENTS.md` pre-review passes ran:
+  - Style-guide pass (this checklist).
+  - POD pass (`podchecker` clean on every touched `.pm`).
+  - Util/role/base-class reuse pass — re-scanned touched files for logic
+    that already exists in the project's `*::Util*`, `*::Role::*`, or a
+    relevant base class; switched to the existing helper where applicable;
+    extracted shared logic where the same code appeared in three or more
+    touched files.
+- [ ] Test suite re-run after fixups; nothing regressed.
+- [ ] Work announced as ready for review only after all of the above.

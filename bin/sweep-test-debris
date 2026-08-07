@@ -1,0 +1,200 @@
+#!/usr/bin/env perl
+use strict;
+use warnings;
+
+# Find (and optionally remove) database test debris left behind by a crashed
+# or killed test run.
+#
+# QuickDB data dirs live in /tmp, which is tmpfs -- RAM. A run that dies never
+# cleans up, so its data dirs stay resident for every later run to work
+# around. One crash left 644 abandoned dirs holding 19G. A healthy suite peaks
+# around 16G and returns /tmp to a few hundred MB when it exits normally.
+#
+# Nothing is deleted unless the directory carries at least one QuickDB
+# fingerprint, and never while a live watcher still owns it.
+#
+# Usage:
+#   sweep-test-debris                 # report only
+#   sweep-test-debris --delete        # remove what it found
+#   sweep-test-debris --tmpdir /tmp   # somewhere other than $TMPDIR
+#   sweep-test-debris --min-age 3600  # only touch dirs older than N seconds
+
+use File::Path qw/remove_tree/;
+use File::Spec ();
+use Getopt::Long qw/GetOptions/;
+
+my %opt = (delete => 0, tmpdir => $ENV{TMPDIR} || '/tmp', 'min-age' => 0);
+GetOptions(\%opt, 'delete', 'tmpdir=s', 'min-age=i', 'help')
+    or die "bad arguments\n";
+
+if ($opt{help}) {
+    print "Usage: sweep-test-debris [--delete] [--tmpdir DIR] [--min-age SECS]\n";
+    exit 0;
+}
+
+# Strong markers: any one of these identifies a dir as QuickDB debris.
+my @STRONG_FILES = qw{server-exit-status my.cfg};
+my @STRONG_GLOBS = ('*.READY', 'cmd-log-*');
+
+# A `data/` subdir alone is far too generic to delete on -- plenty of things
+# in /tmp have one. It is reported as corroboration, never as grounds.
+my @WEAK_FILES = qw{data};
+
+my @live    = live_watchers();
+my @debris  = find_debris($opt{tmpdir}, $opt{'min-age'});
+my $reclaim = 0;
+
+unless (@debris) {
+    print "No database test debris under $opt{tmpdir}.\n";
+    report_watchers(@live);
+    exit 0;
+}
+
+for my $found (@debris) {
+    my $size = dir_size($found->{path});
+    $reclaim += $size;
+    my @marks = (@{$found->{marks}{strong}}, @{$found->{marks}{weak}});
+    printf("%-50s %8s  %s\n", $found->{path}, human($size), join(',', @marks));
+}
+
+printf("\n%d abandoned dir(s), %s total.\n", scalar(@debris), human($reclaim));
+
+report_watchers(@live);
+
+unless ($opt{delete}) {
+    print "\nRe-run with --delete to remove them.\n";
+    exit 0;
+}
+
+if (@live) {
+    print STDERR "\nRefusing to delete while watchers are still live. Signal them first:\n";
+    print STDERR "    kill -TERM <watcher pid>\n";
+    exit 1;
+}
+
+my $removed = 0;
+for my $found (@debris) {
+    my $errors = [];
+    remove_tree($found->{path}, {safe => 1, error => \$errors});
+    if (@$errors) {
+        warn "could not remove $found->{path}\n";
+        next;
+    }
+    $removed++;
+}
+
+printf("Removed %d of %d dir(s).\n", $removed, scalar(@debris));
+exit 0;
+
+# {{{ Discovery
+
+sub find_debris {
+    my ($tmpdir, $min_age) = @_;
+
+    opendir(my $dh, $tmpdir) or die "opendir '$tmpdir': $!\n";
+    my @entries = grep { $_ ne '.' && $_ ne '..' } readdir($dh);
+    closedir($dh);
+
+    my @found;
+    for my $entry (sort @entries) {
+        my $path = File::Spec->catdir($tmpdir, $entry);
+        next unless -d $path && !-l $path;
+        next unless -o $path;
+
+        my $marks = fingerprints_in($path, $entry);
+        next unless @{$marks->{strong}};
+
+        if ($min_age) {
+            my $age = time - (stat($path))[9];
+            next if $age < $min_age;
+        }
+
+        push @found => {path => $path, marks => $marks};
+    }
+
+    return @found;
+}
+
+# Deliberately opendir rather than glob(): glob splits its pattern on
+# whitespace, so a directory named "Notification Cache" globs as two words
+# and the metacharacter-free half comes back as a bogus match. It is also an
+# iterator in boolean context, which makes repeat calls disagree.
+sub fingerprints_in {
+    my ($dir, $entry) = @_;
+
+    my (@strong, @weak);
+
+    push @strong => 'DB-QUICK-name' if $entry =~ /^DB-QUICK/;
+
+    opendir(my $dh, $dir) or return {strong => \@strong, weak => \@weak};
+    my %present = map { $_ => 1 } readdir($dh);
+    closedir($dh);
+
+    for my $mark (@STRONG_FILES) {
+        push @strong => $mark if $present{$mark};
+    }
+
+    for my $pattern (@STRONG_GLOBS) {
+        my $re = glob_to_regex($pattern);
+        push @strong => $pattern if grep { /$re/ } keys %present;
+    }
+
+    for my $mark (@WEAK_FILES) {
+        push @weak => $mark if $present{$mark};
+    }
+
+    return {strong => \@strong, weak => \@weak};
+}
+
+sub glob_to_regex {
+    my ($pattern) = @_;
+    my $re = join('.*', map { quotemeta } split(/\*/, $pattern, -1));
+    return qr/\A$re\z/;
+}
+
+# A killed run can leave watchers holding live servers. Signal the WATCHER,
+# not the server: it then stops the server and removes the data dir the
+# normal way. Note pgrep -f would match its own command line.
+sub live_watchers {
+    my @out = `ps -eo pid,args 2>/dev/null`;
+    my @found;
+    for my $line (@out) {
+        next unless $line =~ /^\s*(\d+)\s+(db-quick-watcher.*)$/;
+        push @found => {pid => $1, args => $2};
+    }
+    return @found;
+}
+
+sub report_watchers {
+    my @watchers = @_;
+    return unless @watchers;
+
+    print "\nLive QuickDB watchers still running:\n";
+    printf("  %-8s %s\n", $_->{pid}, $_->{args}) for @watchers;
+    print "  Stop each with: kill -TERM <pid>  (it removes its own data dir)\n";
+    return;
+}
+
+# }}} Discovery
+
+# {{{ Sizes
+
+sub dir_size {
+    my ($dir) = @_;
+    my $out = `du -sk \Q$dir\E 2>/dev/null`;
+    return 0 unless defined $out && $out =~ /^(\d+)/;
+    return $1 * 1024;
+}
+
+sub human {
+    my ($bytes) = @_;
+    my @units = qw/B K M G T/;
+    my $i     = 0;
+    while ($bytes >= 1024 && $i < $#units) {
+        $bytes /= 1024;
+        $i++;
+    }
+    return sprintf('%.1f%s', $bytes, $units[$i]);
+}
+
+# }}} Sizes
