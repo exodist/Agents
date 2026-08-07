@@ -1,0 +1,12 @@
+# Agent working state
+/worktrees/
+
+# Perl tooling output
+*.bak
+*.tdy
+
+# Editor and OS files
+*.orig
+*.rej
+*.swp
+*~
