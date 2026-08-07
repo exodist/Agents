@@ -1,5 +1,8 @@
 {{$NEXT}}
 
+    - Add a parameterized test-layout auditor for projects that select the
+      category-and-origin profile, without imposing it on other layouts.
+
     - Keep dependency classification and continuous-integration policy local
       to each project while making the optional packaging profile internally
       consistent and documenting the manual release boundary.

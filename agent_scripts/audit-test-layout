@@ -1,0 +1,342 @@
+#!/usr/bin/env perl
+use strict;
+use warnings;
+
+# Audit a project that has selected TESTING.md's category-and-origin test
+# layout. Projects using another declared layout do not run this auditor.
+
+use File::Basename qw/basename dirname/;
+use File::Find ();
+use File::Spec ();
+use Getopt::Long qw/GetOptions/;
+
+my $mode             = 'report';
+my $root             = '.';
+my $namespace        = '';
+my $manual_namespace = '';
+my $test_helper      = '';
+my $deferrals        = '';
+my @root_specials;
+my @unit_specials;
+my @module_excludes;
+my @fixture_extensions;
+
+GetOptions(
+    'mode=s'                => \$mode,
+    'root=s'                => \$root,
+    'namespace=s'           => \$namespace,
+    'manual-namespace=s'    => \$manual_namespace,
+    'test-helper=s'         => \$test_helper,
+    'deferrals=s'           => \$deferrals,
+    'root-special=s'        => \@root_specials,
+    'unit-special-prefix=s' => \@unit_specials,
+    'module-exclude=s'      => \@module_excludes,
+    'fixture-extension=s'   => \@fixture_extensions,
+) or die "Invalid arguments\n";
+
+my %VALID_MODE = map { $_ => 1 } qw/report structure unit manual combined strict/;
+die "Invalid --mode '$mode'\n"                unless $VALID_MODE{$mode};
+die "--namespace Package::Name is required\n" unless length $namespace;
+die "Invalid --namespace '$namespace'\n"
+    unless $namespace =~ m/^[_A-Za-z]\w*(?:::\w+)*$/;
+
+$manual_namespace ||= $namespace . '::Manual';
+die "--manual-namespace must be below --namespace\n"
+    unless $manual_namespace =~ m/^\Q$namespace\E::\w+(?:::\w+)*$/;
+die "No t/ directory below '$root'\n"   unless -d File::Spec->catdir($root, 't');
+die "No lib/ directory below '$root'\n" unless -d File::Spec->catdir($root, 'lib');
+
+@fixture_extensions = qw/sql golden expected out/ unless @fixture_extensions;
+
+my %ROOT_SPECIAL = map { _normalize_path($_) => 1 } (
+    't/00-report.t',
+    't/01-test-support.t',
+    @root_specials,
+);
+my @UNIT_SPECIAL   = map { _normalize_path($_) } @unit_specials;
+my %MODULE_EXCLUDE = map { _normalize_path($_) => 1 } @module_excludes;
+my $namespace_path = $namespace;
+$namespace_path =~ s{::}{/}g;
+my $manual_path = $manual_namespace;
+$manual_path =~ s{::}{/}g;
+my $manual_tail = $manual_namespace;
+$manual_tail =~ s/^\Q$namespace\E:://;
+$manual_tail =~ s{::}{/}g;
+my ($root_module_name) = $namespace =~ m/([^:]+)$/;
+
+my $fixture_pattern = join('|', map { quotemeta($_) } @fixture_extensions);
+my $deferral_text   = _read_deferrals($deferrals);
+my @tests           = _find_files(File::Spec->catdir($root, 't'), qr/\.t$/);
+my @fixture_files   = _find_files(File::Spec->catdir($root, 't'), qr/\.(?:$fixture_pattern)$/);
+my @modules         = _find_files(File::Spec->catdir($root, 'lib'), qr/\.pm$/);
+
+@tests         = map { _relative($_) } @tests;
+@fixture_files = map { _relative($_) } @fixture_files;
+@modules       = map { _relative($_) } @modules;
+
+my @issues;
+my @warnings;
+my @deferred;
+
+_audit_structure();
+_audit_unit_mirrors()   if $mode =~ m/^(?:unit|combined|strict)$/;
+_audit_manual_mirrors() if $mode =~ m/^(?:manual|combined|strict)$/;
+_audit_todos()          if $mode eq 'strict';
+
+print "Test layout inventory: " . scalar(@tests) . " tests, " . scalar(@fixture_files) . " fixture files, " . scalar(@modules) . " modules\n";
+print "DEFERRED: $_\n" for @deferred;
+print "WARNING: $_\n"  for @warnings;
+
+if (@issues) {
+    my $label = $mode eq 'report' ? 'DEBT' : 'ERROR';
+    print "$label: $_\n" for @issues;
+}
+
+if ($mode eq 'report') {
+    print "Report mode: " . scalar(@issues) . " migration issue(s), " . scalar(@warnings) . " warning(s)\n";
+    exit 0;
+}
+
+if (@issues) {
+    print STDERR "Test layout audit failed with " . scalar(@issues) . " error(s).\n";
+    exit 1;
+}
+
+print "OK: $mode test layout audit passed.\n";
+exit 0;
+
+sub _find_files {
+    my ($dir, $match) = @_;
+    my @out;
+    File::Find::find(
+        {
+            no_chdir => 1,
+            wanted   => sub {
+                return unless -f $File::Find::name;
+                push @out => $File::Find::name if $File::Find::name =~ $match;
+            },
+        },
+        $dir,
+    );
+    return sort @out;
+}
+
+sub _normalize_path {
+    my ($path) = @_;
+    $path =~ s{\\}{/}g;
+    $path =~ s{^\./}{};
+    $path =~ s{/$}{};
+    return $path;
+}
+
+sub _relative {
+    my ($path) = @_;
+    my $rel = File::Spec->abs2rel(File::Spec->rel2abs($path), File::Spec->rel2abs($root));
+    return _normalize_path($rel);
+}
+
+sub _read_file {
+    my ($path) = @_;
+    my $full = File::Spec->catfile($root, split(m{/}, $path));
+    open(my $fh, '<', $full) or die "Cannot read '$full': $!\n";
+    local $/;
+    my $content = <$fh>;
+    close($fh);
+    return $content;
+}
+
+sub _read_deferrals {
+    my ($path) = @_;
+    return '' unless length $path;
+    open(my $fh, '<', $path) or die "Cannot read deferrals '$path': $!\n";
+    local $/;
+    my $content = <$fh>;
+    close($fh);
+    return $content;
+}
+
+sub _record_mirror_issue {
+    my ($code, $key, $message) = @_;
+    my $finding = "[$code] $message";
+    if ($mode ne 'strict' && length($deferral_text) && index($deferral_text, $key) >= 0) {
+        push @deferred => $finding;
+        return;
+    }
+    push @issues => $finding;
+}
+
+sub _issue {
+    my ($code, $message) = @_;
+    push @issues => "[$code] $message";
+}
+
+sub _warning {
+    my ($code, $message) = @_;
+    push @warnings => "[$code] $message";
+}
+
+sub _audit_structure {
+    my %folded;
+    my %test_dirs;
+    my %fixture_dirs;
+
+    for my $test (@tests) {
+        push @{$folded{lc $test}} => $test;
+        $test_dirs{dirname($test)} = 1;
+        _audit_test_location($test);
+        _audit_origin($test);
+        _audit_test_imports($test) if length $test_helper;
+        my $name = basename($test);
+        _warning('TLY001', "$test has a basename over 100 characters") if length($name) > 100;
+    }
+
+    for my $fixture (@fixture_files) {
+        $fixture_dirs{dirname($fixture)} = 1;
+    }
+
+    for my $path (sort keys %folded) {
+        my @paths = @{$folded{$path}};
+        _issue('TLY100', 'case-insensitive test-path collision: ' . join(', ', @paths))
+            if @paths > 1;
+    }
+
+    for my $dir (sort keys %fixture_dirs) {
+        my $shared = $dir =~ m{^t/fixtures(?:/|$)};
+        _issue('TLY101', "$dir is an owned fixture directory without the .fixtures suffix")
+            unless $shared || $dir =~ m{\.fixtures(?:/|$)};
+        _issue('TLY102', "$dir both contains .t files and serves as a fixture directory")
+            if $test_dirs{$dir};
+    }
+}
+
+sub _audit_test_location {
+    my ($test) = @_;
+    if ($test =~ m{^t/AI(?:/|$)}) {
+        _issue('TLY103', "$test remains under t/AI, which belongs to the alternative layout");
+        return;
+    }
+    return if $ROOT_SPECIAL{$test};
+    return if $test =~ m{^t/(?:unit|acceptance|regression|integration)/.+\.t$};
+
+    if ($test =~ m{^t/(?:lib|fixtures|scripts)(?:/|$)}) {
+        _issue('TLY104', "$test is a test inside a support directory");
+        return;
+    }
+    _issue('TLY105', "$test is outside an allowed test category");
+}
+
+sub _audit_origin {
+    my ($test)  = @_;
+    my $content = _read_file($test);
+    my ($first) = grep { /\S/ } split(/\n/, $content);
+    unless (defined($first) && $first =~ m/^# Test origin: (human|AI|mixed)$/) {
+        _issue('TLY106', "$test lacks a valid first-substantive-line origin header");
+        return;
+    }
+    return unless $1 eq 'mixed';
+
+    my @lines = split(/\n/, $content);
+    shift @lines while @lines && $lines[0] !~ /\S/;
+    shift @lines;
+    my $has_ai_section = grep { /^# Test origin: AI$/ } @lines;
+    _issue('TLY107', "$test is mixed but has no AI section marker") unless $has_ai_section;
+}
+
+sub _audit_test_imports {
+    my ($test)  = @_;
+    my $content = _read_file($test);
+    my $helper  = quotemeta($test_helper);
+    return unless $content =~ m/^\s*use\s+$helper(?:\s|;)/m;
+    return if $content     =~ m/^\s*use\s+lib\s+[^;]*t\/lib[^;]*;/m;
+    _issue('TLY108', "$test imports $test_helper without adding t/lib to \@INC");
+}
+
+sub _implementation_mirrors {
+    my %out;
+    my $root_module   = "lib/$namespace_path.pm";
+    my $child_prefix  = "lib/$namespace_path/";
+    my $manual_module = "lib/$manual_path.pm";
+    my $manual_prefix = "lib/$manual_path/";
+
+    for my $module (@modules) {
+        next if $MODULE_EXCLUDE{$module};
+        next if $module eq $manual_module || index($module, $manual_prefix) == 0;
+        if ($module eq $root_module) {
+            $out{$module} = "t/unit/$root_module_name";
+            next;
+        }
+        if (index($module, $child_prefix) == 0) {
+            my $mirror = substr($module, length($child_prefix));
+            $mirror =~ s{\.pm$}{};
+            $out{$module} = "t/unit/$mirror";
+            next;
+        }
+        _warning('TLY002', "$module is outside the configured namespace and was not mirror-audited");
+    }
+    return %out;
+}
+
+sub _audit_unit_mirrors {
+    my %mirrors = _implementation_mirrors();
+    my %owners;
+    for my $module (sort keys %mirrors) {
+        my $prefix = $mirrors{$module};
+        my @found  = grep { $_ eq "$prefix.t" || /^\Q${prefix}_\E[^\/]+\.t$/ } @tests;
+        _record_mirror_issue('TLY200', $module, "$module has no exact or suffixed unit-test mirror")
+            unless @found;
+        push @{$owners{$_}} => $module for @found;
+    }
+    for my $test (sort keys %owners) {
+        my @owners = @{$owners{$test}};
+        _issue('TLY201', "$test ambiguously mirrors " . join(', ', @owners)) if @owners > 1;
+    }
+    for my $test (grep { m{^t/unit/} } @tests) {
+        next if grep { index($test, $_) == 0 } @UNIT_SPECIAL;
+        _warning('TLY003', "$test has no implementation-module mirror") unless $owners{$test};
+    }
+}
+
+sub _audit_manual_mirrors {
+    my %expected;
+    my $manual_module = "lib/$manual_path.pm";
+    my $manual_prefix = "lib/$manual_path/";
+
+    for my $module (@modules) {
+        next if $MODULE_EXCLUDE{$module};
+        my $test;
+        if ($module eq $manual_module) {
+            $test = "t/acceptance/$manual_tail.t";
+        }
+        elsif (index($module, $manual_prefix) == 0) {
+            my $suffix = substr($module, length($manual_prefix));
+            $suffix =~ s{\.pm$}{.t};
+            $test = "t/acceptance/$manual_tail/$suffix";
+        }
+        else {
+            next;
+        }
+        $expected{$test} = 1;
+        _record_mirror_issue('TLY300', $module, "$module has no exact manual acceptance mirror at $test")
+            unless grep { $_ eq $test } @tests;
+    }
+    for my $test (grep { /^t\/acceptance\/\Q$manual_tail\E(?:\/|\.t$)/ } @tests) {
+        _warning('TLY004', "$test has no manual-module mirror") unless $expected{$test};
+    }
+}
+
+sub _audit_todos {
+    for my $test (@tests) {
+        my $content = _read_file($test);
+        my @todo;
+        for my $line (split(/\n/, $content)) {
+            $line =~ s/\s+#.*$//;
+            push @todo => $line
+                if $line =~ /(?:^|[^\w:>])todo\s*(?=\(|['"\$])/i
+                || $line =~ /->todo\s*\(/i;
+        }
+        next unless @todo;
+        my @dispositions = $content =~ m/^# Phase-5 disposition \(\d{4}-\d{2}-\d{2}\): .+$/mg;
+        _issue('TLY400', "$test has Test2 TODO usage without enough dated phase-5 disposition markers")
+            if @dispositions < @todo;
+    }
+}

@@ -53,10 +53,12 @@ before replacing an entry point. Then copy in: `templates/CODEX.md`,
 `templates/CLAUDE.md`, `templates/AGENTS.md`,
 `templates/AGENTS_OVERRIDE.md`, `templates/perltidyrc` → `.perltidyrc`,
 `templates/TEMPLATE.pod`, `AI_AND_LLM_POLICY.txt`, `templates/dist.ini`,
-`templates/gitignore` → `.gitignore`, and the `agent_scripts/` auditors the
-project needs. Create `Changes` with a `{{$NEXT}}` section. Then fill in the
-placeholders and verify with `audit-dzil`. `USING.md` has the exact command
-sequence.
+`templates/Changes`, `templates/MANIFEST.SKIP`, `templates/gitignore` →
+`.gitignore`, and the `agent_scripts/` auditors the project needs. If the
+project selects the category-and-origin test profile, include
+`audit-test-layout` and record its parameterized strict command. Then fill in
+the placeholders and verify packaging and optional wiring separately.
+`USING.md` has the exact command sequence.
 
 ## Auditing an existing project
 
@@ -79,6 +81,8 @@ Then by hand:
   `AGENTS_OVERRIDE.md` with its reason — or rot, and gets deleted. Decide
   which; do not leave it ambiguous.
 - Does `AGENTS_OVERRIDE.md` exist and answer all five declarations?
+- If it selects the category-and-origin test layout, is its strict
+  `audit-test-layout` command parameterized for this project?
 - Do the project's `agent_scripts/` copies match `~/projects/Agents/`? Fix the
   canonical copy first, then re-copy.
 

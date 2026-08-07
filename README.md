@@ -85,6 +85,8 @@ agent_scripts/audit-methods-not-functions   Subs defined in an object module
 agent_scripts/audit-readonly-attrs          Read-only HashBase slots using
                                             `-attr` instead of `<attr`.
 agent_scripts/audit-banned-words            Forbidden terminology.
+agent_scripts/audit-test-layout             The optional category-and-origin
+                                            test layout profile.
 agent_scripts/find-long-subs                Subs over 75 lines.
 agent_scripts/find-large-modules            Modules over 10,000 lines.
 agent_scripts/audit-no-secrets              Credentials and sensitive

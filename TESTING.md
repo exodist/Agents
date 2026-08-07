@@ -251,6 +251,30 @@ human and AI material is combined, human material stays above AI material.
 Origin records meaningful **section** provenance — not individual assertions,
 and not the identity of the last editor.
 
+### Auditing the default layout
+
+Projects that select this category-and-origin scheme may copy
+`agent_scripts/audit-test-layout` and make its strict mode a local pre-review
+gate. The project records the exact command, including its namespace and any
+documented exceptions. For example:
+
+```
+perl agent_scripts/audit-test-layout \
+    --mode strict \
+    --namespace Foo::Bar \
+    --manual-namespace Foo::Bar::Manual
+```
+
+The auditor has progressive `report`, `structure`, `unit`, `manual`,
+`combined`, and `strict` modes. `--deferrals FILE` permits named mirror debt
+before strict mode; strict mode deliberately ignores deferrals. Optional
+arguments `--test-helper`, `--root-special`, `--unit-special-prefix`,
+`--module-exclude`, and `--fixture-extension` configure project-specific
+details.
+
+This is a profile tool, not a universal gate. A project using the mirrored
+`t/AI/` scheme or a locally documented replacement does not run it.
+
 ### Alternative: a mirrored `t/AI/` tree
 
 Some projects separate AI-authored tests physically instead:

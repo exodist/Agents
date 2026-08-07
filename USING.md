@@ -216,6 +216,11 @@ cp ~/projects/Agents/agent_scripts/find-long-subs              agent_scripts/
 cp ~/projects/Agents/agent_scripts/find-large-modules          agent_scripts/
 ```
 
+If the project selects TESTING.md's category-and-origin layout, also copy
+`audit-test-layout` and record its exact parameterized `--mode strict` command
+in `AGENTS_OVERRIDE.md`. Projects selecting another layout do not copy or run
+that auditor.
+
 Then fill in `AGENTS.md` (project content), `AGENTS_OVERRIDE.md` (the five
 declarations), `dist.ini` (name, main module, repo URL, prereqs),
 `TEMPLATE.pod` (dist name, repo URL), `.gitignore` (dist name), and any
@@ -273,6 +278,8 @@ By hand:
   has drifted from the universal text, that drift is either a real override —
   move it to `AGENTS_OVERRIDE.md` — or rot, and gets deleted.
 - Does `AGENTS_OVERRIDE.md` exist, and answer all five declarations?
+- If it selects the category-and-origin test layout, does its recorded strict
+  `audit-test-layout` command match the project namespace and exceptions?
 - Do the project's `agent_scripts/` copies match `~/projects/Agents/`? Fix the
   canonical copy first, then re-copy.
 

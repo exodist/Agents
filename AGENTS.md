@@ -74,6 +74,7 @@ run the canonical copy from `~/projects/Agents/agent_scripts/`.
 | `audit-methods-not-functions` | Subs defined in an object module called as bare functions. |
 | `audit-readonly-attrs` | Read-only HashBase slots using `-attr` instead of `<attr`. |
 | `audit-banned-words` | Forbidden terminology. |
+| `audit-test-layout` | The category-and-origin test layout, when selected. |
 | `find-long-subs` | Subs over 75 lines. |
 | `find-large-modules` | Modules over 10,000 lines. |
 

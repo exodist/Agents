@@ -55,6 +55,11 @@ Reason: _____
 - **`t/AI/` mirror tree.** Human tests in `t/`, AI-generated tests in `t/AI/`
   mirroring the same subdirectory layout. No per-file origin header.
 
+If using categories plus origin headers, record the exact strict audit command
+here, including `--namespace` and any project-specific options:
+
+> **Layout audit: _____**
+
 Reason: _____
 
 ### perltidy
