@@ -96,4 +96,32 @@ PERL
     like($output, qr/^OK:/, 'clean result is reported');
 };
 
+subtest 'source-like non-code does not create method-call hits' => sub {
+    my $dir  = tempdir(CLEANUP => 1);
+    my $file = File::Spec->catfile($dir, 'NonCode.pm');
+    write_file(
+        $file,
+        <<'PERL',
+package NonCode;
+use Local::HashBase qw{<name};
+sub helper { 1 }
+sub examples {
+    my $quoted = q{helper()};
+    my $regex = qr{helper\(};
+    my $text = <<'EXAMPLE';
+helper()
+EXAMPLE
+    return $quoted =~ $regex ? $text : undef;
+}
+1;
+__DATA__
+helper()
+PERL
+    );
+
+    my ($exit, $output) = run_cmd({}, $^X, $METHODS, $file);
+    is($exit, 0, 'quotes, heredocs, and data trailers are ignored');
+    like($output, qr/^OK:/, 'clean result is reported');
+};
+
 done_testing;

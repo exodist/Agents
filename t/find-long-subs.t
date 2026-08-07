@@ -26,4 +26,24 @@ is($output, '', 'clean scan is quiet');
 is($exit, 1, 'executable lines still enforce the limit');
 like($output, qr/example\s+\(45 lines\)/, 'reported length counts signature, code, and closing brace');
 
+my $quoted = File::Spec->catfile($dir, 'Quoted.pm');
+write_file(
+    $quoted,
+    <<'PERL',
+package Quoted;
+sub example {
+    my $quoted = q/}}}}}}/;
+    my $regex = qr/\{\{\{/;
+    my $text = <<'EXAMPLE';
+}}}}}}
+EXAMPLE
+    return $quoted =~ $regex ? $text : undef;
+}
+1;
+PERL
+);
+
+($exit, $output) = run_cmd({}, $^X, $AUDIT, '--threshold', 20, $quoted);
+is($exit, 0, 'quote-like braces and heredoc text do not confuse sub boundaries');
+
 done_testing;

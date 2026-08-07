@@ -1,5 +1,8 @@
 {{$NEXT}}
 
+    - Cover quote-like operators, heredocs, POD, and data trailers in scanner
+      tests so source-like text is not mistaken for executable code.
+
     - Separate Dist::Zilla packaging checks from optional Agents project
       wiring, with stable diagnostic codes for both audits.
 
