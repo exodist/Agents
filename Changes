@@ -1,5 +1,7 @@
 {{$NEXT}}
 
+    - Stop treating relative project paths as possible high-entropy secrets.
+
     - Count executable lines rather than comments and blank lines when
       enforcing the subroutine-size limit.
 
