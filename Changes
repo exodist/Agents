@@ -1,4 +1,7 @@
 {{$NEXT}}
 
+    - Limit terminology checks to maintained code and identified user
+      documentation while excluding internal history and worktrees.
+
     - Make optional installation preserve user-owned skill symlinks and work
       from a fresh home directory.

@@ -10,8 +10,9 @@ use warnings;
 #   kwarg(s)     -> "named argument(s)" / "key/value argument"
 #   load-bearing -> name the actual constraint
 #
-# Defaults to scanning tracked source and docs: lib/, t/, scripts/, and the
-# repository's own Markdown. Pass explicit paths to narrow it.
+# Defaults to maintained code plus user-facing documents with conventional
+# names. Internal Markdown is not scanned merely because it is at the
+# repository root. Pass explicit paths to add project-specific user docs.
 #
 # Usage:
 #   perl agent_scripts/audit-banned-words
@@ -31,8 +32,10 @@ my %BANNED = (
     'load-bearing' => 'name the actual constraint (e.g. "the runner relies on this")',
 );
 
-my @DEFAULT_PATHS = qw{lib t scripts share agent_scripts};
-my @DEFAULT_GLOBS = ('*.md', '*.pod');
+my @DEFAULT_PATHS = qw{
+    lib t scripts share agent_scripts bin install
+    README.md AI_AND_LLM_POLICY.txt templates/TEMPLATE.pod
+};
 
 my $list = 0;
 GetOptions('list' => \$list) or die "bad arguments\n";
@@ -71,16 +74,22 @@ print "OK: no forbidden terminology.\n";
 exit 0;
 
 sub default_targets {
-    my @out = grep { -d $_ } @DEFAULT_PATHS;
-    push @out => grep { -f $_ } map { glob($_) } @DEFAULT_GLOBS;
-    return @out;
+    return grep { -e $_ } @DEFAULT_PATHS;
 }
 
 sub wanted_file {
     my ($path) = @_;
-    return 0 if $path =~ m{(?:^|/)(?:\.git|blib|cover_db|node_modules|_build)(?:/|$)};
+    return 0 if is_skipped_path($path);
     return 0 if is_exempt_file($path);
     return 1 if $path =~ /\.(?:pm|pl|t|pod|md|sql|txt)\z/;
+    return 1 if $path =~ m{(?:^|/)(?:agent_scripts|bin)/[^/]+\z};
+    return 0;
+}
+
+sub is_skipped_path {
+    my ($path) = @_;
+    return 1 if $path =~ m{(?:^|/)(?:\.git|blib|cover_db|node_modules|_build)(?:/|$)};
+    return 1 if $path =~ m{(?:^|/)(?:reference|old[^/]*|worktrees)(?:/|$)};
     return 0;
 }
 
@@ -101,6 +110,7 @@ sub is_exempt_file {
 sub scan_file {
     my ($path) = @_;
 
+    return if is_skipped_path($path);
     return if is_exempt_file($path);
 
     open(my $fh, '<', $path) or return;
