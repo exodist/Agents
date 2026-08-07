@@ -118,8 +118,12 @@ sub check_perl_floor {
         return;
     }
 
-    my $dist_floor = dist_perl_floor(File::Spec->catfile($project, 'dist.ini'));
-    if (defined($dist_floor) && $dist_floor != $declared_version) {
+    my $dist_path  = File::Spec->catfile($project, 'dist.ini');
+    my $dist_floor = dist_perl_floor($dist_path);
+    if (-f $dist_path && !defined $dist_floor) {
+        note('WIR106', 'dist.ini has no parsable perl prerequisite matching the minimum Perl declaration');
+    }
+    elsif (defined($dist_floor) && $dist_floor != $declared_version) {
         note('WIR106', "minimum Perl declaration '$declared' does not match the dist.ini perl prerequisite");
     }
 

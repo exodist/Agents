@@ -1,5 +1,8 @@
 {{$NEXT}}
 
+    - Leave dependency classification, prerequisite tiers, and load behavior
+      entirely to each project's own architecture and packaging policy.
+
     - Require projects to inventory their own non-Perl test suites without
       prescribing dependencies, runners, coverage thresholds, or CI.
 

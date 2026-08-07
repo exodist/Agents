@@ -308,16 +308,15 @@ passed to `die` / `warn` / `croak` / `print` that a user might see.
 
 ## 18. Dependencies and distribution
 
-- [ ] New runtime dependencies are declared in `dist.ini`, in the right
-      section (`Prereqs`, `TestRequires`, `RuntimeSuggests`,
-      `RuntimeRecommends`, `DevelopRequires`).
-- [ ] Optional / lazily-loaded modules are Suggests or Recommends, never
-      hard requires, and their load sites `require` them lazily with an
-      actionable error.
-- [ ] `Makefile.PL`, `README`, `README.md`, `cpanfile`, `LICENSE`,
-      `MANIFEST` were **not** hand-edited — they are Dist::Zilla output.
-- [ ] `perl ~/projects/Agents/agent_scripts/audit-dzil .` passes, or its
-      findings are explained.
+- [ ] New dependencies follow the project's own packaging and architecture
+      documents, including their classification and load behavior. The shared
+      repository does not decide these for another project.
+- [ ] When the project uses Dist::Zilla, its generated files were not
+      hand-edited; the project's `dist.ini` and source POD were changed
+      instead.
+- [ ] When the project adopts the shared Dist::Zilla profile,
+      `perl ~/projects/Agents/agent_scripts/audit-dzil .` passes or its
+      advisory findings are explained.
 
 ## 19. Commits and changelog
 

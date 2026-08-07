@@ -103,8 +103,8 @@ repository.url  = https://github.com/<org>/<Dist-Name>/
 repository.type = git
 
 [Prereqs]
-; Hard runtime requirements. Aligned `=` column.
-perl = 5.012000
+; Fill from this project's declared dependency policy.
+perl = <project minimum>
 
 [Prereqs / TestRequires]
 Test2::V0 = 0.000060
@@ -113,13 +113,13 @@ Test2::V0 = 0.000060
 ExtUtils::MakeMaker = 0
 
 [Prereqs / DevelopRequires]
-; Author-only tooling and optional integrations exercised by the author suite.
+; Fill from this project's declared dependency policy.
 
 [Prereqs / RuntimeSuggests]
-; Optional, lazily loaded. Nothing breaks without them; a feature is absent.
+; Fill from this project's declared dependency policy.
 
 [Prereqs / RuntimeRecommends]
-; Optional, but you want it if you can have it (e.g. an XS accelerator).
+; Fill from this project's declared dependency policy.
 
 [MakeMaker]
 
@@ -337,19 +337,14 @@ packaging documents or `AGENTS_OVERRIDE.md` record the differences.
 
 ### Prereqs
 
-- **Hard requires go in `[Prereqs]`.** Only modules the distribution loads
-  unconditionally.
 - **Each project classifies its own dependencies.** The shared repository does
-  not decide whether a named module is required or optional for another
-  project.
-- **Suggests** means nothing breaks without the module; a feature is simply
-  absent. **Recommends** means the module is wanted when available, but a
-  complete fallback remains.
-- Every optional module is `require`d **lazily at its point of use**, with an
-  actionable error naming what to install. Nothing always-loaded may `use` an
-  optional module at compile time.
-- **`[Prereqs / DevelopRequires]` may include optional integrations** needed
-  for the project's documented author-test matrix.
+  not decide whether a named module is required, optional, suggested,
+  recommended, test-only, or developer-only, and it does not prescribe the
+  module's load behavior. Follow the project's architecture and packaging
+  documents.
+- The skeleton includes common Dist::Zilla prerequisite sections as places
+  for the project's classifications; their presence is not a decision about
+  any dependency.
 - Keep the `=` column aligned within a section. It is scanned by eye
   constantly.
 - A comment above a non-obvious dependency explaining *why* it is optional,
@@ -384,8 +379,7 @@ are project-local concerns. This repository does not prescribe or audit them.
 
 1. Use the project's dependency policy to choose the right
    `[Prereqs / ...]` section in `dist.ini`.
-2. If the project classifies it as optional, keep the load behavior consistent
-   with that classification.
+2. Implement the load behavior required by that project policy.
 3. `dzil build` — this regenerates `Makefile.PL` and `cpanfile` and
    `[CopyFilesFromBuild]` copies them back into the tree.
 4. Commit `dist.ini`, `Makefile.PL`, and `cpanfile` together.

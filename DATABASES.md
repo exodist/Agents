@@ -7,17 +7,10 @@ priority over this shared operational guidance.
 
 ## Dependency ownership
 
-The shared Agents repository does not classify individual database modules as
-hard prerequisites, recommendations, or suggestions. A project decides from
-its actual behavior:
-
-- Code loaded for default functionality needs an ordinary runtime prerequisite.
-- Code loaded only for an optional feature is declared in the optional tier
-  that matches the project's support promise.
-- Optional modules load at the point of use and produce an actionable error
-  when absent.
-
-Auditors here do not maintain a module-name allowlist or denylist.
+The shared Agents repository does not classify individual database modules,
+choose prerequisite tiers, or prescribe load behavior. A project's own
+architecture and packaging documents make those decisions. Auditors here do
+not maintain a module-name allowlist or denylist.
 
 ## Developer database installs
 

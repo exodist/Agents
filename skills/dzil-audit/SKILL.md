@@ -46,14 +46,8 @@ do not run `dzil release` unless asked.
 
 1. Follow the project's dependency policy and add it to the chosen
    `[Prereqs / ...]` section in `dist.ini`.
-   - **`[Prereqs]`** — loaded unconditionally.
-   - **`RuntimeSuggests`** — nothing breaks without it; a feature is absent.
-   - **`RuntimeRecommends`** — wanted when available (an XS accelerator), but
-     the pure-Perl path is complete.
-   - **`DevelopRequires`** — author tooling and optional integrations needed
-     by the project's author-test matrix.
-2. If the project classifies it as optional, keep load behavior consistent
-   with that classification.
+   The shared profile does not classify the dependency or choose a tier.
+2. Implement the load behavior required by the project's own policy.
 3. `dzil build` — regenerates `Makefile.PL` and `cpanfile` and copies them
    back.
 4. Commit `dist.ini`, `Makefile.PL`, and `cpanfile` together.

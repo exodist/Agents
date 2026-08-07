@@ -86,6 +86,11 @@ subtest 'Perl floor matches packaging and module pragmas' => sub {
     like($output, qr/WIR106.*does not match/,          'dist.ini mismatch is reported');
     like($output, qr/WIR107.*Example\.pm uses v5\.38/, 'higher shipped pragma is reported');
 
+    write_file(File::Spec->catfile($dir, 'dist.ini'), "[Prereqs]\nperl = _____\n");
+    ($exit, $output) = run_cmd({}, $^X, $AUDIT, $dir);
+    is($exit, 1, 'unfilled dist.ini minimum fails');
+    like($output, qr/WIR106.*no parsable perl prerequisite/, 'dist.ini placeholder is reported');
+
     write_file(File::Spec->catfile($dir, 'dist.ini'), "[Prereqs]\nperl = 5.012000\n");
     write_file(File::Spec->catfile($dir, 'lib', 'Example.pm'), "package Example;\nuse 5.012;\n1;\n");
     ($exit, $output) = run_cmd({}, $^X, $AUDIT, $dir);
