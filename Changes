@@ -1,5 +1,7 @@
 {{$NEXT}}
 
+    - Require agents to flag speculative or disproportionate complexity for owner cost-benefit decisions.
+
     - Centralize brief documentation rules by audience, including narrow comment references to committed AI documents.
 
     - Keep auditor diagnostics self-contained instead of referring users to

@@ -24,7 +24,7 @@ project for drift.
 | File | What it covers |
 |---|---|
 | [`USING.md`](USING.md) | How a project wires itself to this repository. Point an agent here to set one up. |
-| [`AGENTS.md`](AGENTS.md) | Agent workflow: how work happens, decision discussion, reference trees, pre-review, testing, commits, changelog, and worktrees. |
+| [`AGENTS.md`](AGENTS.md) | Agent workflow and engineering judgment: scope, cost versus value, decisions, pre-review, testing, commits, changelog, and worktrees. |
 | [`DOCUMENTATION.md`](DOCUMENTATION.md) | Content rules for human and agent documents, commit messages, `Changes`, comments, and POD. |
 | [`PERL_STYLE_GUIDE.md`](PERL_STYLE_GUIDE.md) | Perl style and layout: object orientation, errors, filehandles, conditionals, naming, terminology, perltidy, POD placement, and sizes. |
 | [`STYLE_GUIDE_AGENT_CHECKLIST.md`](STYLE_GUIDE_AGENT_CHECKLIST.md) | The self-audit form of the style guide. Walk it before handing work back. |

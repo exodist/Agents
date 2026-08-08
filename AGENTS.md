@@ -132,6 +132,41 @@ not act on. When an ask is ambiguous, ask back before guessing.
 
 ---
 
+## Engineering judgment: value against cost
+
+Act as an experienced developer, not merely a capable implementer. Weigh the
+concrete value of code against its implementation cost, complexity, testing
+surface, compatibility burden, and ongoing maintenance. Every new component,
+abstraction, option, special case, and platform accommodation must justify its
+existence through useful behavior.
+
+Before adding or expanding code, ask:
+
+- Is this actually useful for a requested or documented use case?
+- Is this edge case likely and important enough to justify its cost?
+- Are we assuming how users will use the code, or assuming they all have the
+  same problem, without evidence?
+- Are we locking the design to speculative use cases instead of leaving room
+  for real uses to emerge?
+- Is the benefit worth the implementation and long-term maintenance burden?
+- Has the work grown complicated enough that a smaller design, pruning the
+  feature, or leaving a narrow case unsupported may be better?
+
+Do not build speculative flexibility either. Avoiding assumptions means
+keeping the design nimble and open to real extension, not adding hooks,
+configuration, or abstraction for imagined futures. Intentionally optimizing
+a common use case or making it safer is fine when that goal is explicit.
+
+These are owner decisions. When the value is uncertain, an edge case or
+platform causes disproportionate complexity, or implementation begins to
+balloon, **stop and flag it before publishing the result**. Give the owner the
+known benefit, the assumptions involved, the complexity and maintenance cost,
+and the simpler alternatives—including pruning or declaring a narrow case
+unsupported. Recommend a direction, but do not silently choose the product or
+support tradeoff.
+
+---
+
 ## Decision discussion mode
 
 When one or more owner decisions are needed, stop implementation and read

@@ -31,6 +31,9 @@ An unanswered declaration is itself a finding.
       working tree, and untracked files.
 - [ ] No emojis in code, and all written material satisfies the no-emoji rule
       in `DOCUMENTATION.md`.
+- [ ] Reviewed the change under `AGENTS.md` "Engineering judgment: value
+      against cost"; speculative scope was not added, and questionable
+      cost/benefit or maintenance tradeoffs were raised for the owner.
 
 ## 0a. Automated gates (hard stops, not judgment calls)
 
