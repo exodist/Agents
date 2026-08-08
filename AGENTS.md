@@ -252,7 +252,7 @@ roads-not-taken context.
 - This applies to **all** such commits, whether they land directly on the
   main branch or on a worktree branch merged in later. When you open a
   worktree, the work's `Changes` entry lands in that branch alongside the
-  code; the merge commit carries it onto the main branch.
+  code; integrating the branch carries it onto the main branch.
 - **Exempt:** changes that ship nothing to users — pure test-only work,
   trivial cleanups (whitespace, typos, formatting), and dev-only tooling
   (`agent_scripts/`, reference trees, `AI_DOCS/`). Everything else needs an
@@ -262,13 +262,19 @@ roads-not-taken context.
 
 ## Worktrees
 
-- **Significant work requires a worktree.** Place worktrees in `worktrees/`
-  (gitignored).
-- **Documentation-only work does not require a worktree.**
-- **Always integrate a worktree's branch with a merge commit**
-  (`git merge --no-ff`), never a fast-forward. The merge commit is the record
-  that a discrete piece of work landed; preserve it even when the target
-  branch has not advanced.
+- **Complicated work requires a worktree.** This includes multi-step features,
+  architectural changes, broad refactors, risky changes, and work expected to
+  need several commits. Place each worktree under the project repository root
+  as `<project-root>/worktrees/<worktree-name>`; the root `worktrees/`
+  directory is gitignored.
+- Simple bug fixes, minor changes, and small documentation edits may be made
+  directly on the primary branch (`master`, or the project's declared
+  equivalent).
+- Count the commits a worktree branch adds relative to its target branch. A
+  branch adding **two or more commits** must be integrated with a merge commit
+  (`git merge --no-ff`) so the discrete body of work remains visible.
+- A worktree branch adding **one commit** may be fast-forwarded when the target
+  permits it. Do not manufacture a merge commit solely to wrap one commit.
 - A project may suspend the worktree rule during a foundations phase. If so,
   its own `AGENTS.md` says which branch to commit to directly.
 

@@ -312,6 +312,12 @@ Skip this section unless the project's entry documents opt into
       `{{$NEXT}}` in `Changes`, **in that same commit**.
 - [ ] Nothing was pushed or merged without the user asking.
 
+## 19a. Worktrees
+
+- [ ] Worktree use and integration satisfy `AGENTS.md` under "Worktrees":
+      complicated work used one, two-or-more-commit branches retain a merge
+      commit, and one-commit branches may fast-forward.
+
 ## 20. Reference trees — only if the project has one
 
 Skip unless the project's `AGENTS.md` names a reference tree. Most do not.

@@ -1,5 +1,7 @@
 {{$NEXT}}
 
+    - Allow minor work on the primary branch and one-commit worktrees to fast-forward while preserving merge commits for multi-commit worktrees.
+
     - Require agents to flag speculative or disproportionate complexity for owner cost-benefit decisions.
 
     - Centralize brief documentation rules by audience, including narrow comment references to committed AI documents.
