@@ -42,10 +42,12 @@ No 'vibe' coding
     assist, and be used as a tool. But it cannot do all the work, and it cannot
     replace your own understanding of the code you are contributing.
 
-Documentation must not be "uncanny valley"
+Documentation follows the project's documentation policy
 
     Documentation may be AI written, and may even be identifiably so, but it
-    must not feel unnatural to read.
+    must meet the same readability and content standards as human-written
+    documentation. Projects using the shared Agents guidance follow
+    ~/projects/Agents/DOCUMENTATION.md.
 
 Significant AI/LLM code MUST be noted as such.
 

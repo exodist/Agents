@@ -45,12 +45,13 @@ and `~/projects/Agents` is not present, clone it:
 ```
 
 **Cloning is the whole setup.** There is no install step: `AGENTS.md` there
-points at every document, tool, auditor, and procedure by absolute path, so
-they work from any project immediately. `~/projects/Agents/install` is an
-optional convenience that links the procedure files into the per-user paths
-`~/.claude/skills` and `~/.agents/skills`. Codex can then discover them and
-select them through `/skills`, `$skill-name`, or implicit matching. Skipping
-it changes nothing else.
+points at critical documents and says when to use each tool, auditor, and
+procedure by absolute path, so they work from any project immediately.
+`~/projects/Agents/install` is an optional convenience that links the
+procedure files into the per-user paths `~/.claude/skills` and
+`~/.agents/skills`. Codex can then discover them and select them through
+`/skills`, `$skill-name`, or implicit matching. Skipping it changes nothing
+else.
 
 A consuming project may instead make the Codex skills repository-scoped by
 pointing its `.agents/skills` at `~/projects/Agents/skills`. Codex scans that
@@ -75,9 +76,10 @@ Read the project's entry point first, then follow only the critical references
 it names. Do not scan every `.md` file for possible instructions.
 
 If the project opts in, read shared `AGENTS.md` and the particular shared
-guide or procedure needed for the current task. Then read the project-local
-documents named by its entry point. Authority does not depend on which file
-was read last:
+guide or procedure needed for the current task. `AGENTS.md` points to
+`DOCUMENTATION.md` for written material. Then read the project-local documents
+named by its entry point. Authority does not depend on which file was read
+last:
 
 - Project documents override shared Agents documents.
 - `ARCHITECTURE.md` governs project design and may replace shared templates
@@ -151,14 +153,12 @@ If `~/projects/Agents` does not exist, clone it before doing anything else:
 
     git clone git@github.com:exodist/Agents.git ~/projects/Agents
 
-Then read `~/projects/Agents/AGENTS.md` and follow it. It is authoritative for
-workflow, pre-review checks, commits, changelog, and worktrees, and it points
-at the Perl style guide, the self-audit checklist, the testing policy, and the
-packaging guide.
+Then read `~/projects/Agents/AGENTS.md` and follow the shared guidance this
+project has adopted. It points at task-specific guides and procedures.
 
-All documents in THIS repository take priority over shared guidance.
-`AGENTS_OVERRIDE.md` records declarations and explicit shared-rule overrides;
-read it when present.
+All documents in THIS repository take priority over the shared repository.
+Read the project documents named below; `AGENTS_OVERRIDE.md` records
+declarations and explicit shared-rule overrides when present.
 ```
 
 After the stanza, `AGENTS.md` carries **only what is true of this project**:
@@ -176,6 +176,8 @@ After the stanza, `AGENTS.md` carries **only what is true of this project**:
 
 It does **not** restate universal rules. A rule that appears in both places
 will drift, and the copy is the one that goes stale.
+
+Its writing follows `DOCUMENTATION.md` under "AI/agent-facing material".
 
 ### `AGENTS_OVERRIDE.md` — declarations and overrides
 
@@ -296,10 +298,10 @@ By hand:
   Harvest that content into the appropriate project document before replacing
   the entry point.
 - Does `AGENTS.md` open with the bootstrap stanza?
-- Does `AGENTS.md` restate universal rules instead of referencing them? Replace
-  each copy with a pointer, keeping only the project-specific parts. If a copy
-  has drifted from the universal text, that drift is either a real override —
-  move it to `AGENTS_OVERRIDE.md` — or rot, and gets deleted.
+- Does `AGENTS.md` follow `DOCUMENTATION.md` under "AI/agent-facing material",
+  especially the rule against copying universal guidance? Replace each copy
+  with a pointer, keeping only the project-specific parts. If a copy has
+  drifted, move a real override to `AGENTS_OVERRIDE.md`; delete stale text.
 - Does `AGENTS_OVERRIDE.md` exist, and answer all five declarations?
 - If it selects the category-and-origin test layout, does its recorded strict
   `audit-test-layout` command match the project namespace and exceptions?

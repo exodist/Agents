@@ -1,5 +1,7 @@
 {{$NEXT}}
 
+    - Centralize brief documentation rules by audience, including narrow comment references to committed AI documents.
+
     - Keep auditor diagnostics self-contained instead of referring users to
       internal Markdown filenames.
 

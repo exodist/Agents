@@ -6,7 +6,8 @@ across every repository that points at it.
 
 Architecture and design rules belong in a project's own `ARCHITECTURE.md`.
 Workflow rules belong in `AGENTS.md`. Test layout and execution policy
-belong in `TESTING.md`. This file is style only.
+belong in `TESTING.md`. Documentation content belongs in `DOCUMENTATION.md`.
+This file is Perl style and layout only.
 
 A project may **override** a rule here, but only by recording the override
 explicitly in its own `AGENTS_OVERRIDE.md`. Silent divergence is a bug. The
@@ -417,8 +418,8 @@ signatures. Report the missing declarations instead of guessing new values.
 
 ## Whitespace and formatting
 
-- **No trailing whitespace. No emojis.** Anywhere — code, comments, POD,
-  commit messages, Markdown.
+- **No trailing whitespace. No emojis in code.** Documentation has its own
+  no-emoji rule in `DOCUMENTATION.md`.
 - Run **perlcritic** with the repository `.perlcriticrc` when the project has
   one. Not every project does; do not invent one unasked.
 
@@ -491,48 +492,9 @@ Audit: `agent_scripts/find-long-subs lib`
 
 ## Comments
 
-Comments are for what the code cannot say. Most code needs none.
-
-- **Default: no comment.** Well-named identifiers document themselves; a
-  sentence restating the next line is noise.
-- **Only if it adds significant value**: a non-obvious *why*, a hidden
-  constraint, a subtle invariant, a workaround for a specific bug, behavior
-  that would surprise a future reader.
-
-  ```perl
-  # BAD — comment restates the code:
-  # Return 1
-  return 1;
-  ```
-
-- **As brief as the point allows.** `# Do X because Z breaks without X` is
-  usually the whole comment. One line; two or three when the reason genuinely
-  needs them. If a comment wants to be a paragraph, that is the signal to cut
-  it or move it to POD.
-- **Write the reason, not the story.** Why the code is this way, not the
-  investigation that led there. That belongs in the commit message, which is
-  where someone looks for history.
-- **No comment may reference another comment.** Each stands alone. Nothing
-  like "for the same reason as above" or "see the note below" — they are read
-  with code between them, not as one essay.
-- **`Agent Note:` prefix** for context aimed at a future agent rather than a
-  human reader. Still brief.
-- **No changelog in comments.** No "added for the X flow", "removed Z",
-  "fixes issue #123", "TODO before merge". Those belong in commit messages.
-  A comment describing a **real, durable** external contract or hidden
-  consumer is fine — it documents an invariant, not a change.
-- Comments may reference `ARCHITECTURE.md`, `PERL_STYLE_GUIDE.md`, or the
-  project's `STYLE_GUIDE.md` (all tracked, all authoritative). References to
-  `AI_DOCS/*` or other Markdown are **discouraged**; restate the rule
-  instead. When a reference is included it must be specific — full path plus
-  a section identifier. A bare token like `D6` or `M2 step 4+5` is not
-  acceptable.
-
-Prefer POD on the sub over a comment block whenever you are explaining what
-something is *for*. POD covers what it does, how to call it, and its inputs
-and outputs. Keep implementation detail out of POD except brief notes where
-a caller would be surprised — side effects especially. Implementation
-reasoning stays in a short comment inside the sub.
+Comments are maintained documentation. Follow `DOCUMENTATION.md` under
+"Comments" for when they are justified, how brief they should be, what
+belongs in POD instead, and the rules for referencing committed AI documents.
 
 ---
 
@@ -561,9 +523,8 @@ quoting an external name you cannot change.
 
 ## POD
 
-Every shipped `.pm` file must have POD. Start from the repository
-`TEMPLATE.pod` (canonical copy: `templates/TEMPLATE.pod` in this repository)
-and remove the sections that are not relevant.
+POD requirements and content rules live in `DOCUMENTATION.md` under "POD".
+This section defines placement and ordering.
 
 ### Placement — default: all POD at the bottom
 
@@ -611,17 +572,6 @@ the `EXPORTS` group comes before `PUBLIC METHODS`, which comes before
 `PRIVATE METHODS`. The within-group ordering rules above still apply.
 
 Whichever layout a project uses, every file in it uses the same one.
-
-### POD style
-
-- **Be brief.** Describe behavior the reader cannot infer from the signature,
-  in one or two sentences. Do not retell the module in prose.
-- **Do not repeat yourself.** If one explanation covers several methods, put
-  it in `DESCRIPTION` once and keep per-method POD short.
-- **POD must not reference any `.md` document** — not `ARCHITECTURE.md`, not
-  a style guide, not `AI_DOCS/*`. Users read POD; they cannot read internal
-  docs. Restate the relevant rule in plain prose if it matters.
-- `podchecker` must report zero errors and zero warnings.
 
 ---
 

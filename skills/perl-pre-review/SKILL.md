@@ -11,6 +11,7 @@ ready for review.
 
 Authoritative sources: `~/projects/Agents/AGENTS.md` ("Pre-review checks"),
 `~/projects/Agents/PERL_STYLE_GUIDE.md`,
+`~/projects/Agents/DOCUMENTATION.md`, and
 `~/projects/Agents/STYLE_GUIDE_AGENT_CHECKLIST.md`. Read the project's own
 `AGENTS.md` too — it declares the Perl mode, POD layout, and test layout, and
 may add project-specific gates.
@@ -83,8 +84,8 @@ podchecker <every touched .pm>
 
 Resolve every error **and** every warning.
 
-Also verify no user-facing string — POD, help output, `die` / `warn` /
-`croak` / `print` — references any `.md` document.
+Check touched POD and other user-facing strings against `DOCUMENTATION.md`,
+especially its audience and reference rules.
 
 ## 3. Util / role / base-class reuse pass
 
@@ -109,8 +110,8 @@ classes.
 
 - Every commit that changes shipped behavior has its own bullet under
   `{{$NEXT}}` in `Changes`, in that same commit.
-- Commit messages self-explanatory: no plan/review document references, no
-  finding numbers, no `#` followed by digits.
+- Commit messages and `Changes` entries satisfy their sections in
+  `DOCUMENTATION.md`.
 - Land fixups either as cleanup commits or by amending the relevant feature
   commits.
 

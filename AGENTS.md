@@ -10,7 +10,7 @@ exceptions, but it is not what grants local documents their authority.
 
 You are an expert Perl developer. Write code following the patterns and
 style of "Exodist" as seen throughout these codebases and codified in
-`PERL_STYLE_GUIDE.md`.
+`PERL_STYLE_GUIDE.md`. Written material follows `DOCUMENTATION.md`.
 
 ## What to read
 
@@ -25,6 +25,7 @@ For a project that opts into this repository:
 1. Read the project's complete entry document.
 2. Read this file for shared workflow and safety rules.
 3. Read only the shared documents this file names for the work being done:
+   `DOCUMENTATION.md` before writing or editing documentation in any form,
    the Perl guide for Perl edits, `TESTING.md` before test work,
    `DZIL_GUIDE.md` before packaging work, `DATABASES.md` only when a database
    project's entry documents opt into it, and the matching procedure under
@@ -33,11 +34,11 @@ For a project that opts into this repository:
    `ARCHITECTURE.md`, test instructions, and declarations.
 
 The shared documents cover separate domains rather than outranking one
-another. If the checklist differs from the Perl style guide, fix the
-checklist. If any shared rule differs from a project-local document, follow
-the project. A project's `ARCHITECTURE.md` is authoritative for its design
-even when it began as a copy of a shared template and even when no
-`AGENTS_OVERRIDE.md` mentions the change.
+another. If the checklist differs from the Perl style guide or documentation
+guide, fix the checklist. If any shared rule differs from a project-local
+document, follow the project. A project's `ARCHITECTURE.md` is authoritative
+for its design even when it began as a copy of a shared template and even
+when no `AGENTS_OVERRIDE.md` mentions the change.
 
 If you are about to implement something that seems to conflict with a
 project's `ARCHITECTURE.md`, **stop and verify**. The most common cause is
@@ -185,52 +186,12 @@ add commands or tighter limits.
 
 ---
 
-## AI task documentation
+## Documentation
 
-`AI_DOCS/` holds durable context that the code and commit history cannot
-carry on their own. **Default: do not write one.** Only write an AI_DOC when
-the task is:
-
-- A significant new feature.
-- An architectural change (process topology, schema layout, lifecycle
-  contracts, module boundaries with real design weight).
-- A non-trivial refactor that changes module boundaries, public interfaces,
-  or coding patterns across multiple files.
-
-Do **not** write an AI_DOC for:
-
-- **Bug fixes.** If the fix contradicts or extends what an existing AI_DOC or
-  `ARCHITECTURE.md` section says, update that document in place. Otherwise
-  the commit message is the only record.
-- **Test-only work** (adding tests, fixing flakes, test refactors). Commit
-  messages only.
-- **Trivial cleanups** (typos, whitespace, perltidy passes, comment tweaks).
-
-When one is warranted, it describes: what the task was and what triggered
-it; decisions made, including alternatives considered and why they were
-rejected; and any architectural changes introduced.
-
-Filename: `AI_DOCS/<YYYY-MM-DD>-<short-slug>.md`.
-
-Any decision to deviate from `ARCHITECTURE.md` must **also** be recorded as
-an addendum section appended to `ARCHITECTURE.md` itself, explaining and
-justifying the deviation. `ARCHITECTURE.md` remains the authoritative spec;
-addenda exist so anyone reading it sees the deviation and its reasoning in
-one place. This applies whether or not an AI_DOC is also written.
-
-### Referencing docs from code
-
-User-facing text — POD, command `description` / `summary` / help output,
-`die` / `warn` / `croak` / `print` strings, any diagnostic a user might see —
-must **never** reference any `.md` document. If the rule matters to the user,
-restate it in plain prose; if it does not, drop the reference. Users cannot
-read internal documentation and should not be pointed at it.
-
-Regular `#` comments may reference `ARCHITECTURE.md` or a style guide (both
-tracked, both authoritative). References to `AI_DOCS/*` or other Markdown
-are **discouraged** and should appear only when the comment cannot stand on
-its own without one. A reference must be specific: full path plus a section
-identifier. A bare token like `D6` or `M2 step 4+5` is not acceptable.
+Read `DOCUMENTATION.md` before writing or editing commit messages, `Changes`
+entries, comments, POD, human-facing text, or AI/agent documents. It defines
+the shared rules for brevity, duplication, audience, references, and useful
+roads-not-taken context.
 
 ---
 
@@ -239,10 +200,7 @@ identifier. A bare token like `D6` or `M2 step 4+5` is not acceptable.
 - **Make a distinct commit for each change.**
 - **Exception:** if fixing a bug introduced by a recent commit that has not
   yet been pushed to origin, amend that commit instead of creating a new one.
-- Commit messages are fully self-explanatory. **No references to plan
-  documents, review documents, or finding numbers.** Never `#` followed by
-  digits — GitHub reads it as an issue link.
-- No emojis in commit messages.
+- Commit-message content follows `DOCUMENTATION.md` under "Commit messages".
 - **Never push, never merge, never delete user-visible state** without the
   user asking.
 
@@ -251,17 +209,15 @@ identifier. A bare token like `D6` or `M2 step 4+5` is not acceptable.
 ## Changelog
 
 - Every commit that changes shipped behavior records itself in `Changes` in
-  the **same commit**, as a bullet under the `{{$NEXT}}` section at the top,
-  describing the change in user-facing terms. Do not defer changelog entries
-  to release time — releases have shipped with empty changelogs because
-  entries were never written.
-- Keep each entry brief: one line, one sentence where possible, two at most.
+  the **same commit**, as a bullet under the `{{$NEXT}}` section at the top.
+  Do not defer changelog entries to release time — releases have shipped with
+  empty changelogs because entries were never written.
+- Entry content and formatting follow `DOCUMENTATION.md` under "`Changes`
+  entries".
 - This applies to **all** such commits, whether they land directly on the
   main branch or on a worktree branch merged in later. When you open a
   worktree, the work's `Changes` entry lands in that branch alongside the
   code; the merge commit carries it onto the main branch.
-- `Changes` is a `Text::Template` document — **never put a literal `{{` or
-  `}}` inside a bullet.**
 - **Exempt:** changes that ship nothing to users — pure test-only work,
   trivial cleanups (whitespace, typos, formatting), and dev-only tooling
   (`agent_scripts/`, reference trees, `AI_DOCS/`). Everything else needs an

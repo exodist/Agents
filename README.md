@@ -24,8 +24,9 @@ project for drift.
 | File | What it covers |
 |---|---|
 | [`USING.md`](USING.md) | How a project wires itself to this repository. Point an agent here to set one up. |
-| [`AGENTS.md`](AGENTS.md) | Agent workflow: how work happens, decision discussion mode, reference trees, the three mandatory pre-review passes, AI docs, commits, changelog, worktrees. |
-| [`PERL_STYLE_GUIDE.md`](PERL_STYLE_GUIDE.md) | Perl style: object orientation, error handling, filehandles, conditionals, naming, comments, terminology, perltidy, POD, sizes. |
+| [`AGENTS.md`](AGENTS.md) | Agent workflow: how work happens, decision discussion, reference trees, pre-review, testing, commits, changelog, and worktrees. |
+| [`DOCUMENTATION.md`](DOCUMENTATION.md) | Content rules for human and agent documents, commit messages, `Changes`, comments, and POD. |
+| [`PERL_STYLE_GUIDE.md`](PERL_STYLE_GUIDE.md) | Perl style and layout: object orientation, errors, filehandles, conditionals, naming, terminology, perltidy, POD placement, and sizes. |
 | [`STYLE_GUIDE_AGENT_CHECKLIST.md`](STYLE_GUIDE_AGENT_CHECKLIST.md) | The self-audit form of the style guide. Walk it before handing work back. |
 | [`TESTING.md`](TESTING.md) | Test execution, the shared concurrency lock, memory traps, test layout and provenance. |
 | [`DATABASES.md`](DATABASES.md) | Optional database-test operations, developer installs, and per-install isolation. |
@@ -127,9 +128,9 @@ scaffold, `TEMPLATE.pod`, `perltidyrc`, `dist.ini`, `Changes`,
 
 ## Installing — not required
 
-**Clone it and it works.** `AGENTS.md` points agents at every document, tool,
-auditor, and procedure by absolute path. Nothing is installed, and nothing
-breaks if it never is.
+**Clone it and it works.** `AGENTS.md` points agents at the critical shared
+documents and says when to use each tool, auditor, and procedure by absolute
+path. Nothing is installed, and nothing breaks if it never is.
 
 ```
 git clone git@github.com:exodist/Agents.git ~/projects/Agents

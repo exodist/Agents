@@ -77,11 +77,10 @@ Then by hand:
 - Does `CLAUDE.md` do anything besides point at `AGENTS.md`? Move that content
   into `AGENTS.md`.
 - Does `AGENTS.md` open with the bootstrap stanza?
-- Does `AGENTS.md` restate universal rules instead of referencing them?
-  Replace each copy with a pointer. Where a copy has **drifted** from the
-  universal text, that drift is either a real override — move it to
-  `AGENTS_OVERRIDE.md` with its reason — or rot, and gets deleted. Decide
-  which; do not leave it ambiguous.
+- Does `AGENTS.md` follow `~/projects/Agents/DOCUMENTATION.md` under
+  "AI/agent-facing material", especially the rule against copying universal
+  guidance? Replace each copy with a pointer. Move real drift to
+  `AGENTS_OVERRIDE.md` as a reasoned override; delete stale text.
 - Does `AGENTS_OVERRIDE.md` exist and answer all five declarations?
 - If it selects the category-and-origin test layout, is its strict
   `audit-test-layout` command parameterized for this project?

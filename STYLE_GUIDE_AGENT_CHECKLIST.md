@@ -2,12 +2,14 @@
 
 Self-audit checklist. Walk it against **every file the branch touched**
 before declaring work ready for review. This is the operational form of
-`PERL_STYLE_GUIDE.md`; where the two disagree, the style guide wins and this
-file gets fixed.
+`PERL_STYLE_GUIDE.md` and `DOCUMENTATION.md`; where they disagree, the
+authoritative guide wins and this file gets fixed.
 
 Sources this mirrors:
 
 - **`PERL_STYLE_GUIDE.md`** — style, formatting, language-feature rules.
+- **`DOCUMENTATION.md`** — comments, POD content, human-facing text, commit
+  messages, and `Changes` entries.
 - **`AGENTS.md`** — workflow, pre-review checks, conventions.
 - **`TESTING.md`** — test layout, provenance, execution policy.
 - The project's `AGENTS_OVERRIDE.md` — declarations and overrides, which win.
@@ -27,7 +29,8 @@ An unanswered declaration is itself a finding.
 - [ ] Established the complete touched set through
       `skills/perl-pre-review/SKILL.md`, including branch commits, index,
       working tree, and untracked files.
-- [ ] No emojis anywhere — code, comments, POD, Markdown, commit messages.
+- [ ] No emojis in code, and all written material satisfies the no-emoji rule
+      in `DOCUMENTATION.md`.
 
 ## 0a. Automated gates (hard stops, not judgment calls)
 
@@ -242,21 +245,8 @@ Skip this section unless the project's entry documents opt into
 
 ## 14. Comments
 
-- [ ] Default is **no comment**. Every comment in the diff earns its place:
-      a non-obvious *why*, a hidden constraint, a subtle invariant, a
-      workaround, or genuinely surprising behavior.
-- [ ] No comment restates the code.
-- [ ] No comment references another comment ("as above", "see below").
-- [ ] No multi-paragraph comment blocks; that content belongs in POD or
-      `ARCHITECTURE.md`.
-- [ ] No changelog-style comments ("added for X", "removed Z", "fixes
-      issue 123", "TODO before merge").
-- [ ] Comments that cite `ARCHITECTURE.md` or a style guide use the **full
-      path plus a specific section identifier**. Bare tokens like `D6` or
-      `step 4+5` are not acceptable.
-- [ ] Comments do not reference `AI_DOCS/*` or other Markdown unless
-      genuinely unavoidable.
-- [ ] `Agent Note:` prefix used for context aimed at a future agent.
+- [ ] Every touched comment satisfies `DOCUMENTATION.md` under "Comments",
+      including necessity, brevity, content, and reference rules.
 
 ## 14a. Terminology
 
@@ -267,12 +257,8 @@ Skip this section unless the project's entry documents opt into
 
 ## 15. POD content
 
-- [ ] Every shipped `.pm` has POD, started from `TEMPLATE.pod` and trimmed.
-- [ ] Brief: describes what the reader cannot infer from the signature, in
-      one or two sentences.
-- [ ] No repetition — shared explanation lives once in `DESCRIPTION`.
-- [ ] `ATTRIBUTES` section present for `Object::HashBase`-style classes.
-- [ ] `podchecker` clean.
+- [ ] Every shipped `.pm` and all touched POD satisfy `DOCUMENTATION.md`
+      under "POD".
 
 ## 16. POD placement **[project-declared]**
 
@@ -296,15 +282,10 @@ Skip this section unless the project's entry documents opt into
 - [ ] Whichever layout applies, **every file in the project uses the same
       one** — the diff did not mix them.
 
-## 17. User-facing strings (POD, help, diagnostics)
+## 17. Human-facing documentation and strings
 
-Applies to POD, command `description` / `summary` / help output, and strings
-passed to `die` / `warn` / `croak` / `print` that a user might see.
-
-- [ ] No reference to any `.md` file — `ARCHITECTURE.md`, a style guide,
-      `AI_DOCS/*`, `AGENTS.md`, or anything else.
-- [ ] If the rule or behavior matters, it is restated in plain prose; if it
-      does not, the reference is dropped entirely.
+- [ ] POD, help, diagnostics, and other human-facing text satisfy
+      `DOCUMENTATION.md` under "Human-facing material".
 
 ## 18. Dependencies and distribution
 
@@ -322,12 +303,10 @@ passed to `die` / `warn` / `croak` / `print` that a user might see.
 
 - [ ] One distinct commit per change (or an amend to an unpushed commit that
       introduced the bug being fixed).
-- [ ] Commit messages are self-explanatory: no plan/review document
-      references, no finding numbers, no `#` followed by digits.
+- [ ] Commit messages and `Changes` entries satisfy their sections in
+      `DOCUMENTATION.md`.
 - [ ] Every commit changing shipped behavior added its own bullet under
-      `{{$NEXT}}` in `Changes`, **in that same commit**. One line, one
-      sentence where possible.
-- [ ] No literal `{{` or `}}` inside a `Changes` bullet.
+      `{{$NEXT}}` in `Changes`, **in that same commit**.
 - [ ] Nothing was pushed or merged without the user asking.
 
 ## 20. Reference trees — only if the project has one

@@ -23,17 +23,16 @@ declarations and explicit shared-rule overrides when present.
   Everything above is verbatim boilerplate -- do not edit it.
   Everything below is this project's own content.
 
-  Keep it SHORT. Do not restate a universal rule here; a copy drifts, and the
-  copy is what goes stale. Record deliberate differences in
-  AGENTS_OVERRIDE.md, not here.
+  Follow ~/projects/Agents/DOCUMENTATION.md. Keep only project-specific
+  context here; record deliberate shared-rule differences in
+  AGENTS_OVERRIDE.md.
 -->
 
 ---
 
 ## What this project is
 
-<!-- One or two paragraphs: what it does, and what is deliberately out of
-     scope. -->
+<!-- State what it does and any scope boundary a future agent must know. -->
 
 CPAN distribution name: `Dist-Name`
 
