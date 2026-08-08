@@ -8,6 +8,23 @@ Read this file when you are editing `~/projects/Agents`.
 
 ---
 
+## Work directly on `master` unless the owner asks for a worktree
+
+This is an agent-guidance and tooling repository, not a consuming Perl
+distribution. The shared worktree selection and commit-count merge rules in
+`AGENTS.md` are for projects that adopt this repository; they do not govern
+work on this repository itself.
+
+- Default to making changes directly on `master`.
+- Worktrees are rare here. Create one only when the owner explicitly asks for
+  one, and place it under `<repository-root>/worktrees/<worktree-name>`.
+- Do not choose fast-forward versus merge-commit integration from the number
+  of branch commits. Follow the owner's explicit integration direction.
+- The general rule still applies: never merge, push, or delete the branch or
+  worktree unless the owner asks.
+
+---
+
 ## No credentials, no secrets, ever
 
 This repository is public-by-intent and gets cloned onto every machine that
