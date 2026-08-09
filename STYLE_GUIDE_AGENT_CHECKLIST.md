@@ -285,10 +285,12 @@ Skip this section unless the project's entry documents opt into
 - [ ] Whichever layout applies, **every file in the project uses the same
       one** — the diff did not mix them.
 
-## 17. Human-facing documentation and strings
+## 17. Non-Markdown human-facing documentation and strings
 
 - [ ] POD, help, diagnostics, and other human-facing text satisfy
-      `DOCUMENTATION.md` under "Human-facing material".
+      `DOCUMENTATION.md` under "Human-facing material outside Markdown".
+- [ ] Every committed Markdown document points only to committed Markdown
+      documents; anything landing together is included in the same commit.
 
 ## 18. Dependencies and distribution
 

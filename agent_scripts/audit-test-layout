@@ -2,8 +2,9 @@
 use strict;
 use warnings;
 
-# Audit a project that has selected TESTING.md's category-and-origin test
-# layout. Projects using another declared layout do not run this auditor.
+# Audit a project that has selected TESTING.md, "Test layout and provenance
+# [project-declared]", and its category-and-origin layout. Other declared
+# layouts do not use it.
 
 use File::Basename qw/basename dirname/;
 use File::Find ();

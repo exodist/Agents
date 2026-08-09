@@ -1,5 +1,7 @@
 {{$NEXT}}
 
+    - Restrict documentation references by medium, with committed Markdown and comments pointing only to committed Markdown targets.
+
     - Keep work in the Agents repository on master unless the owner explicitly requests a worktree or integration shape.
 
     - Allow minor work on the primary branch and one-commit worktrees to fast-forward while preserving merge commits for multi-commit worktrees.

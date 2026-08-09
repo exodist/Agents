@@ -51,6 +51,7 @@ subtest 'unadopted project' => sub {
     my ($exit, $output) = run_cmd({}, $^X, $AUDIT, $dir);
     is($exit, 1, 'missing optional wiring is reported when this audit is requested');
     like($output, qr/\[warning WIR002\]/, 'finding has a stable code');
+    unlike($output, qr/\.md\b/, 'diagnostics do not refer users to Markdown files');
 };
 
 subtest 'adopted project' => sub {

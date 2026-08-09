@@ -2,7 +2,8 @@
 use strict;
 use warnings;
 
-# Audit a distribution's Dist::Zilla setup against DZIL_GUIDE.md.
+# Audit a distribution's Dist::Zilla setup against DZIL_GUIDE.md, "The
+# contract".
 #
 # Findings are advisory. A project may have a good reason to differ -- report
 # them to the user rather than silently rewriting release wiring.
@@ -235,7 +236,7 @@ sub check_gather {
     # comparison expects it.
     unless (has_plugin($ini, 'DualLife')) {
         my @root_md = grep { !m{/README\.md$} } glob(File::Spec->catfile($root, '*.md'));
-        note('DZI201', 'internal .md files at the root are not excluded from the gather configuration (add exclude_match = \\.md$)')
+        note('DZI201', 'internal Markdown files at the root are not excluded from the gather configuration (add an exclude_match for Markdown filenames)')
             if @root_md && !grep { /\\\.md/ } keys %excluded;
     }
 

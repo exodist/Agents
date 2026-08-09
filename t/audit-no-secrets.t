@@ -31,6 +31,7 @@ subtest 'high-entropy value' => sub {
     my ($exit, $output) = run_cmd({}, $^X, $AUDIT, $file);
     is($exit, 1, 'token-shaped value still fails');
     like($output, qr/high-entropy blob/, 'finding identifies the heuristic');
+    unlike($output, qr/\.md\b/, 'diagnostic is self-contained');
 };
 
 done_testing;

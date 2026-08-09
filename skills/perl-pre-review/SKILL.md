@@ -84,8 +84,13 @@ podchecker <every touched .pm>
 
 Resolve every error **and** every warning.
 
-Check touched POD and other user-facing strings against `DOCUMENTATION.md`,
-especially its audience and reference rules.
+Check touched material against `DOCUMENTATION.md`:
+
+- POD and other non-Markdown human-facing text reference no `.md` file or
+  AI/agent document.
+- Comments reference only committed Markdown targets, with the required path,
+  section, and AI/agent label when applicable.
+- Committed Markdown references no uncommitted Markdown working file.
 
 ## 3. Util / role / base-class reuse pass
 

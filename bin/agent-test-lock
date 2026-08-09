@@ -11,7 +11,7 @@ use warnings;
 # above --jobs 4, so only one such run happens at a time.
 #
 # This is agent-side tooling. Nothing in any project's lib/ or t/ knows about
-# it, and it never ships. See ~/projects/Agents/TESTING.md.
+# it, and it never ships. See TESTING.md, "The shared test lock".
 #
 # Usage:
 #   agent-test-lock [options] -- <command...>

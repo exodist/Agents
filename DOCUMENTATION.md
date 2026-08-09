@@ -15,30 +15,40 @@ commit or `Changes` entry is required.
   says everything necessary once and stops.
 - Remove repetition, obvious restatements, narrative lead-in, and detail that
   does not help the reader use, review, or maintain the work.
-- Keep one authoritative explanation. Point to it when the intended reader
-  can access it; do not maintain several copies that can drift.
+- Keep one authoritative explanation. Point to it only when the reference
+  rules below permit; do not maintain several copies that can drift.
 - Prefer plain language, short sentences, and a structure the intended reader
   can scan quickly.
 - No emojis.
 
 ## Audience and references
 
-The intended audience determines the rules, not the filename or file type.
-For example, an AI contribution policy written for human contributors is
-human-facing even though its subject is AI.
+Audience determines content and level of detail. Medium determines whether a
+document reference is allowed: Markdown documents have their own rule, and
+code comments have the only non-Markdown exception.
 
-### Human-facing material
+### Markdown documents
 
-Human-facing material includes user and contributor documentation, README
-files, POD, command descriptions and help, diagnostics, `Changes`, and commit
-messages.
+Any Markdown document may reference any other Markdown document, whether its
+audience is human, AI/agent, or mixed.
 
-- It must stand on its own or reference other human-facing material that its
-  audience can actually access.
-- It must not reference AI/agent-only plans, reviews, findings, decision
-  ledgers, prompts, or working documents.
-- When an internal rule matters to the human reader, state the necessary
-  behavior briefly in human terms. When it does not matter, omit it.
+- An uncommitted working Markdown document may reference committed or
+  uncommitted Markdown documents.
+- A committed Markdown document may reference only Markdown documents that
+  are already committed or land in the same commit. Never commit a dangling
+  reference to an uncommitted Markdown working file.
+
+### Human-facing material outside Markdown
+
+This includes user and contributor documentation in other formats, POD,
+command descriptions and help, diagnostics, `Changes`, and commit messages.
+
+- It must not reference any `.md` file.
+- It must not reference any AI/agent document, regardless of that document's
+  filename or format.
+- When information from an internal document matters to the reader, restate
+  the necessary behavior briefly in human terms. When it does not matter,
+  omit it.
 - Describe what exists, what changed, and the decisions actually made. Do not
   inventory work not done, rejected choices, or investigative dead ends just
   because they occurred.
@@ -51,13 +61,13 @@ messages.
 
 Agent instructions, AI task documents, plans, reviews, and similar working
 documents may carry more context than human-facing documentation. They may
-reference one another and may record alternatives, roads not taken, and the
-reasons choices were rejected when that context will help later work.
+record alternatives, roads not taken, and the reasons choices were rejected
+when that context will help later work.
 
 They must still be readable, relevant, and no more verbose than their purpose
-requires. Prefer a specific reference to an authoritative explanation over a
-duplicated rule. A committed document must not leave a dangling reference to
-an uncommitted working file.
+requires. When they are Markdown, they may cross-reference under the Markdown
+rules above. Prefer a specific permitted reference to an authoritative
+explanation over a duplicated rule.
 
 Project `AGENTS.md` files carry project-specific context. They point to shared
 rules instead of copying them; deliberate local differences belong in a
@@ -72,6 +82,7 @@ project-local authoritative document or `AGENTS_OVERRIDE.md`.
   a common pattern needs to be preserved.
 - Be self-explanatory. Do not refer to plan or review documents, finding
   numbers, or other AI/agent-only context.
+- Do not reference a `.md` file or any AI/agent document.
 - Never write `#` followed by digits; GitHub interprets it as an issue link.
 
 ## `Changes` entries
@@ -110,25 +121,24 @@ with maintained code and must justify that cost.
   to call it, or its inputs and outputs. Keep implementation reasoning in a
   justified comment.
 
-A comment may reference a committed human-facing document using its full
-repository-relative path and a specific section.
-
-A comment may also reference an AI/agent document only when all of these are
-true:
+A comment may reference documentation only when the target is a Markdown
+document and all of these are true:
 
 - The reference is necessary to the comment's value.
-- The document is tracked and committed no later than the comment; landing
-  both in the same commit is acceptable.
-- The comment explicitly labels the target as an AI document.
+- The target is tracked and committed no later than the comment; landing both
+  in the same commit is acceptable.
 - The reference gives the full repository-relative path and exact section.
+- When the target is AI/agent-facing, the comment explicitly labels it as an
+  AI/agent document.
 
 For example:
 
 ```perl
-# AI document: AI_DOCS/2026-08-08-cache-layout.md, "Rejected shared cache".
+# AI/agent document: AI_DOCS/2026-08-08-cache-layout.md, "Rejected shared cache".
 ```
 
-Never reference an uncommitted AI/agent document from maintained code.
+Never reference an uncommitted Markdown document or a non-Markdown AI/agent
+document from maintained code.
 
 ## POD
 
@@ -142,8 +152,9 @@ Never reference an uncommitted AI/agent document from maintained code.
 - Include `ATTRIBUTES` for `Object::HashBase`-style classes.
 - Keep implementation detail out unless a caller would be surprised, such as
   an important side effect.
-- POD is human-facing. It must not reference AI/agent-only documents or an
-  internal Markdown file that will not be available to the POD reader.
+- POD must not reference any `.md` file or any AI/agent document, even when
+  that document is committed, public, or otherwise available to the reader.
+  Restate necessary behavior in the POD or omit the reference.
 - `podchecker` must report zero errors and zero warnings.
 
 POD placement and section ordering are Perl layout rules; see

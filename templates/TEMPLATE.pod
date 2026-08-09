@@ -2,10 +2,6 @@
 
 =encoding UTF-8
 
-=for comment
-Follow ~/projects/Agents/DOCUMENTATION.md under "POD" while filling in this
-template. Remove this comment from the finished module.
-
 =head1 NAME
 
 Module::Name - One-line summary.

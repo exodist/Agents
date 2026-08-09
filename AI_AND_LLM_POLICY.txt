@@ -46,8 +46,8 @@ Documentation follows the project's documentation policy
 
     Documentation may be AI written, and may even be identifiably so, but it
     must meet the same readability and content standards as human-written
-    documentation. Projects using the shared Agents guidance follow
-    ~/projects/Agents/DOCUMENTATION.md.
+    documentation. It must be concise, natural to read, useful to its audience,
+    and free of needless repetition.
 
 Significant AI/LLM code MUST be noted as such.
 

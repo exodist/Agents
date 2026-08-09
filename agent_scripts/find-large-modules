@@ -5,8 +5,8 @@ use warnings;
 # Walk lib/**.pm and report any file whose code (excluding POD) exceeds the
 # 10,000-line threshold (see PERL_STYLE_GUIDE.md "Module size").
 #
-# A project may declare a lower threshold in its own AGENTS_OVERRIDE.md; pass
-# it with --threshold in that case.
+# A project may declare a lower threshold; pass it with --threshold in that
+# case.
 #
 # Usage:
 #   perl agent_scripts/find-large-modules                    # threshold = 10000, walks lib

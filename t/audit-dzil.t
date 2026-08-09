@@ -74,4 +74,16 @@ subtest 'dependency policy remains project-local' => sub {
     is($exit, 0, 'individual dependency classification is not enforced');
 };
 
+subtest 'Markdown exclusion diagnostic is self-contained' => sub {
+    my $ini = template_text();
+    $ini =~ s/^exclude_match\s+= \\.md\$.*\n//m;
+    my $dir = project_with_ini($ini);
+    write_file(File::Spec->catfile($dir, 'INTERNAL.md'), "fixture\n");
+
+    my ($exit, $output) = run_cmd({}, $^X, $AUDIT, $dir);
+    is($exit, 1, 'missing Markdown exclusion fails');
+    like($output, qr/DZI201/, 'finding has a stable code');
+    unlike($output, qr/\.md\b/, 'diagnostic does not refer users to a Markdown filename');
+};
+
 done_testing;
