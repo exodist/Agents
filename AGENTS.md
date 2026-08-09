@@ -27,6 +27,7 @@ For a project that opts into this repository:
 3. Read only the shared documents this file names for the work being done:
    `DOCUMENTATION.md` before writing or editing documentation in any form,
    the Perl guide for Perl edits, `TESTING.md` before test work,
+   `CODE_REVIEW.md` before announcing a completed change,
    `DZIL_GUIDE.md` before packaging work, `DATABASES.md` only when a database
    project's entry documents opt into it, and the matching procedure under
    `skills/` before carrying it out.
@@ -209,6 +210,15 @@ Before announcing work ready for review, read and follow
 procedure for establishing the full touched set, running automated gates,
 walking `STYLE_GUIDE_AGENT_CHECKLIST.md`, checking POD and reuse, rerunning
 tests, and reporting results. A gate hit is a hard stop.
+
+---
+
+## Independent code review
+
+After the applicable pre-review checks pass, follow
+[`CODE_REVIEW.md`](CODE_REVIEW.md) before announcing any change complete. It
+defines the required fresh-context sub-agent review, review-and-fix loop, and
+handoff of deferred decisions and minor findings.
 
 ---
 

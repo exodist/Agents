@@ -1,5 +1,9 @@
 {{$NEXT}}
 
+    - Require same-model independent review cycles without redundant review-time suite runs, and define a bounded user-requested multi-model review that reports combined findings without automatic fixes.
+
+    - Exempt documentation-only changes in the shared-guidance repository from mandatory independent review cycles.
+
     - Restrict documentation references by medium, with committed Markdown and comments pointing only to committed Markdown targets.
 
     - Keep work in the Agents repository on master unless the owner explicitly requests a worktree or integration shape.

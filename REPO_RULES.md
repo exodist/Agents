@@ -25,6 +25,15 @@ work on this repository itself.
 
 ---
 
+## Documentation-only changes may skip independent review
+
+This repository does not require the independent review cycle in
+`CODE_REVIEW.md` for a change that touches documentation only. Consuming
+projects do not inherit this exception. An explicit user request for review,
+including a multi-model review, still applies.
+
+---
+
 ## No credentials, no secrets, ever
 
 This repository is public-by-intent and gets cloned onto every machine that

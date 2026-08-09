@@ -10,7 +10,8 @@ when it is required and points here rather than duplicating these steps.
 
 Any time one or more decisions are needed from the user — deferred review
 findings, design questions, API-shape choices, anything an agent cannot rule
-on itself — walk them this way. Never dump the whole list and never batch the
+on itself — walk them this way. Except for the final minor-finding disposition
+defined in `CODE_REVIEW.md`, never dump the whole list and never batch the
 answers.
 
 ## The rules
@@ -26,6 +27,10 @@ answers.
   single combined item — say so and count them accordingly
   (`Items 5+9+10 of 10`). Do **not** group items that merely resemble each
   other.
+- **Review minor-finding exception.** `CODE_REVIEW.md` collects unfixed minor
+  findings into one final disposition item. This is the sole exception to the
+  grouping rule: present its brief bullet list and let the user skip the
+  items, request details, or identify which ones to fix.
 - **Plain conversation, not a selector.** Never present the decision through a
   menu or choice UI. The user decides in free-form discussion.
 - **Record the ruling** where the project tracks such decisions (the active

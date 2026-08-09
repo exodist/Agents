@@ -99,11 +99,16 @@ those live in `DATABASES.md` and apply only when the project opts in.
 
 ### Who runs the suite
 
-**Only whoever is making the change.** Reviewers assume it passes — the
-implementer verifies before handing work over. A reviewer who believes a
-change breaks the suite reports that as a finding rather than running it.
-Review rounds otherwise multiply full suites across agents, which is how the
-machine got OOM'd.
+For agent-authored work, **only whoever is making the change** runs the suite.
+Reviewers assume it passes — the implementer verifies before handing work
+over. A reviewer who believes an agent-authored change breaks the suite
+reports that as a finding rather than running it. Review rounds otherwise
+multiply full suites across agents, which is how the machine got OOM'd.
+
+That assumption does not apply to human-authored pull requests or other
+external contributions whose prior validation is not guaranteed. A reviewer
+may run the applicable tests for those changes under this guide.
+`CODE_REVIEW.md` defines the narrow test boundary for review-derived fixes.
 
 ### The release path
 
