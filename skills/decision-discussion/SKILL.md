@@ -53,6 +53,13 @@ Context
 - Measured behavior: ...
 - Prior rulings that bear on it: ...
 
+Value and cost (when behavior or additional support is at issue)
+- Evidence and expected frequency: ...
+- Concrete benefit and affected users: ...
+- Implementation and testing cost: ...
+- Ongoing maintenance and compatibility burden: ...
+- Reversibility: cost of adding support later versus removing it once relied on
+
 <Code example, when it clarifies — current behavior, or the shapes a fix
 would take.>
 
@@ -65,6 +72,21 @@ Recommendation: <which, and why.>
 
 Include the code example only when it earns its space. Include options only
 when obvious ones exist. Always include the recommendation and its reason.
+
+For edge-case and optional-support decisions, include the value-and-cost
+assessment even when the evidence is "no known use case." Do not hide
+uncertainty behind a generic cost or consequence.
+
+When demand is unproven or the situation is unlikely, the recommendation
+should lean toward the smallest honest contract: document the case as
+unsupported and/or throw a clear exception instead of adding speculative
+logic. Support can usually be added compatibly later when a concrete need
+appears. Poor or over-engineered support is harder to withdraw after callers
+rely on it and can impose a permanent testing, compatibility, and maintenance
+burden. Recommend additional machinery only when a known or commonly
+encountered use case is important enough to justify its full lifetime cost.
+This default does not override documented requirements, existing compatibility
+contracts, correctness, safety, or data integrity.
 
 ## Before you start
 

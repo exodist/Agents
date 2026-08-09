@@ -153,6 +153,15 @@ Before adding or expanding code, ask:
 - Has the work grown complicated enough that a smaller design, pruning the
   feature, or leaving a narrow case unsupported may be better?
 
+Treat support as a long-lived compatibility commitment. When there is no
+known use case or an edge case is unlikely, lean toward the smallest honest
+contract: document it as unsupported and/or fail with a clear exception
+instead of adding speculative logic. Support can usually be added later
+without breaking existing callers once a real need appears. Removing poorly
+designed support after callers depend on it is much harder, and can leave a
+permanent testing and maintenance burden. Additional support must justify its
+full lifetime cost, not only the cost of its initial implementation.
+
 `OVERENGINEERING_EXAMPLES.md` is a calibration set of prior owner rulings for
 these judgments. It is not routine context and does not need to be loaded for
 ordinary implementation work. Read it completely before writing a requested
