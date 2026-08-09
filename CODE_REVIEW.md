@@ -42,6 +42,19 @@ value may be disproportionate to their complexity and maintenance burden, but
 not as binding precedent. A comparable tradeoff is an owner decision to flag,
 not permission for the reviewer to remove requested behavior by analogy.
 
+Apply [`AGENTS.md`](AGENTS.md) under "Engineering judgment: value against
+cost" whenever a finding concerns added behavior or support. Report the
+evidence and expected frequency, concrete benefit and affected users,
+implementation and testing cost, ongoing maintenance and compatibility burden,
+and the reversibility of adding support later versus removing it once callers
+rely on it. When there is no known or commonly encountered use case, recommend
+the smallest honest contract by default: document the case as unsupported
+and/or fail with a clear exception instead of adding speculative machinery.
+Support can usually be added compatibly after a concrete need appears, while
+poor or over-engineered support is difficult to withdraw. This default does
+not override documented requirements, existing compatibility contracts,
+correctness, safety, or data integrity.
+
 ## User-requested multi-model review
 
 The user may explicitly request independent reviews from multiple named

@@ -162,6 +162,14 @@ designed support after callers depend on it is much harder, and can leave a
 permanent testing and maintenance burden. Additional support must justify its
 full lifetime cost, not only the cost of its initial implementation.
 
+A requested implementation plan must apply this test before treating added
+machinery or edge-case support as planned work. For any questionable addition,
+state the evidence and expected frequency, concrete benefit and affected
+users, implementation and testing cost, ongoing maintenance and compatibility
+burden, and reversibility. When the need is unproven or unlikely, plan the
+smallest honest contract—documentation and/or a clear exception—by default.
+Do not postpone this judgment until implementation or code review.
+
 `OVERENGINEERING_EXAMPLES.md` is a calibration set of prior owner rulings for
 these judgments. It is not routine context and does not need to be loaded for
 ordinary implementation work. Read it completely before writing a requested
