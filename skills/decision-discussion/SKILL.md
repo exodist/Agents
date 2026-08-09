@@ -68,6 +68,11 @@ when obvious ones exist. Always include the recommendation and its reason.
 
 ## Before you start
 
+- Read `~/projects/Agents/OVERENGINEERING_EXAMPLES.md` completely and keep it
+  in context throughout the discussion. Use it to calibrate options and the
+  recommendation, and call out a close analogy when it helps expose likely
+  disproportionate complexity. The examples are not binding precedents; the
+  current decision still belongs to the owner.
 - Count the items and say so up front: "N decisions to walk."
 - Check whether the project has already pre-ruled on any of them (a
   `PENDING_DECISIONS.md`, a disposition ledger, an earlier AI_DOC). Use the

@@ -153,6 +153,12 @@ Before adding or expanding code, ask:
 - Has the work grown complicated enough that a smaller design, pruning the
   feature, or leaving a narrow case unsupported may be better?
 
+`OVERENGINEERING_EXAMPLES.md` is a calibration set of prior owner rulings for
+these judgments. It is not routine context and does not need to be loaded for
+ordinary implementation work. Read it completely before writing a requested
+implementation plan, and when the decision-discussion or code-review
+procedures require it; otherwise leave it out of context until it is needed.
+
 Do not build speculative flexibility either. Avoiding assumptions means
 keeping the design nimble and open to real extension, not adding hooks,
 configuration, or abstraction for imagined futures. Intentionally optimizing

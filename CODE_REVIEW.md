@@ -35,6 +35,13 @@ reports findings without editing the work. Each finding states the location,
 problem, and concrete impact. The reviewer explicitly says when it found no
 issues.
 
+Every reviewer also reads
+[`OVERENGINEERING_EXAMPLES.md`](OVERENGINEERING_EXAMPLES.md) completely and
+keeps it in context while reviewing. Use it to recognize changes whose likely
+value may be disproportionate to their complexity and maintenance burden, but
+not as binding precedent. A comparable tradeoff is an owner decision to flag,
+not permission for the reviewer to remove requested behavior by analogy.
+
 ## User-requested multi-model review
 
 The user may explicitly request independent reviews from multiple named
@@ -114,6 +121,8 @@ instructions, relevant tests, and the surrounding implementation. Look for:
 - Missing, inaccurate, or misleading user-facing documentation.
 - Violations of the style guide or any other repository rule.
 - Maintainability problems with meaningful ongoing cost.
+- Machinery whose likely value appears disproportionate to its complexity,
+  testing surface, compatibility burden, or maintenance cost.
 
 Classify each finding by the disposition it requires:
 
