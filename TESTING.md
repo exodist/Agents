@@ -108,7 +108,8 @@ multiply full suites across agents, which is how the machine got OOM'd.
 That assumption does not apply to human-authored pull requests or other
 external contributions whose prior validation is not guaranteed. A reviewer
 may run the applicable tests for those changes under this guide.
-`CODE_REVIEW.md` defines the narrow test boundary for review-derived fixes.
+Review-derived fixes follow the same split: the agent making them runs the
+suite, the reviewers still do not. `CODE_REVIEW.md` has the details.
 
 ### The release path
 

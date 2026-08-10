@@ -88,15 +88,15 @@ failures. Reviewers inspect tests and prior validation as evidence but do not
 rerun test suites. This applies to the normal review cycle and user-requested
 multi-model review.
 
-Do not rerun a suite after review fixes. Run a test only when the finding and
-fix concern a specific test and a pinpoint invocation is truly necessary to
-verify that fix. Never expand that check into the full suite.
+The agent that fixes review findings is changing the work, not reviewing it,
+and verifies its own change like any other implementer. Run the applicable
+full test suite after that cycle's fixes, before handing the work to a new
+review cycle and before announcing it complete. The same applies to review
+fixes the user requests during later disposition.
 
-Review-derived fixes remain part of the review process for this rule,
-including fixes the user requests during later disposition. Run the applicable
-non-test gates and launch a new independent review cycle, but do not restart
-the full pre-review procedure or test suite solely because those fixes were
-made.
+Nothing else about the pre-review procedure restarts because those fixes were
+made. Run the applicable non-test gates for the fixes, run the suite, and
+launch a new independent review cycle.
 
 This assumption does not apply when reviewing a human-authored change, a pull
 request from outside the agent workflow, or another external contribution
@@ -251,8 +251,7 @@ round uses one reviewer or a permitted large-change split.
 3. If there are no must-fix findings, the cycle is clean; stop the loop.
 4. Fix every must-fix finding. Defer owner decisions and record any minor
    findings intentionally left unfixed and any pre-existing findings.
-5. Run the applicable non-test validation for the fixes. Test execution stays
-   within the narrow limits above.
+5. Run the applicable non-test gates and the full test suite for the fixes.
 6. Commit all of this cycle's fixes as one new commit on top of the work under
    review.
 7. Check the stop conditions below. If one is met, halt the loop and flag it.
@@ -361,8 +360,8 @@ briefly and ask the user how to track them — commonly a new document or an
 addition to an existing TODO document. Do not fix them as part of this work
 unless the user asks for that.
 
-Any review fixes requested during that discussion receive the non-test
-validation allowed above, land as their own commit, and must pass a new
+Any review fixes requested during that discussion receive the validation
+required above, land as their own commit, and must pass a new
 independent review cycle scoped to that commit before being announced
 complete. The user may waive that cycle for a narrow approved correction such
 as a typo, a wording change, or a single-line edit; a waiver covers only the

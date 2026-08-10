@@ -1,5 +1,7 @@
 {{$NEXT}}
 
+    - Require the agent fixing review findings to run the full test suite, while reviewers still assume the implementer left it green.
+
     - Make KISS the standing default while code is written, with simple-to-use human interfaces as the one exception.
 
     - Bound review loops with a frozen scope manifest, a cumulative growth halt, optional-hardening findings, explicit owner-decision triggers, and archive refs.
