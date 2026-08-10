@@ -25,9 +25,9 @@ The reviewer must be independent:
 - It starts with fresh context, not the parent's inherited implementation
   conversation.
 - The parent gives it a self-contained review brief with the requested
-  outcome, acceptance criteria, review scope and baseline, applicable
-  repository entry documents, relevant owner rulings, and validation already
-  run.
+  outcome, acceptance criteria, the scope manifest and this cycle's scope,
+  applicable repository entry documents, relevant owner rulings, and
+  validation already run.
 - The brief identifies what to review without telling the reviewer what
   conclusion to reach or where the parent expects problems.
 
@@ -102,6 +102,23 @@ This assumption does not apply when reviewing a human-authored change, a pull
 request from outside the agent workflow, or another external contribution
 whose prior validation is not guaranteed. Follow the project's test procedure
 for those changes. Explicit user instructions to run tests also take priority.
+
+## Scope manifest
+
+Before the first cycle, record the manifest that fixes the loop's boundary,
+and give it to every reviewer as part of the brief:
+
+- The request and the requested outcome.
+- The baseline commit the work started from and the commits in scope.
+- The paths the work changed.
+- Owner rulings that bear on the work, including any problems the owner
+  already said to defer.
+
+The manifest does not change while the loop runs. A finding about a path the
+manifest does not list is pre-existing or optional hardening, never must-fix,
+unless the reviewed work newly triggers it. A fix that needs to touch a path
+outside the manifest is an owner decision, not a fix the agent makes on its
+own.
 
 ## Cycle scope
 
@@ -187,11 +204,39 @@ Classify each finding by the disposition it requires:
 - **Must fix:** Any correctness bug, user-facing documentation problem, style
   violation, repository-rule violation, or significant maintainability
   problem that does not require an owner decision.
+- **Optional hardening:** A change that would strengthen the work although
+  nothing about the work is wrong without it — an additional test
+  combination, a defensive check, further cleanup. It never makes a cycle
+  unclean. Record it with the minor findings, and raise it as an owner
+  decision when it carries material cost.
 - **Minor:** A nit with no effect on correctness and no significant effect on
   maintainability.
 
 Do not dilute a must-fix finding into a minor item merely because its fix is
-inconvenient. Do not guess at an owner decision.
+inconvenient. Do not guess at an owner decision. Do not classify optional
+hardening as must-fix because it would make the work stronger.
+
+A fix requires an owner decision, whatever class the finding carries, when it
+would:
+
+- change supported behavior or error policy;
+- add a backend, process, producer, or execution-mode special case;
+- change architecture rather than restore an existing contract;
+- create or substantially expand a test matrix;
+- restructure a large module or a user manual;
+- touch anything outside the scope manifest;
+- exceed 100 changed lines or three files as a single fix.
+
+Correctness does not exempt a fix from this. When the resolution is a product,
+support, or cost tradeoff, it is an owner decision even though the finding is
+a real bug.
+
+A missing test is must-fix only when changed behavior has no reasonable
+evidence, or a distinct implementation seam makes the untested failure
+plausible; the reviewer names that seam. Further backend, mode, producer, or
+state combinations that exercise the same code path are optional hardening. A
+hypothetical broken implementation that only an unwritten combination would
+catch does not by itself make a test required.
 
 ## Review and fix loop
 
@@ -232,24 +277,40 @@ commits, squash only after a clean cycle. The agent doing the squash verifies
 the result itself; a squash that preserves already-reviewed content does not
 need another independent review cycle.
 
+Create an archive ref before the first cycle, pointing at the pre-review tip,
+and another before any squash, pointing at the clean tip. Name them
+`refs/archive/<branch>-<what-it-marks>-<YYYYMMDD>` and report them with the
+review results. They make rollback an ordinary operation instead of reflog
+archaeology.
+
+These refs are scaffolding for a live loop, not history worth keeping. When
+the user merges, pushes, or removes the worktree for the work, delete that
+work's archive refs as part of that step and say which ones you deleted.
+Never delete an archive ref for work still in flight, and never leave stale
+ones behind after the work lands.
+
 ## Stop conditions
 
-A clean cycle is the normal way the loop ends. These two conditions end it
-early, because each is evidence of a problem the loop itself cannot fix. When
-one is met, keep the fixes already committed, stop launching reviewers, and
-report to the user instead of continuing.
+A clean cycle is the normal way the loop ends. These conditions end it early,
+because each is evidence of a problem the loop itself cannot fix. When one is
+met, keep the fixes already committed, stop launching reviewers, and report to
+the user instead of continuing.
 
-- **Oversized fixes:** One cycle's fix commit changes more than half as many
+- **Oversized fix:** One cycle's fix commit changes more than half as many
   lines as the original work under review. Count changed lines the same way
   the large-change thresholds do, comparing the fix commit against the first
   cycle's scope.
+- **Cumulative growth:** The loop's fix commits together change more than half
+  as many lines as the original work, measured the same way. This catches many
+  moderate rounds that no single round would trip.
 - **Round limit:** Nine cycles have run without a clean result.
 
 Flag the halt with the unresolved must-fix findings and an explanation of what
-the trigger indicates. Oversized fixes usually mean the original work missed
-the requirement, took a wrong approach, or that reviewers are rewriting it
-rather than correcting it. Nine unclean rounds usually mean the same, or that
-fixes keep introducing new problems, or that reviewers are churning on
+the trigger indicates. Oversized or cumulatively large fixes usually mean the
+original work missed the requirement, took a wrong approach, or that reviewers
+are rewriting it rather than correcting it. Nine unclean rounds usually mean
+the same, or that fixes keep introducing new problems, or that reviewers are
+churning on
 subjective preferences. Recommend a direction — for example redoing the work,
 narrowing the requirement, or accepting the remaining findings — and let the
 user decide.
@@ -265,12 +326,21 @@ After a clean cycle, report to the user:
 - An extremely brief bullet list of the issues review found and the agent
   fixed.
 - The count of deferred owner decisions.
-- The count of unfixed minor findings.
+- The count of unfixed minor findings and recorded optional hardening.
 - The count of recorded pre-existing findings.
+- The original changed-line count, the cumulative size of the review fixes,
+  and the archive refs created.
 
 Report the same items when a stop condition halted the loop, plus which
 condition tripped, the unresolved must-fix findings, and the explanation and
 recommendation that condition requires. Do not announce halted work complete.
+
+Name the state the loop ended in. "Clean" is not the only acceptable outcome:
+
+- clean;
+- halted at a stop condition with known findings;
+- the owner accepted the remaining findings;
+- the owner sent the work back for redesign instead of another round.
 
 End the turn after this report so the user can read it. Do not begin walking
 the remaining items in the same message.
@@ -279,9 +349,9 @@ If deferred decisions, minor findings, or pre-existing findings remain when
 the user continues, read and follow
 [`skills/decision-discussion/SKILL.md`](skills/decision-discussion/SKILL.md).
 Walk substantive owner decisions under that procedure. Make disposition of
-the minor findings the last review-finding discussion item: present a brief
-bullet list of the unfixed minor items, then let the user skip them, request
-more detail about any item, or identify which ones to fix.
+the minor findings and optional hardening the last review-finding discussion
+item: present them as one brief bullet list, then let the user skip them,
+request more detail about any item, or identify which ones to fix.
 
 Close with the pre-existing findings when any were recorded. Present them
 briefly and ask the user how to track them — commonly a new document or an
@@ -291,4 +361,6 @@ unless the user asks for that.
 Any review fixes requested during that discussion receive the non-test
 validation allowed above, land as their own commit, and must pass a new
 independent review cycle scoped to that commit before being announced
-complete.
+complete. The user may waive that cycle for a narrow approved correction such
+as a typo, a wording change, or a single-line edit; a waiver covers only the
+correction it was given for.
