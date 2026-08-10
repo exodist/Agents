@@ -7,7 +7,9 @@ minimum change size that skips review.
 
 Run the cycle after implementation and the applicable pre-review checks. A
 single completed body of work is one review scope even when it can be
-described in several ways, such as both a branch and its commits.
+described in several ways, such as both a branch and its commits. That whole
+body of work is the first cycle's scope; later cycles narrow to the fixes made
+since, as "Cycle scope" below defines.
 
 ## Independent reviewer
 
@@ -15,7 +17,7 @@ Use one newly launched sub-agent for the whole review scope unless the large
 change rules below justify splitting it. Use the same model as the agent that
 implemented the work. When no agent implemented the change, use the same model
 as the parent agent coordinating the review. Launch every reviewer with
-`high` effort in Claude or `high` reasoning in Codex.
+`medium` effort in Claude or `medium` reasoning in Codex.
 
 The reviewer must be independent:
 
@@ -101,6 +103,38 @@ request from outside the agent workflow, or another external contribution
 whose prior validation is not guaranteed. Follow the project's test procedure
 for those changes. Explicit user instructions to run tests also take priority.
 
+## Cycle scope
+
+Each cycle reviews only the work produced before it. No cycle re-reviews work
+an earlier cycle already covered.
+
+- The first cycle's scope is the complete body of work: every commit in the
+  branch or commit set under review, diffed against the baseline it started
+  from.
+- Every later cycle's scope is exactly one commit — the fix commit the
+  previous cycle produced.
+
+A reviewer may read earlier commits, the baseline, and surrounding code as
+context, but reports findings only about its own scope. It does not re-report
+or re-litigate findings against commits an earlier cycle reviewed.
+
+## Out-of-scope and pre-existing problems
+
+Review what the work under review changed. Code, comments, tests, and
+documentation the work did not touch are context, not review targets. Do not
+go looking for problems in them.
+
+A problem that already exists in the baseline the branch or commit set started
+from is a **pre-existing finding**. Record its location and problem and stop
+there. Pre-existing findings are never fixed during the review loop, never
+make a cycle unclean, and never justify another cycle. The narrow exception is
+a pre-existing problem the reviewed work newly triggers or makes materially
+worse; there the finding is the reviewed work's interaction with it, not the
+old code's general quality.
+
+Hand recorded pre-existing findings to the user after the loop ends, under
+"Report and owner disposition".
+
 ## Large change review
 
 In the normal review cycle, one reviewer owns the entire scope. Multiple
@@ -121,6 +155,10 @@ Choose either the commit split or the file split, not both. Give every
 reviewer the full change as context but a distinct primary scope, so it can
 check interactions without duplicating responsibility. Together the assigned
 scopes must cover every change.
+
+Measure these thresholds against the current cycle's scope, not the branch
+total. A later cycle reviews a single fix commit and normally uses one
+reviewer.
 
 ## Review standard
 
@@ -160,19 +198,38 @@ inconvenient. Do not guess at an owner decision.
 One review cycle is one round of independent reviewer sub-agents, whether the
 round uses one reviewer or a permitted large-change split.
 
-1. Launch the fresh-context reviewer or reviewers.
+1. Launch the fresh-context reviewer or reviewers for this cycle's scope.
 2. Collect and reconcile their findings.
 3. If there are no must-fix findings, the cycle is clean; stop the loop.
 4. Fix every must-fix finding. Defer owner decisions and record any minor
-   findings intentionally left unfixed.
+   findings intentionally left unfixed and any pre-existing findings.
 5. Run the applicable non-test validation for the fixes. Test execution stays
    within the narrow limits above.
-6. Begin a new cycle with a newly launched reviewer or set of reviewers. Have
-   them review the entire updated scope, including the fixes.
+6. Commit all of this cycle's fixes as one new commit on top of the work under
+   review.
+7. Begin a new cycle with a newly launched reviewer or set of reviewers whose
+   scope is that new commit alone.
 
 Never reuse a reviewer for a later cycle. A cycle is clean when no unresolved
-must-fix finding remains. It may still contain minor findings deliberately
-left unfixed or items deferred for an owner decision.
+must-fix finding remains in its scope. It may still contain minor findings
+deliberately left unfixed, items deferred for an owner decision, or recorded
+pre-existing findings.
+
+## Fix commits and history
+
+Each cycle produces exactly one fix commit: work N commits, first cycle's
+fixes land as commit N+1, the second cycle's as N+2, and so on. A cycle that
+finds nothing to fix produces no commit and ends the loop.
+
+While the loop is running, do not amend, rebase, or squash the work under
+review — the next cycle needs the fixes as their own reviewable commit. This
+overrides the amend exception in [`AGENTS.md`](AGENTS.md) under "Commits" for
+the duration of the loop.
+
+When the work is meant to land with review fixes folded into the original
+commits, squash only after a clean cycle. The agent doing the squash verifies
+the result itself; a squash that preserves already-reviewed content does not
+need another independent review cycle.
 
 ## Report and owner disposition
 
@@ -183,18 +240,25 @@ After a clean cycle, report to the user:
   fixed.
 - The count of deferred owner decisions.
 - The count of unfixed minor findings.
+- The count of recorded pre-existing findings.
 
 End the turn after this report so the user can read it. Do not begin walking
 the remaining items in the same message.
 
-If deferred decisions or minor findings remain when the user continues, read
-and follow
+If deferred decisions, minor findings, or pre-existing findings remain when
+the user continues, read and follow
 [`skills/decision-discussion/SKILL.md`](skills/decision-discussion/SKILL.md).
 Walk substantive owner decisions under that procedure. Make disposition of
-the minor findings the final discussion item: present a brief bullet list of
-the unfixed minor items, then let the user skip them, request more detail
-about any item, or identify which ones to fix.
+the minor findings the last review-finding discussion item: present a brief
+bullet list of the unfixed minor items, then let the user skip them, request
+more detail about any item, or identify which ones to fix.
+
+Close with the pre-existing findings when any were recorded. Present them
+briefly and ask the user how to track them — commonly a new document or an
+addition to an existing TODO document. Do not fix them as part of this work
+unless the user asks for that.
 
 Any review fixes requested during that discussion receive the non-test
-validation allowed above and must pass a new independent review cycle before
-being announced complete.
+validation allowed above, land as their own commit, and must pass a new
+independent review cycle scoped to that commit before being announced
+complete.

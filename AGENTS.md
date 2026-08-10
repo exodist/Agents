@@ -240,8 +240,9 @@ tests, and reporting results. A gate hit is a hard stop.
 
 After the applicable pre-review checks pass, follow
 [`CODE_REVIEW.md`](CODE_REVIEW.md) before announcing any change complete. It
-defines the required fresh-context sub-agent review, review-and-fix loop, and
-handoff of deferred decisions and minor findings.
+defines the required fresh-context sub-agent review, the review-and-fix loop
+with one fix commit per cycle and a narrowing scope, and handoff of deferred
+decisions, minor findings, and pre-existing problems.
 
 ---
 
@@ -268,6 +269,8 @@ roads-not-taken context.
 - **Make a distinct commit for each change.**
 - **Exception:** if fixing a bug introduced by a recent commit that has not
   yet been pushed to origin, amend that commit instead of creating a new one.
+  This exception does not apply while a review-and-fix loop is running; each
+  cycle's fixes land as a new commit per [`CODE_REVIEW.md`](CODE_REVIEW.md).
 - Commit-message content follows `DOCUMENTATION.md` under "Commit messages".
 - **Never push, never merge, never delete user-visible state** without the
   user asking.
