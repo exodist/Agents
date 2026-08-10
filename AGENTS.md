@@ -241,8 +241,8 @@ tests, and reporting results. A gate hit is a hard stop.
 After the applicable pre-review checks pass, follow
 [`CODE_REVIEW.md`](CODE_REVIEW.md) before announcing any change complete. It
 defines the required fresh-context sub-agent review, the review-and-fix loop
-with one fix commit per cycle and a narrowing scope, and handoff of deferred
-decisions, minor findings, and pre-existing problems.
+with one fix commit per cycle, a narrowing scope, and stop conditions, and
+handoff of deferred decisions, minor findings, and pre-existing problems.
 
 ---
 

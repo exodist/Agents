@@ -1,5 +1,7 @@
 {{$NEXT}}
 
+    - Halt review loops that produce oversized fixes or run nine unclean rounds, flagging the cause for the owner.
+
     - Bound review cycles to the work before them, with one fix commit per cycle and pre-existing problems tracked instead of fixed.
 
     - Require adopting distributions to ship one synchronized AI/LLM policy unless a project override replaces it.

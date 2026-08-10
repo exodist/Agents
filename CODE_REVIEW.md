@@ -207,8 +207,9 @@ round uses one reviewer or a permitted large-change split.
    within the narrow limits above.
 6. Commit all of this cycle's fixes as one new commit on top of the work under
    review.
-7. Begin a new cycle with a newly launched reviewer or set of reviewers whose
-   scope is that new commit alone.
+7. Check the stop conditions below. If one is met, halt the loop and flag it.
+8. Otherwise begin a new cycle with a newly launched reviewer or set of
+   reviewers whose scope is that new commit alone.
 
 Never reuse a reviewer for a later cycle. A cycle is clean when no unresolved
 must-fix finding remains in its scope. It may still contain minor findings
@@ -231,6 +232,31 @@ commits, squash only after a clean cycle. The agent doing the squash verifies
 the result itself; a squash that preserves already-reviewed content does not
 need another independent review cycle.
 
+## Stop conditions
+
+A clean cycle is the normal way the loop ends. These two conditions end it
+early, because each is evidence of a problem the loop itself cannot fix. When
+one is met, keep the fixes already committed, stop launching reviewers, and
+report to the user instead of continuing.
+
+- **Oversized fixes:** One cycle's fix commit changes more than half as many
+  lines as the original work under review. Count changed lines the same way
+  the large-change thresholds do, comparing the fix commit against the first
+  cycle's scope.
+- **Round limit:** Nine cycles have run without a clean result.
+
+Flag the halt with the unresolved must-fix findings and an explanation of what
+the trigger indicates. Oversized fixes usually mean the original work missed
+the requirement, took a wrong approach, or that reviewers are rewriting it
+rather than correcting it. Nine unclean rounds usually mean the same, or that
+fixes keep introducing new problems, or that reviewers are churning on
+subjective preferences. Recommend a direction — for example redoing the work,
+narrowing the requirement, or accepting the remaining findings — and let the
+user decide.
+
+Do not resume the loop, retry with different reviewers, or start over on your
+own after a halt.
+
 ## Report and owner disposition
 
 After a clean cycle, report to the user:
@@ -241,6 +267,10 @@ After a clean cycle, report to the user:
 - The count of deferred owner decisions.
 - The count of unfixed minor findings.
 - The count of recorded pre-existing findings.
+
+Report the same items when a stop condition halted the loop, plus which
+condition tripped, the unresolved must-fix findings, and the explanation and
+recommendation that condition requires. Do not announce halted work complete.
 
 End the turn after this report so the user can read it. Do not begin walking
 the remaining items in the same message.
