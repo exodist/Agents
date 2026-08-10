@@ -62,6 +62,10 @@ project selects the category-and-origin test profile, include
 the placeholders and verify packaging and optional wiring separately.
 `USING.md` has the exact command sequence.
 
+Keep `AI_AND_LLM_POLICY.txt` as the repository's only AI/LLM policy document
+and include it in the distribution. Match the canonical copy exactly unless
+`AGENTS_OVERRIDE.md` declares that the project replaces its policy.
+
 ## Auditing an existing project
 
 ```
@@ -84,6 +88,9 @@ Then by hand:
 - Does `AGENTS_OVERRIDE.md` exist and answer all five declarations?
 - If it selects the category-and-origin test layout, is its strict
   `audit-test-layout` command parameterized for this project?
+- Is `AI_AND_LLM_POLICY.txt` the only AI/LLM policy document, included in the
+  distribution, and identical to the canonical copy unless an override
+  declares a replacement policy?
 - Do the project's `agent_scripts/` copies match `~/projects/Agents/`? Fix the
   canonical copy first, then re-copy.
 

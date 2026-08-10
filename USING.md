@@ -239,6 +239,11 @@ cp ~/projects/Agents/agent_scripts/find-long-subs              agent_scripts/
 cp ~/projects/Agents/agent_scripts/find-large-modules          agent_scripts/
 ```
 
+Keep exactly one AI/LLM policy document in the repository and distribution,
+named `AI_AND_LLM_POLICY.txt`. It matches the canonical copy byte-for-byte
+unless `AGENTS_OVERRIDE.md` explicitly declares a different policy. An
+override replaces the file's content; it does not add a second policy file.
+
 If the project selects TESTING.md's category-and-origin layout, also copy
 `audit-test-layout` and record its exact parameterized `--mode strict` command
 in `AGENTS_OVERRIDE.md`. Projects selecting another layout do not copy or run
@@ -305,6 +310,9 @@ By hand:
 - Does `AGENTS_OVERRIDE.md` exist, and answer all five declarations?
 - If it selects the category-and-origin test layout, does its recorded strict
   `audit-test-layout` command match the project namespace and exceptions?
+- Is `AI_AND_LLM_POLICY.txt` the repository's only AI/LLM policy document, and
+  does it ship with the distribution? Unless an override declares a different
+  policy, does it match `~/projects/Agents/AI_AND_LLM_POLICY.txt` exactly?
 - Do the project's `agent_scripts/` copies match `~/projects/Agents/`? Fix the
   canonical copy first, then re-copy.
 

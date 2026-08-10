@@ -320,8 +320,9 @@ packaging documents or `AGENTS_OVERRIDE.md` record the differences.
 
 ### What ships
 
-- **`lib/`, `t/`, `scripts/`, `share/`, `Changes`, and the generated files.**
-  That is the whole shipped surface.
+- **`lib/`, `t/`, `scripts/`, `share/`, `Changes`,
+  `AI_AND_LLM_POLICY.txt`, and the generated files.** That is the whole
+  shipped surface.
 - **Never ships:** `agent_scripts/`, `AI_DOCS/`, `worktrees/`,
   `release-scripts/`, `demo/`, coverage and profiling output, `pt/`, `tt/`,
   `xt/downstream/`, any reference tree the project keeps (`reference/`,
@@ -332,8 +333,10 @@ packaging documents or `AGENTS_OVERRIDE.md` record the differences.
   `[Git::GatherDir]` block with `include_dotfiles = 1`, so files like
   `t/.gitignore` ship. Add one block per test root the dist has (`t/`,
   `t2/`, …).
-- `AI_AND_LLM_POLICY.txt` is a `.txt`, not a `.md`, precisely so it ships
-  with the distribution.
+- Exactly one AI/LLM policy document ships: `AI_AND_LLM_POLICY.txt`. It is a
+  `.txt`, not a `.md`, precisely so it ships with the distribution. Its content
+  matches the canonical copy unless the project declares a replacement policy
+  in `AGENTS_OVERRIDE.md`.
 
 ### Prereqs
 

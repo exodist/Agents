@@ -1,5 +1,7 @@
 {{$NEXT}}
 
+    - Require adopting distributions to ship one synchronized AI/LLM policy unless a project override replaces it.
+
     - Require brief, single-line Changes bullets in shared agent and review guidance.
 
     - Require same-model independent review cycles without redundant review-time suite runs, and define a bounded user-requested multi-model review that reports combined findings without automatic fixes.

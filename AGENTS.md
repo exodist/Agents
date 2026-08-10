@@ -349,7 +349,13 @@ POD instead.
 ## AI / LLM contribution policy
 
 Projects ship `AI_AND_LLM_POLICY.txt` at their root (canonical copy in this
-repository). The short version, which agents must honor:
+repository). An adopting project keeps exactly one AI/LLM policy document in
+the repository and distribution, under that filename. Keep it byte-for-byte
+current with the canonical copy unless `AGENTS_OVERRIDE.md` explicitly
+declares a different policy; a local policy replaces the canonical text rather
+than adding a second policy document.
+
+The short version, which agents must honor:
 
 - Work lands in **digestible chunks** a human can actually review.
 - Generated code is **human-vetted** before merge.
