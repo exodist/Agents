@@ -34,6 +34,10 @@ An unanswered declaration is itself a finding.
 - [ ] Reviewed the change under `AGENTS.md` "Engineering judgment: value
       against cost"; speculative scope was not added, and questionable
       cost/benefit or maintenance tradeoffs were raised for the owner.
+- [ ] Applied `AGENTS.md` "Keep it simple": this is the simplest
+      implementation that does the job, with no layer, option, or abstraction
+      nothing needs yet, and any human-interface sugar stays thin and at the
+      surface.
 
 ## 0a. Automated gates (hard stops, not judgment calls)
 

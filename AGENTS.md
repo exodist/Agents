@@ -191,6 +191,53 @@ support tradeoff.
 
 ---
 
+## Keep it simple
+
+KISS is the standing default. Look for the simplest, lightest, most elegant
+way to do the job and take it unless a concrete requirement rules it out. The
+finish line is not "it works"; it is the smallest thing that works.
+
+The section above decides whether to build something. This one governs how it
+gets built, while the code is being written — not at plan time or review time
+only.
+
+- Prefer the direct implementation to the general one. Solve the case in front
+  of you.
+- Use the language, an existing project component, or a dependency the project
+  already carries before writing new machinery.
+- Add an abstraction, layer, or level of indirection only when something
+  concrete needs it now. Two real callers are a reason; one imagined caller is
+  not.
+- Fewer moving parts wins: fewer options, branches, states, files, and
+  configuration knobs.
+- Delete what the change makes unnecessary instead of leaving it beside the
+  new path.
+- When an implementation starts to sprawl, stop and reconsider the design.
+  Sprawl usually means the approach is wrong, not that more code is needed. If
+  the simpler design would change what the work delivers, that is an owner
+  decision — flag it.
+
+Elegant means obvious in hindsight, not clever. Compressed code that saves
+three lines and costs the next reader ten minutes is not simple.
+
+### Simple to use, simple inside
+
+Human-facing interfaces read "simple" differently. For a public API, a command
+line, or anything else a person drives, simple means **simple to use**: a low
+learning curve, sane defaults, and common cases working with little ceremony.
+
+That justifies affordances an internal component would not deserve — defaults,
+forgiving argument shapes, convenience wrappers, helpful diagnostics. Keep that
+cost thin and at the surface. Everything under the interface stays as simple
+and light as the rules above require. A simple interface is worth some sugar;
+it is never worth a complicated engine.
+
+This covers making real use cases easy, not covering every call shape someone
+might prefer. Sugar with no known use is speculative flexibility under a nicer
+name.
+
+---
+
 ## Decision discussion mode
 
 When one or more owner decisions are needed, stop implementation and read

@@ -194,6 +194,9 @@ instructions, relevant tests, and the surrounding implementation. Look for:
 - Maintainability problems with meaningful ongoing cost.
 - Machinery whose likely value appears disproportionate to its complexity,
   testing surface, compatibility burden, or maintenance cost.
+- Complexity a simpler implementation would avoid, under [`AGENTS.md`](AGENTS.md)
+  "Keep it simple": a layer, option, or abstraction nothing needs yet, or
+  human-interface sugar that has thickened into internal complexity.
 
 Classify each finding by the disposition it requires:
 

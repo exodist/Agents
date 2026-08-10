@@ -1,5 +1,7 @@
 {{$NEXT}}
 
+    - Make KISS the standing default while code is written, with simple-to-use human interfaces as the one exception.
+
     - Bound review loops with a frozen scope manifest, a cumulative growth halt, optional-hardening findings, explicit owner-decision triggers, and archive refs.
 
     - Halt review loops that produce oversized fixes or run nine unclean rounds, flagging the cause for the owner.
