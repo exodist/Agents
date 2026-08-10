@@ -87,14 +87,23 @@ project-local authoritative document or `AGENTS_OVERRIDE.md`.
 
 ## `Changes` entries
 
+- Write each entry as one top-level `-` bullet on one physical line.
+- Use one short sentence. A second sentence is allowed only for
+  essential compatibility or migration information.
+- Keep the bullet text at or below 35 words and 200 characters.
 - Describe shipped behavior in user-facing terms, not implementation work or
   agent process.
-- Keep each bullet to one line and one sentence where possible, two sentences
-  at most.
+- Do not use continuation paragraphs, sub-bullets, implementation details,
+  test summaries, rationale, or agent-process history. Put supporting detail
+  in the appropriate user documentation.
 - State what changed. Mention what did not change only when it is an important
   compatibility guarantee or other critical user information.
 - Do not put a literal `{{` or `}}` inside a bullet; `Changes` is a
   `Text::Template` document.
+
+Good: `- Reject undefined field names instead of silently ignoring them.`
+
+Exceptional second sentence: `- Rename foo() to bar(). The old name remains as a deprecated alias.`
 
 ## Comments
 

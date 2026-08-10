@@ -115,6 +115,9 @@ classes.
 
 - Every commit that changes shipped behavior has its own bullet under
   `{{$NEXT}}` in `Changes`, in that same commit.
+- Every new or edited `Changes` entry is one physical-line bullet, no more than
+  35 words or 200 characters, and one short sentence. A second sentence is
+  limited to essential compatibility or migration information.
 - Commit messages and `Changes` entries satisfy their sections in
   `DOCUMENTATION.md`.
 - Land fixups either as cleanup commits or by amending the relevant feature

@@ -282,6 +282,9 @@ roads-not-taken context.
   empty changelogs because entries were never written.
 - Entry content and formatting follow `DOCUMENTATION.md` under "`Changes`
   entries".
+- Keep each entry to one brief bullet on one physical line and one short
+  sentence. A second sentence is reserved for essential compatibility or
+  migration information.
 - This applies to **all** such commits, whether they land directly on the
   main branch or on a worktree branch merged in later. When you open a
   worktree, the work's `Changes` entry lands in that branch alongside the

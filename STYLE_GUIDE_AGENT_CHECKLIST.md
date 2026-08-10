@@ -310,6 +310,9 @@ Skip this section unless the project's entry documents opt into
       introduced the bug being fixed).
 - [ ] Commit messages and `Changes` entries satisfy their sections in
       `DOCUMENTATION.md`.
+- [ ] Every `Changes` entry is one physical-line bullet, no more than 35 words
+      or 200 characters, and one short sentence; a second sentence appears
+      only for essential compatibility or migration information.
 - [ ] Every commit changing shipped behavior added its own bullet under
       `{{$NEXT}}` in `Changes`, **in that same commit**.
 - [ ] Nothing was pushed or merged without the user asking.

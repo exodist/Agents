@@ -132,6 +132,9 @@ instructions, relevant tests, and the surrounding implementation. Look for:
 - Behavior that does not satisfy the requested or documented outcome.
 - Missing or inadequate tests where they leave changed behavior unverified.
 - Missing, inaccurate, or misleading user-facing documentation.
+- `Changes` entries that are multiline, nested, exceed 35 words or 200
+  characters, include supporting detail or process history, or use a second
+  sentence without essential compatibility or migration information.
 - Violations of the style guide or any other repository rule.
 - Maintainability problems with meaningful ongoing cost.
 - Machinery whose likely value appears disproportionate to its complexity,
