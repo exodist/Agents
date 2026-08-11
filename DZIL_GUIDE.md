@@ -71,6 +71,7 @@ exclude_filename = README.md
 exclude_filename = cpanfile
 exclude_filename = cpanfile.ci
 exclude_filename = TEMPLATE.pod
+exclude_filename = perltidyrc          ; developer formatting config
 exclude_filename = .yath-persist.json
 
 [PruneCruft]
@@ -326,9 +327,18 @@ packaging documents or `AGENTS_OVERRIDE.md` record the differences.
 - **Never ships:** `agent_scripts/`, `AI_DOCS/`, `worktrees/`,
   `release-scripts/`, `demo/`, coverage and profiling output, `pt/`, `tt/`,
   `xt/downstream/`, any reference tree the project keeps (`reference/`,
-  `old*/`), and **every internal `.md`** (`AGENTS.md`, `ARCHITECTURE.md`,
-  style guides, plans, reviews). `README.md` is exempt because
-  `[ReadmeFromPod]` regenerates it.
+  `old*/`), the `perltidyrc` formatting config, and **every internal `.md`**
+  (`AGENTS.md`, `AGENTS_OVERRIDE.md`, `CLAUDE.md`, `CODEX.md`,
+  `ARCHITECTURE.md`, style guides, plans, reviews). `README.md` is exempt
+  because `[ReadmeFromPod]` regenerates it into the build.
+- None of that is useful to someone installing the distribution, and a
+  document written for a project's own developers and agents reads as
+  published documentation once it is inside a tarball on CPAN.
+- **A project may ship any of it deliberately.** Packaging is a release
+  decision the project owns, so an exception needs no argument here — only a
+  record. Declare it in the project's `AGENTS_OVERRIDE.md`, naming what ships
+  and why, and `audit-dzil` findings against that declaration are expected
+  rather than debt. The dual-life shape below is one such declared exception.
 - `t/` is excluded from `[GatherDir]` and re-gathered by a
   `[Git::GatherDir]` block with `include_dotfiles = 1`, so files like
   `t/.gitignore` ship. Add one block per test root the dist has (`t/`,
@@ -418,7 +428,8 @@ perl ~/projects/Agents/agent_scripts/audit-dzil .
 It reports, per project:
 
 - Missing or out-of-order plugin sections.
-- Dev-only trees that are not excluded from `[GatherDir]`.
+- Dev-only trees, internal Markdown, and `perltidyrc` that are not excluded
+  from `[GatherDir]`.
 - Generated files missing from `[CopyFilesFromBuild]`, `[Git::Check]`, or
   `[Git::Commit]`.
 - A missing NJH smoker guard.

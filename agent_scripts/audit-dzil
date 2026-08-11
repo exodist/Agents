@@ -216,6 +216,11 @@ sub check_gather {
         plugin_values($ini, 'Git::GatherDir', 'exclude_match'),
     );
 
+    my %excluded_file = map { $_ => 1 } (
+        plugin_values($ini, 'GatherDir',      'exclude_filename'),
+        plugin_values($ini, 'Git::GatherDir', 'exclude_filename'),
+    );
+
     # exclude_match values are anchored regexes with an optional trailing
     # slash ('^agent_scripts/'); the tree names are bare ('agent_scripts').
     # Normalize both ends before comparing, or every excluded tree reports
@@ -239,6 +244,12 @@ sub check_gather {
         note('DZI201', 'internal Markdown files at the root are not excluded from the gather configuration (add an exclude_match for Markdown filenames)')
             if @root_md && !grep { /\\\.md/ } keys %excluded;
     }
+
+    # Only the undotted spelling: [GatherDir] skips dotfiles already, and a
+    # project uses this one precisely so perltidy does NOT pick it up
+    # automatically.
+    note('DZI204', "'perltidyrc' exists but is not excluded from the gather configuration (add an exclude_filename for it)")
+        if -f File::Spec->catfile($root, 'perltidyrc') && !$excluded_file{perltidyrc};
 
     my $t_excluded = grep { m{^\^t/} } keys %excluded;
     my $t_gathered = grep { m{^t/?$} } plugin_values($ini, 'Git::GatherDir', 'root');
