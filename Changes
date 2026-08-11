@@ -1,5 +1,7 @@
 {{$NEXT}}
 
+    - State that the AI/LLM policy guides new contributions toward maintainer understanding, and that proven contributors may deviate when quality holds.
+
     - Require the agent fixing review findings to run the full test suite, while reviewers still assume the implementer left it green.
 
     - Make KISS the standing default while code is written, with simple-to-use human interfaces as the one exception.

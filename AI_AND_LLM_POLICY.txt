@@ -12,6 +12,28 @@ TL;DR:
     or how it works will be accepted. Such things are fine for rapid
     experimentation, just not final product.
 
+    These rules exist to serve one goal: the humans who maintain this code
+    later must be able to understand it. Proven contributors have some leeway
+    where that goal is still met.
+
+Who these rules are for, and how strict they are
+
+    The bar every contribution must clear is that the humans maintaining the
+    code going forward can understand it. The rest of this policy is a guide
+    for getting new contributors and new contributions over that bar. It is
+    not an unbreakable law.
+
+    Active project members with a track record of quality work have more
+    freedom. They may deviate from the specifics below — how work is chunked,
+    whether corrections land as their own commit, how AI use is noted — as
+    long as what they contribute stays high quality and understandable to the
+    people who will maintain it.
+
+    How much flexibility applies depends on the contribution itself and on
+    proven contributors being willing to do the review. A larger or looser
+    contribution is acceptable when someone trusted has actually read it and
+    stands behind it. When that is not the case, follow the rules as written.
+
 Can developers use AI/LLM tools to contribute?
 
     Developers who contribute are allowed to use whatever tools they decide are
