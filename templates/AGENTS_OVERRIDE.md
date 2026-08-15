@@ -120,12 +120,5 @@ subsystem.
 
 ## Prior rulings
 
-Decisions the owner has already made that agents keep re-asking about. One
-line each, dated. This section exists so the same question is not walked
-through discussion mode twice.
-
-<!--
-- 2026-07-15: Review findings about missing AI_DOCS entries and about
-  module/file/sub length are ignored entirely. Do not act on them, do not
-  report them as pending work.
--->
+Recorded in `RULINGS.md`, not here. This file holds declarations and
+shared-rule overrides; a ruling is neither.

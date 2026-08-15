@@ -1,5 +1,7 @@
 {{$NEXT}}
 
+    - Define an optional project RULINGS.md recording owner decisions, read only when a decision is needed, with recorded rulings flagged for the owner rather than overturned.
+
     - State that the AI/LLM policy guides new contributions toward maintainer understanding, and that proven contributors may deviate when quality holds.
 
     - Require the agent fixing review findings to run the full test suite, while reviewers still assume the implementer left it green.

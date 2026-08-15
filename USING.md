@@ -27,6 +27,7 @@ The main files in a consuming project are:
 | `CODEX.md` / `CLAUDE.md` | Optional harness entry points that direct the agent to the project's `AGENTS.md`. |
 | `AGENTS.md` | Opens with the bootstrap stanza pointing here, then carries project-specific context. |
 | `AGENTS_OVERRIDE.md` | A convenient ledger for declarations and explicit shared-rule overrides. |
+| `RULINGS.md` | Optional. Durable record of owner decisions, read only when a decision is needed. |
 
 Copying rules into a project is the failure mode this structure exists to
 prevent: a copy drifts, and then two repositories disagree with no way to tell
@@ -209,7 +210,17 @@ preferred ledger so an exception is easy to find. A project-local
 without duplicating its contents here.
 
 Keep it to declarations and overrides. Project *context* goes in `AGENTS.md`,
-project *design* goes in `ARCHITECTURE.md`.
+project *design* goes in `ARCHITECTURE.md`. Owner *rulings* go in
+`RULINGS.md`.
+
+### `RULINGS.md` — durable owner decisions
+
+Scaffold: `~/projects/Agents/templates/RULINGS.md`.
+
+Optional, and not part of new-project setup — create it from the scaffold when
+the first ruling is recorded. Absent means the project has none. Agents read it
+only when a decision is in front of them; shared `AGENTS.md` under "Rulings"
+governs how a recorded ruling is treated.
 
 ---
 

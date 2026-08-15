@@ -34,8 +34,9 @@ on itself — walk them this way. Except for the batched dispositions defined in
   request details, decide which ones to fix, or say how to track them.
 - **Plain conversation, not a selector.** Never present the decision through a
   menu or choice UI. The user decides in free-form discussion.
-- **Record the ruling** where the project tracks such decisions (the active
-  disposition ledger, the relevant doc) **before** presenting the next item.
+- **Record the ruling** in the project's `RULINGS.md` — or in the active
+  disposition ledger, when the walk has one — **before** presenting the next
+  item.
 - **Do not implement anything mid-walk** unless the user says to. Collect
   rulings; implement when asked.
 
@@ -97,9 +98,11 @@ contracts, correctness, safety, or data integrity.
   disproportionate complexity. The examples are not binding precedents; the
   current decision still belongs to the owner.
 - Count the items and say so up front: "N decisions to walk."
-- Check whether the project has already pre-ruled on any of them (a
-  `PENDING_DECISIONS.md`, a disposition ledger, an earlier AI_DOC). Use the
-  recorded answers; only raise items that are still open, that the record does
-  not cover, or where the code contradicts the record's framing.
+- Check whether the project has already pre-ruled on any of them: read
+  `RULINGS.md` if it exists, then any `PENDING_DECISIONS.md`, disposition
+  ledger, or earlier AI_DOC. Use the recorded answers; only raise items that
+  are still open, that the record does not cover, or where the code
+  contradicts the record's framing. A recorded ruling that new evidence may
+  have invalidated is raised as exactly that, not re-walked from scratch.
 - Where a decision blocks execution that is otherwise ready to run, say so in
   the item so the user knows what is waiting on it.

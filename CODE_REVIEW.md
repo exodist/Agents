@@ -26,8 +26,8 @@ The reviewer must be independent:
   conversation.
 - The parent gives it a self-contained review brief with the requested
   outcome, acceptance criteria, the scope manifest and this cycle's scope,
-  applicable repository entry documents, relevant owner rulings, and
-  validation already run.
+  applicable repository entry documents, relevant owner rulings from
+  `RULINGS.md`, and validation already run.
 - The brief identifies what to review without telling the reviewer what
   conclusion to reach or where the parent expects problems.
 

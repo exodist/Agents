@@ -247,6 +247,30 @@ context, recommendations, and recording each ruling before continuing.
 
 ---
 
+## Rulings — `RULINGS.md`
+
+A project may keep `RULINGS.md` at its root: the durable record of decisions
+its owner has already made. A project without one has no recorded rulings.
+
+**It is not general context.** Do not read it to orient yourself in a project.
+Read it when a decision is in front of you — before a decision walk, before
+proposing work, and before spending real effort on a problem that may already
+have been settled.
+
+- **A recorded ruling stands.** When nothing has changed, follow it. Do not
+  re-open it, re-argue it, or spend significant effort on the question again.
+- **Flag, never overturn.** When a bug report, pull request, user request, or
+  changed constraint suggests a ruling needs revisiting, say so and let the
+  user decide.
+- **Record new rulings there**, not in `AGENTS_OVERRIDE.md`. That file holds
+  project declarations and shared-rule overrides; a ruling is neither.
+
+Each entry names the decision, states what it rules out, and carries enough
+evidence for the next reader to judge whether the situation has changed.
+Scaffold: `~/projects/Agents/templates/RULINGS.md`.
+
+---
+
 ## Reference trees — only where a project has them
 
 **Most projects do not have one. Skip this section unless the project's
