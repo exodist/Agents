@@ -1,5 +1,7 @@
 {{$NEXT}}
 
+    - Limit RULINGS.md to decisions that could be raised again, keeping routine calls nobody will question out of every future reader's context.
+
     - Define an optional project RULINGS.md recording owner decisions, read only when a decision is needed, with recorded rulings flagged for the owner rather than overturned.
 
     - State that the AI/LLM policy guides new contributions toward maintainer understanding, and that proven contributors may deviate when quality holds.

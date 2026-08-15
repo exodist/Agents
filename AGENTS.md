@@ -269,6 +269,27 @@ Each entry names the decision, states what it rules out, and carries enough
 evidence for the next reader to judge whether the situation has changed.
 Scaffold: `~/projects/Agents/templates/RULINGS.md`.
 
+### What earns a place in `RULINGS.md`
+
+**Most decisions do not.** A ruling is recorded when it could reasonably be
+raised again:
+
+- It settles something contentious, or went against the obvious answer.
+- The same question is likely to come up in a later session, by a different
+  agent, or from a contributor.
+- It may need revisiting when circumstances change, and the next reader will
+  need the evidence to judge that.
+
+A decision nobody will ever question is not a ruling worth recording. No agent
+is going to ask why a typo was corrected, why a failing test was made to pass,
+or why a broken link was fixed. Writing those down costs every future reader
+context and buys nothing — a `RULINGS.md` padded with settled trivia is one
+that stops being read.
+
+The test: **would someone plausibly ask about this again, or need to know why
+it went this way?** If not, the reasoning belongs in the commit message and
+nowhere else.
+
 ---
 
 ## Reference trees — only where a project has them

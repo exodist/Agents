@@ -218,9 +218,11 @@ project *design* goes in `ARCHITECTURE.md`. Owner *rulings* go in
 Scaffold: `~/projects/Agents/templates/RULINGS.md`.
 
 Optional, and not part of new-project setup — create it from the scaffold when
-the first ruling is recorded. Absent means the project has none. Agents read it
-only when a decision is in front of them; shared `AGENTS.md` under "Rulings"
-governs how a recorded ruling is treated.
+the first ruling worth recording lands. Absent means the project has none, and
+a long-running project may never need one. Agents read it only when a decision
+is in front of them; shared `AGENTS.md` under "Rulings" governs how a recorded
+ruling is treated and, under "What earns a place in `RULINGS.md`", which
+decisions belong there at all. Most do not.
 
 ---
 

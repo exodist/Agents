@@ -11,6 +11,11 @@ than acting against it. See `~/projects/Agents/AGENTS.md` under "Rulings".
 Newest first. Each entry gives the date, what was ruled, and enough evidence
 for the next reader to judge whether the situation has changed.
 
+Only decisions that could be raised again belong here — contentious calls,
+questions likely to recur, and rulings that may need revisiting when
+circumstances change. Routine decisions nobody will ever question stay out;
+see `~/projects/Agents/AGENTS.md` under "What earns a place in `RULINGS.md`".
+
 ---
 
 <!-- Delete this example when the first real ruling lands.

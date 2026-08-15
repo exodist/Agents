@@ -34,9 +34,12 @@ on itself — walk them this way. Except for the batched dispositions defined in
   request details, decide which ones to fix, or say how to track them.
 - **Plain conversation, not a selector.** Never present the decision through a
   menu or choice UI. The user decides in free-form discussion.
-- **Record the ruling** in the project's `RULINGS.md` — or in the active
-  disposition ledger, when the walk has one — **before** presenting the next
-  item.
+- **Record the ruling when it is worth recording** — in the project's
+  `RULINGS.md`, or in the active disposition ledger when the walk has one —
+  **before** presenting the next item. A walk producing decisions nobody will
+  question again produces no `RULINGS.md` entries, and that is the normal
+  outcome for routine items. `~/projects/Agents/AGENTS.md` under "What earns a
+  place in `RULINGS.md`" is the bar.
 - **Do not implement anything mid-walk** unless the user says to. Collect
   rulings; implement when asked.
 
