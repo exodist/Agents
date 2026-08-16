@@ -33,6 +33,48 @@ distribution. The project picks that path and records it in
 Either way the location may be a checkout or a symlink to one, and it is
 read-only from a consuming project's point of view.
 
+## Staying in sync
+
+A project records the commit it last synced with in its bootstrap stanza and
+checks for pending syncs once, at the start of each session:
+
+```
+git -C <location> log --oneline <last-synced-sha>..HEAD -- \
+    AI_AND_LLM_POLICY.txt templates/ agent_scripts/ SYNC.md
+```
+
+Those are the paths a project holds copies of, plus `SYNC.md` — the ledger of
+changes that require a project to do something. Everything else here reaches a
+project the moment it lands, because projects reference these rules rather
+than copying them. No output means there is nothing to apply; say nothing and
+get on with the work.
+
+When there is output, `git -C <location> diff <last-synced-sha>..HEAD --
+SYNC.md` gives the new ledger entries, each naming the action it requires.
+**Tell the user what is pending and let them decide**, before starting the
+work they came for:
+
+- **Sync now.** One commit when the whole sync is small and mechanical; a
+  worktree branch when it is not, under the worktree rules below. Update the
+  `Last synced` line to the commit being synced to, in the same commit or
+  branch.
+- **Skip for now.** The normal answer when the user came to do something else.
+  Proceed with the original task and do not raise it again this session.
+
+Applying part of a sync is fine when the user asks for that; record only the
+commit actually reached, and say what was left.
+
+Three cases end the check early: a checkout that is not a git repository, a
+project with no `Last synced` line, and a recorded commit the checkout does
+not contain — which means this clone is older than the record, not that
+something is pending. Say so once, treat it as nothing pending, and carry on.
+An unrecorded or unreachable baseline is a wiring gap for the user to close,
+not a reason to block the session. `USING.md` covers recording it.
+
+Never sync a project unasked, and never pull this repository mid-task. A rule
+changing under you halfway through the work is worse than a rule being a week
+old.
+
 ## What to read
 
 Start with `CODEX.md` and/or `AGENTS.md` in the project, according to the

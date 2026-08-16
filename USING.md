@@ -93,6 +93,46 @@ worse than a rule being a week old.
 
 ---
 
+## Staying in sync
+
+A project references these rules rather than copying them, so most changes
+here reach it with nothing to do. The exceptions are the files it does hold
+copies of and the changes that ask something of the project itself. Both are
+tracked against one recorded commit.
+
+**The project records the commit it last synced with** in its bootstrap
+stanza:
+
+```
+- Last synced: 9f3c1ab2d4e6f8a0b1c2d3e4f5a6b7c8d9e0f1a2 (2026-08-15)
+```
+
+Use the full 40-character sha and the date it was applied. A project adopting
+this repository for the first time records the current commit — there is
+nothing to apply, because it is copying today's files.
+
+**Every session begins by checking it**, from the project's stanza:
+
+```
+git -C ~/projects/Agents log --oneline <last-synced-sha>..HEAD -- \
+    AI_AND_LLM_POLICY.txt templates/ agent_scripts/ SYNC.md
+```
+
+`AI_AND_LLM_POLICY.txt`, `templates/`, and `agent_scripts/` are what a project
+holds copies of. `SYNC.md` is this repository's ledger of changes requiring
+project action — a new declaration to answer, a document to edit, a ruling to
+make. `git diff <last-synced-sha>..HEAD -- SYNC.md` yields exactly the entries
+added since, each naming its action.
+
+**The user decides what happens next.** Shared `AGENTS.md` under "Staying in
+sync" is the procedure: report what is pending, offer to sync now as one
+commit or a worktree branch depending on size, and accept "skip for now" as
+the normal answer when the user came to do something else. The `Last synced`
+line moves to the commit actually reached, in the same commit or branch as the
+sync. Nothing is synced unasked.
+
+---
+
 ## Reading and authority
 
 Read the project's entry point first, then follow only the critical references
@@ -173,6 +213,7 @@ authoritative for project-specific rules and design.
 - Default location: `~/projects/Agents`
 - This project's location: as declared in `AGENTS_OVERRIDE.md` under "Agents
   repository location", when that section is present.
+- Last synced: 0000000000000000000000000000000000000000 (YYYY-MM-DD)
 
 Use the declared location when there is one, otherwise the default. If no
 checkout is there, **stop and ask the user** whether to clone it and where.
@@ -180,6 +221,15 @@ Never clone it for them, and never guess a location.
 
 Shared documents spell their paths against the default location. When this
 project declares another, read every such path against the declared one.
+
+Check for pending syncs once, at the start of the session:
+
+    git -C <location> log --oneline <last-synced-sha>..HEAD -- \
+        AI_AND_LLM_POLICY.txt templates/ agent_scripts/ SYNC.md
+
+No output means nothing to apply. Otherwise follow "Staying in sync" in the
+shared `AGENTS.md`: show the user what is pending and let them sync now or
+skip it and carry on with what they came here to do. Never sync unasked.
 
 Then read `AGENTS.md` in that checkout and follow the shared guidance this
 project has adopted. It points at task-specific guides and procedures.
@@ -298,6 +348,13 @@ If the project selects TESTING.md's category-and-origin layout, also copy
 in `AGENTS_OVERRIDE.md`. Projects selecting another layout do not copy or run
 that auditor.
 
+Record the commit the project is starting from, in the stanza's `Last synced`
+line:
+
+```
+git -C ~/projects/Agents log -1 --format='%H %ad' --date=short
+```
+
 Then fill in `AGENTS.md` (project content), `AGENTS_OVERRIDE.md` (the five
 declarations), `dist.ini` (name, main module, repo URL, prereqs),
 `TEMPLATE.pod` (dist name, repo URL), `.gitignore` (dist name), and any
@@ -353,6 +410,9 @@ By hand:
   the entry point.
 - Does `AGENTS.md` open with the current bootstrap stanza? An older one tells
   the agent to clone the repository itself and names no override — replace it.
+- Does the stanza carry a `Last synced` line with a real commit? Without one
+  no session can tell what is pending. Establish the baseline by applying
+  whatever is outstanding, then record the commit reached.
 - Is the checkout somewhere other than `~/projects/Agents`? Then
   `AGENTS_OVERRIDE.md` needs its location section, and any absolute path the
   project spells out for itself — the `agent-test-lock` command in its

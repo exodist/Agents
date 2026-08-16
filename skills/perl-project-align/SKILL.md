@@ -23,6 +23,24 @@ location where there is one. When no checkout exists, ask the user whether to
 clone it and where — never clone it for them, and never pick the location
 yourself. Record a non-default answer in `AGENTS_OVERRIDE.md`.
 
+## Pending syncs
+
+A project records the commit it last synced with in its bootstrap stanza, and
+every session checks it:
+
+```
+git -C ~/projects/Agents log --oneline <last-synced-sha>..HEAD -- \
+    AI_AND_LLM_POLICY.txt templates/ agent_scripts/ SYNC.md
+```
+
+Those are the files a project copies, plus the ledger of changes that require
+project action. `git diff <last-synced-sha>..HEAD -- SYNC.md` gives the new
+ledger entries and their actions. Report what is pending and let the user sync
+now — one commit if small, a worktree branch if not — or skip and get on with
+what they came for. Move the `Last synced` line to the commit reached, in the
+same commit or branch. Never sync unasked. Full procedure: `AGENTS.md` under
+"Staying in sync".
+
 Three files per project:
 
 | File | Role |
@@ -84,6 +102,8 @@ Then by hand:
   into `AGENTS.md`.
 - Does `AGENTS.md` open with the current bootstrap stanza? An older one clones
   the repository on its own initiative and names no override — replace it.
+- Does the stanza record a real `Last synced` commit? Without one, no session
+  can tell what is pending.
 - If the checkout is not at `~/projects/Agents`, does `AGENTS_OVERRIDE.md`
   declare where it is, and do the project's own absolute paths match? A
   checkout inside the project must be gitignored and excluded from the

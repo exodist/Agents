@@ -39,6 +39,7 @@ project for drift.
 | [`DZIL_GUIDE.md`](DZIL_GUIDE.md) | An optional shared `dist.ini` profile and manual release procedure. |
 | [`CPAN_TESTERS.md`](CPAN_TESTERS.md) | Task-specific procedure for querying and analyzing public CPAN Testers reports. |
 | [`AI_AND_LLM_POLICY.txt`](AI_AND_LLM_POLICY.txt) | Canonical contributor-facing AI/LLM policy. Adopting projects ship one synchronized copy unless they declare a replacement policy. |
+| [`SYNC.md`](SYNC.md) | Ledger of changes that require an adopting project to do something. Checked against the commit it last synced with. |
 | [`REPO_RULES.md`](REPO_RULES.md) | Rules for editing **this** repository. Consuming projects do not inherit them. |
 | [`RULINGS.md`](RULINGS.md) | Owner decisions already made about these rules. Read it when a decision is in front of you, not for context. |
 | [`CLAUDE.md`](CLAUDE.md) | Points at `AGENTS.md`. That is its entire job. |

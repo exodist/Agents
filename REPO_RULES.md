@@ -131,6 +131,27 @@ rule and judged under another.
 
 ---
 
+## Changes that require project action are recorded in `SYNC.md`
+
+Most changes here need nothing from adopting projects: they reference these
+rules, so a reworded rule reaches them the moment it lands. Some do require
+action — re-copying a file the project holds, editing one of its documents,
+answering a new declaration, making a ruling. **Those write a `SYNC.md` entry
+in the same commit**, naming what changed and the exact action a project
+takes.
+
+That entry is what a project's session-start check shows its user. A missing
+one is recoverable — add it in a later commit and every project that has not
+yet synced past it still sees it — but the user who hit the gap in between
+does not get told.
+
+Changes to `AI_AND_LLM_POLICY.txt`, `templates/`, and `agent_scripts/` are
+caught by the check whether or not they have an entry, because projects hold
+copies of those. Write the entry anyway when the action is not obvious from
+the commit subject.
+
+---
+
 ## Auditors stay in sync
 
 `agent_scripts/` here is canonical. Projects hold copies. When an auditor needs

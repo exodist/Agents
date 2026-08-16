@@ -62,6 +62,22 @@ sub check_agents {
     # itself: its clone URL, the default location, or the file read from it.
     note('WIR100', 'project agent instructions do not point at the shared Agents repository')
         unless $content =~ m{projects/Agents|Agents\.git|Agents/AGENTS\.md};
+
+    check_sync_record($content);
+    return;
+}
+
+sub check_sync_record {
+    my ($content) = @_;
+
+    unless ($content =~ m{^\s*-\s+Last synced:\s*(\S+)}m) {
+        note('WIR108', 'project agent instructions do not record the shared commit they last synced with');
+        return;
+    }
+
+    my $sha = $1;
+    note('WIR108', "recorded sync commit is not a commit sha: '$sha'")
+        unless $sha =~ /^[0-9a-f]{7,40}$/ && $sha =~ /[1-9a-f]/;
     return;
 }
 

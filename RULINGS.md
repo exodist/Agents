@@ -13,6 +13,44 @@ for the next reader to judge whether the situation has changed.
 
 ---
 
+## 2026-08-15 — Sync-worthy changes are found by path, plus a ledger
+
+**Ruling: a project detects pending syncs with one `git log` over the
+artifacts it copies — `AI_AND_LLM_POLICY.txt`, `templates/`, `agent_scripts/`
+— and over `SYNC.md`, this repository's ledger of changes that require action
+in an adopting project. A change requiring project action writes its `SYNC.md`
+entry in the same commit.**
+
+Projects reference these rules rather than copying them, so most commits here
+need no project action at all; reporting every commit would bury the few that
+matter. The path filter alone catches copied artifacts but misses a rule
+change that requires a new ruling or a new project practice — hence the
+ledger. A commit trailer was considered and rejected: a forgotten trailer is
+invisible and cannot be fixed after the fact, while a missing ledger entry can
+be added in a later commit and every project that has not yet synced past it
+still sees it. A ledger entry also carries the instructions to show the user;
+a subject line does not.
+
+Revisit if: the ledger goes unwritten often enough that projects miss required
+actions, or the path filter starts reporting mostly noise.
+
+## 2026-08-15 — The synced commit is recorded in the bootstrap stanza
+
+**Ruling: an adopting project records `- Last synced: <sha> (<date>)` in the
+bootstrap stanza of its `AGENTS.md`, and `audit-project-wiring` reports a
+missing or unparseable line.**
+
+The stanza is the block an agent reads before anything else and already names
+the repository and its location, so sync state belongs beside them and needs
+no extra file read to resolve. It is the one line of otherwise verbatim
+boilerplate that changes per project and per sync. The advisory finding is
+deliberate: every project adopted before this rule lacks the line, and that is
+accurate rather than noisy.
+
+Revisit if: keeping a machine-updated line inside a hand-written file causes
+merge friction, in which case the ledger in `AGENTS_OVERRIDE.md` is the
+alternative that was weighed.
+
 ## 2026-08-15 — No named location for a project-local checkout
 
 **Ruling: shared guidance does not name a path for a checkout kept inside a

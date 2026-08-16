@@ -35,13 +35,21 @@ None.
 EOT
 }
 
+sub agents_md {
+    my (%params) = @_;
+    my $synced = exists($params{synced}) ? $params{synced} : '9f3c1ab2d4e6f8a0b1c2d3e4f5a6b7c8d9e0f1a2';
+    my $body   = $params{body} // "Read ~/projects/Agents/AGENTS.md first.\n";
+    $body .= "- Last synced: $synced (2026-08-15)\n" if defined $synced;
+    return $body;
+}
+
 sub adopted_project {
     my $dir = tempdir(CLEANUP => 1);
     for my $file (qw/Changes .perltidyrc AI_AND_LLM_POLICY.txt TEMPLATE.pod/) {
         write_file(File::Spec->catfile($dir, $file), "fixture\n");
     }
     write_file(File::Spec->catfile($dir, 'AGENTS_OVERRIDE.md'), valid_override());
-    write_file(File::Spec->catfile($dir, 'AGENTS.md'),          "Read ~/projects/Agents/AGENTS.md first.\n");
+    write_file(File::Spec->catfile($dir, 'AGENTS.md'), agents_md());
     write_file(File::Spec->catfile($dir, 'CODEX.md'),           "Read AGENTS.md first.\n");
     return $dir;
 }
@@ -63,16 +71,32 @@ subtest 'adopted project' => sub {
 };
 
 subtest 'checkout location is a project choice' => sub {
-    my $dir = adopted_project();
-    write_file(File::Spec->catfile($dir, 'AGENTS.md'), "Clone git\@github.com:exodist/Agents.git where the user says.\n");
+    my $dir    = adopted_project();
+    my $agents = File::Spec->catfile($dir, 'AGENTS.md');
+    write_file($agents, agents_md(synced => 'abcdef1', body => "Clone git\@github.com:exodist/Agents.git where the user says.\n"));
 
     my ($exit, $output) = run_cmd({}, $^X, $AUDIT, $dir);
     is($exit, 0, 'a project naming the repository without the default path passes') or diag $output;
 
-    write_file(File::Spec->catfile($dir, 'AGENTS.md'), "This project stands alone.\n");
+    write_file($agents, agents_md(synced => 'abcdef1', body => "This project stands alone.\n"));
     ($exit, $output) = run_cmd({}, $^X, $AUDIT, $dir);
     is($exit, 1, 'a project naming the repository nowhere fails');
     like($output, qr/\[warning WIR100\]/, 'finding has a stable code');
+};
+
+subtest 'recorded sync commit' => sub {
+    my $dir    = adopted_project();
+    my $agents = File::Spec->catfile($dir, 'AGENTS.md');
+
+    write_file($agents, agents_md(synced => undef));
+    my ($exit, $output) = run_cmd({}, $^X, $AUDIT, $dir);
+    is($exit, 1, 'a project recording no synced commit fails');
+    like($output, qr/\[warning WIR108\].*last synced/, 'missing sync record is reported');
+
+    write_file($agents, agents_md(synced => '0000000000000000000000000000000000000000'));
+    ($exit, $output) = run_cmd({}, $^X, $AUDIT, $dir);
+    is($exit, 1, 'the unfilled template placeholder fails');
+    like($output, qr/\[warning WIR108\].*not a commit sha/, 'placeholder is reported as unparseable');
 };
 
 subtest 'declaration placeholders and signature pragma' => sub {

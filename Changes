@@ -1,5 +1,7 @@
 {{$NEXT}}
 
+    - Track the shared commit a project last synced with, checking each session for pending updates and leaving the decision to sync or skip with the user.
+
     - Bar bot accounts from pull requests and ticket discussion, allowing only a disclosed initial bug report before the thread is left to humans.
 
     - Let a project declare where the Agents checkout lives, and require agents to ask the user rather than clone into a location nobody chose.
