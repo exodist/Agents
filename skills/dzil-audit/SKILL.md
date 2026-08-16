@@ -64,4 +64,5 @@ exempt — `[ReadmeFromPod]` regenerates it.
 block with `include_dotfiles = 1`, so `t/` dotfiles ship. One block per test
 root.
 
-`AI_AND_LLM_POLICY.txt` is a `.txt` rather than `.md` precisely so it ships.
+`AI_AND_LLM_POLICY.md` is the one internal `.md` that ships: the blanket
+`\.md$` exclusion stays, and a `[GatherFile]` block gathers it back by name.

@@ -145,7 +145,7 @@ one is recoverable — add it in a later commit and every project that has not
 yet synced past it still sees it — but the user who hit the gap in between
 does not get told.
 
-Changes to `AI_AND_LLM_POLICY.txt`, `templates/`, and `agent_scripts/` are
+Changes to `AI_AND_LLM_POLICY.md`, `templates/`, and `agent_scripts/` are
 caught by the check whether or not they have an entry, because projects hold
 copies of those. Write the entry anyway when the action is not obvious from
 the commit subject.

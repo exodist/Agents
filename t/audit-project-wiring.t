@@ -45,7 +45,7 @@ sub agents_md {
 
 sub adopted_project {
     my $dir = tempdir(CLEANUP => 1);
-    for my $file (qw/Changes .perltidyrc AI_AND_LLM_POLICY.txt TEMPLATE.pod/) {
+    for my $file (qw/Changes .perltidyrc AI_AND_LLM_POLICY.md TEMPLATE.pod/) {
         write_file(File::Spec->catfile($dir, $file), "fixture\n");
     }
     write_file(File::Spec->catfile($dir, 'AGENTS_OVERRIDE.md'), valid_override());

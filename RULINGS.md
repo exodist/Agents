@@ -16,7 +16,7 @@ for the next reader to judge whether the situation has changed.
 ## 2026-08-15 — Sync-worthy changes are found by path, plus a ledger
 
 **Ruling: a project detects pending syncs with one `git log` over the
-artifacts it copies — `AI_AND_LLM_POLICY.txt`, `templates/`, `agent_scripts/`
+artifacts it copies — `AI_AND_LLM_POLICY.md`, `templates/`, `agent_scripts/`
 — and over `SYNC.md`, this repository's ledger of changes that require action
 in an adopting project. A change requiring project action writes its `SYNC.md`
 entry in the same commit.**

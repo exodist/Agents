@@ -115,10 +115,10 @@ nothing to apply, because it is copying today's files.
 
 ```
 git -C ~/projects/Agents log --oneline <last-synced-sha>..HEAD -- \
-    AI_AND_LLM_POLICY.txt templates/ agent_scripts/ SYNC.md
+    AI_AND_LLM_POLICY.md templates/ agent_scripts/ SYNC.md
 ```
 
-`AI_AND_LLM_POLICY.txt`, `templates/`, and `agent_scripts/` are what a project
+`AI_AND_LLM_POLICY.md`, `templates/`, and `agent_scripts/` are what a project
 holds copies of. `SYNC.md` is this repository's ledger of changes requiring
 project action — a new declaration to answer, a document to edit, a ruling to
 make. `git diff <last-synced-sha>..HEAD -- SYNC.md` yields exactly the entries
@@ -225,7 +225,7 @@ project declares another, read every such path against the declared one.
 Check for pending syncs once, at the start of the session:
 
     git -C <location> log --oneline <last-synced-sha>..HEAD -- \
-        AI_AND_LLM_POLICY.txt templates/ agent_scripts/ SYNC.md
+        AI_AND_LLM_POLICY.md templates/ agent_scripts/ SYNC.md
 
 No output means nothing to apply. Otherwise follow "Staying in sync" in the
 shared `AGENTS.md`: show the user what is pending and let them sync now or
@@ -324,7 +324,7 @@ cp ~/projects/Agents/templates/AGENTS.md            AGENTS.md
 cp ~/projects/Agents/templates/AGENTS_OVERRIDE.md   AGENTS_OVERRIDE.md
 cp ~/projects/Agents/templates/perltidyrc           .perltidyrc
 cp ~/projects/Agents/templates/TEMPLATE.pod         TEMPLATE.pod
-cp ~/projects/Agents/AI_AND_LLM_POLICY.txt          AI_AND_LLM_POLICY.txt
+cp ~/projects/Agents/AI_AND_LLM_POLICY.md           AI_AND_LLM_POLICY.md
 cp ~/projects/Agents/templates/dist.ini             dist.ini
 cp ~/projects/Agents/templates/Changes              Changes
 cp ~/projects/Agents/templates/MANIFEST.SKIP        MANIFEST.SKIP
@@ -339,7 +339,7 @@ cp ~/projects/Agents/agent_scripts/find-large-modules          agent_scripts/
 ```
 
 Keep exactly one AI/LLM policy document in the repository and distribution,
-named `AI_AND_LLM_POLICY.txt`. It matches the canonical copy byte-for-byte
+named `AI_AND_LLM_POLICY.md`. It matches the canonical copy byte-for-byte
 unless `AGENTS_OVERRIDE.md` explicitly declares a different policy. An
 override replaces the file's content; it does not add a second policy file.
 
@@ -425,9 +425,9 @@ By hand:
 - Does `AGENTS_OVERRIDE.md` exist, and answer all five declarations?
 - If it selects the category-and-origin test layout, does its recorded strict
   `audit-test-layout` command match the project namespace and exceptions?
-- Is `AI_AND_LLM_POLICY.txt` the repository's only AI/LLM policy document, and
+- Is `AI_AND_LLM_POLICY.md` the repository's only AI/LLM policy document, and
   does it ship with the distribution? Unless an override declares a different
-  policy, does it match `~/projects/Agents/AI_AND_LLM_POLICY.txt` exactly?
+  policy, does it match `~/projects/Agents/AI_AND_LLM_POLICY.md` exactly?
 - Do the project's `agent_scripts/` copies match `~/projects/Agents/`? Fix the
   canonical copy first, then re-copy.
 

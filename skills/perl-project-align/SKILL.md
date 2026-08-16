@@ -30,7 +30,7 @@ every session checks it:
 
 ```
 git -C ~/projects/Agents log --oneline <last-synced-sha>..HEAD -- \
-    AI_AND_LLM_POLICY.txt templates/ agent_scripts/ SYNC.md
+    AI_AND_LLM_POLICY.md templates/ agent_scripts/ SYNC.md
 ```
 
 Those are the files a project copies, plus the ledger of changes that require
@@ -74,7 +74,7 @@ every test command and local gate, and related-repository propagation
 contracts. Then copy in: `templates/CODEX.md`,
 `templates/CLAUDE.md`, `templates/AGENTS.md`,
 `templates/AGENTS_OVERRIDE.md`, `templates/perltidyrc` → `.perltidyrc`,
-`templates/TEMPLATE.pod`, `AI_AND_LLM_POLICY.txt`, `templates/dist.ini`,
+`templates/TEMPLATE.pod`, `AI_AND_LLM_POLICY.md`, `templates/dist.ini`,
 `templates/Changes`, `templates/MANIFEST.SKIP`, `templates/gitignore` →
 `.gitignore`, and the `agent_scripts/` auditors the project needs. If the
 project selects the category-and-origin test profile, include
@@ -82,7 +82,7 @@ project selects the category-and-origin test profile, include
 the placeholders and verify packaging and optional wiring separately.
 `USING.md` has the exact command sequence.
 
-Keep `AI_AND_LLM_POLICY.txt` as the repository's only AI/LLM policy document
+Keep `AI_AND_LLM_POLICY.md` as the repository's only AI/LLM policy document
 and include it in the distribution. Match the canonical copy exactly unless
 `AGENTS_OVERRIDE.md` declares that the project replaces its policy.
 
@@ -115,7 +115,7 @@ Then by hand:
 - Does `AGENTS_OVERRIDE.md` exist and answer all five declarations?
 - If it selects the category-and-origin test layout, is its strict
   `audit-test-layout` command parameterized for this project?
-- Is `AI_AND_LLM_POLICY.txt` the only AI/LLM policy document, included in the
+- Is `AI_AND_LLM_POLICY.md` the only AI/LLM policy document, included in the
   distribution, and identical to the canonical copy unless an override
   declares a replacement policy?
 - Do the project's `agent_scripts/` copies match `~/projects/Agents/`? Fix the

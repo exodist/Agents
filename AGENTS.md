@@ -40,7 +40,7 @@ checks for pending syncs once, at the start of each session:
 
 ```
 git -C <location> log --oneline <last-synced-sha>..HEAD -- \
-    AI_AND_LLM_POLICY.txt templates/ agent_scripts/ SYNC.md
+    AI_AND_LLM_POLICY.md templates/ agent_scripts/ SYNC.md
 ```
 
 Those are the paths a project holds copies of, plus `SYNC.md` — the ledger of
@@ -506,7 +506,7 @@ POD instead.
 
 ## AI / LLM contribution policy
 
-Projects ship `AI_AND_LLM_POLICY.txt` at their root (canonical copy in this
+Projects ship `AI_AND_LLM_POLICY.md` at their root (canonical copy in this
 repository). An adopting project keeps exactly one AI/LLM policy document in
 the repository and distribution, under that filename. Keep it byte-for-byte
 current with the canonical copy unless `AGENTS_OVERRIDE.md` explicitly
@@ -522,8 +522,10 @@ The short version, which agents must honor:
 - Significant AI/LLM-authored code is **noted as such** in the commit message,
   the pull request description, or the ticket.
 - **Tickets and pull requests are for humans.** Do not open, review, or
-  comment on them from a bot or agent account. The sole exception is filing an
-  initial bug report — security issues included — which must state that it
+  comment on them from a bot or agent account. Two narrow exceptions: filing
+  an initial bug report — security issues included — which must state that it
   comes from a bot, carry everything needed to debug the issue, and then leave
-  the thread alone. This restricts who takes part, not what wrote the code: a
-  human may submit AI-assisted work, and then does the discussing themselves.
+  the thread alone; and a restricted-availability model answering on a
+  security ticket when a human directly asks it to. This restricts who takes
+  part, not what wrote the code: a human may submit AI-assisted work, and then
+  does the discussing themselves.

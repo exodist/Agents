@@ -21,7 +21,7 @@ project declares another, read every such path against the declared one.
 Check for pending syncs once, at the start of the session:
 
     git -C <location> log --oneline <last-synced-sha>..HEAD -- \
-        AI_AND_LLM_POLICY.txt templates/ agent_scripts/ SYNC.md
+        AI_AND_LLM_POLICY.md templates/ agent_scripts/ SYNC.md
 
 No output means nothing to apply. Otherwise follow "Staying in sync" in the
 shared `AGENTS.md`: show the user what is pending and let them sync now or

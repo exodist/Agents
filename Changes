@@ -1,5 +1,7 @@
 {{$NEXT}}
 
+    - Rewrite the AI/LLM policy as AI_AND_LLM_POLICY.md, shipped as the one internal Markdown file a distribution gathers back by name.
+
     - Move AI-use notes to the commit, pull request, or ticket instead of a BOT username, and state that they exist to give maintainers a rough sense of how much incoming work is AI generated.
 
     - Give the AI/LLM policy two stated goals: maintainer understanding, and keeping the burden of externally submitted AI/LLM work manageable.

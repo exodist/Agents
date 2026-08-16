@@ -34,7 +34,7 @@ my %BANNED = (
 
 my @DEFAULT_PATHS = qw{
     lib t scripts share agent_scripts bin install
-    README.md AI_AND_LLM_POLICY.txt templates/TEMPLATE.pod
+    README.md AI_AND_LLM_POLICY.md templates/TEMPLATE.pod
 };
 
 my $list = 0;

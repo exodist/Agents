@@ -322,15 +322,17 @@ packaging documents or `AGENTS_OVERRIDE.md` record the differences.
 ### What ships
 
 - **`lib/`, `t/`, `scripts/`, `share/`, `Changes`,
-  `AI_AND_LLM_POLICY.txt`, and the generated files.** That is the whole
+  `AI_AND_LLM_POLICY.md`, and the generated files.** That is the whole
   shipped surface.
 - **Never ships:** `agent_scripts/`, `AI_DOCS/`, `worktrees/`,
   `release-scripts/`, `demo/`, coverage and profiling output, `pt/`, `tt/`,
   `xt/downstream/`, any reference tree the project keeps (`reference/`,
   `old*/`), the `perltidyrc` formatting config, and **every internal `.md`**
   (`AGENTS.md`, `AGENTS_OVERRIDE.md`, `CLAUDE.md`, `CODEX.md`,
-  `ARCHITECTURE.md`, style guides, plans, reviews). `README.md` is exempt
-  because `[ReadmeFromPod]` regenerates it into the build.
+  `ARCHITECTURE.md`, style guides, plans, reviews). Two exemptions:
+  `README.md`, because `[ReadmeFromPod]` regenerates it into the build, and
+  `AI_AND_LLM_POLICY.md`, gathered back by name because it is written for
+  contributors rather than for the project's own developers.
 - None of that is useful to someone installing the distribution, and a
   document written for a project's own developers and agents reads as
   published documentation once it is inside a tarball on CPAN.
@@ -343,10 +345,11 @@ packaging documents or `AGENTS_OVERRIDE.md` record the differences.
   `[Git::GatherDir]` block with `include_dotfiles = 1`, so files like
   `t/.gitignore` ship. Add one block per test root the dist has (`t/`,
   `t2/`, …).
-- Exactly one AI/LLM policy document ships: `AI_AND_LLM_POLICY.txt`. It is a
-  `.txt`, not a `.md`, precisely so it ships with the distribution. Its content
-  matches the canonical copy unless the project declares a replacement policy
-  in `AGENTS_OVERRIDE.md`.
+- Exactly one AI/LLM policy document ships: `AI_AND_LLM_POLICY.md`. It is the
+  one internal `.md` that does, so the blanket `\.md$` exclusion stays and a
+  `[GatherFile]` block gathers it back by name. Its content matches the
+  canonical copy unless the project declares a replacement policy in
+  `AGENTS_OVERRIDE.md`.
 
 ### Prereqs
 

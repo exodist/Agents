@@ -25,12 +25,12 @@ die "'$root' is not a directory\n" unless -d $root;
 my @findings;
 
 my %required = (
-    'Changes'               => ['WIR001', 'no Changes file'],
-    'AGENTS.md'             => ['WIR002', 'no project agent-instruction file'],
-    'AGENTS_OVERRIDE.md'    => ['WIR003', 'no project declaration and override ledger'],
-    '.perltidyrc'           => ['WIR004', 'no .perltidyrc'],
-    'AI_AND_LLM_POLICY.txt' => ['WIR005', 'no AI_AND_LLM_POLICY.txt'],
-    'TEMPLATE.pod'          => ['WIR006', 'no TEMPLATE.pod'],
+    'Changes'              => ['WIR001', 'no Changes file'],
+    'AGENTS.md'            => ['WIR002', 'no project agent-instruction file'],
+    'AGENTS_OVERRIDE.md'   => ['WIR003', 'no project declaration and override ledger'],
+    '.perltidyrc'          => ['WIR004', 'no .perltidyrc'],
+    'AI_AND_LLM_POLICY.md' => ['WIR005', 'no contributor-facing AI/LLM policy document'],
+    'TEMPLATE.pod'         => ['WIR006', 'no TEMPLATE.pod'],
 );
 
 for my $file (sort keys %required) {

@@ -38,7 +38,7 @@ project for drift.
 | [`DATABASES.md`](DATABASES.md) | Optional database-test operations, developer installs, and per-install isolation. |
 | [`DZIL_GUIDE.md`](DZIL_GUIDE.md) | An optional shared `dist.ini` profile and manual release procedure. |
 | [`CPAN_TESTERS.md`](CPAN_TESTERS.md) | Task-specific procedure for querying and analyzing public CPAN Testers reports. |
-| [`AI_AND_LLM_POLICY.txt`](AI_AND_LLM_POLICY.txt) | Canonical contributor-facing AI/LLM policy. Adopting projects ship one synchronized copy unless they declare a replacement policy. |
+| [`AI_AND_LLM_POLICY.md`](AI_AND_LLM_POLICY.md) | Canonical contributor-facing AI/LLM policy. Adopting projects ship one synchronized copy unless they declare a replacement policy. |
 | [`SYNC.md`](SYNC.md) | Ledger of changes that require an adopting project to do something. Checked against the commit it last synced with. |
 | [`REPO_RULES.md`](REPO_RULES.md) | Rules for editing **this** repository. Consuming projects do not inherit them. |
 | [`RULINGS.md`](RULINGS.md) | Owner decisions already made about these rules. Read it when a decision is in front of you, not for context. |
@@ -51,7 +51,7 @@ project for drift.
 | `CLAUDE.md` | Points at the project's `AGENTS.md`. Nothing else, ever. |
 | `AGENTS.md` | Bootstrap stanza pointing here, then project-specific context. |
 | `AGENTS_OVERRIDE.md` | A ledger for project declarations, explicit shared-rule overrides, and a non-default checkout location. |
-| `AI_AND_LLM_POLICY.txt` | The sole contributor-facing AI/LLM policy, included in the distribution. |
+| `AI_AND_LLM_POLICY.md` | The sole contributor-facing AI/LLM policy, included in the distribution. |
 
 `CODEX.md` and `CLAUDE.md` are optional harness entry points. When present,
 their job is to direct the agent to the project's `AGENTS.md`; existing useful
