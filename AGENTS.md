@@ -479,3 +479,8 @@ The short version, which agents must honor:
   to end.
 - Significant AI/LLM-authored code is **noted as such** in the commit or
   author metadata.
+- **Tickets and pull requests are for humans.** Do not open, review, or
+  comment on them from a bot or agent account. The sole exception is filing an
+  initial bug report — security issues included — which must state that it
+  comes from a bot, carry everything needed to debug the issue, and then leave
+  the thread alone.

@@ -1,5 +1,7 @@
 {{$NEXT}}
 
+    - Bar bot accounts from pull requests and ticket discussion, allowing only a disclosed initial bug report before the thread is left to humans.
+
     - Let a project declare where the Agents checkout lives, and require agents to ask the user rather than clone into a location nobody chose.
 
     - Limit RULINGS.md to decisions that could be raised again, keeping routine calls nobody will question out of every future reader's context.
