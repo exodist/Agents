@@ -37,6 +37,14 @@ The session-start check and the procedure for applying a pending sync are in
 the short form. A project adopting this repository for the first time records
 the current commit and has nothing to apply.
 
+## 2026-08-15 — The bot rule restricts participants, not tooling
+
+**Action: re-copy `AI_AND_LLM_POLICY.txt` from this repository.**
+
+"Tickets and pull requests are for humans" now says outright that a human may
+open a pull request containing AI/LLM-assisted work — the rule is about who
+takes part in the discussion, and the human who submits does the discussing.
+
 ## 2026-08-15 — The policy says whose burden it manages
 
 **Action: re-copy `AI_AND_LLM_POLICY.txt` from this repository.**

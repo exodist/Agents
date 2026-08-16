@@ -15,6 +15,8 @@ TL;DR:
     Bot and AI accounts do not open pull requests or take part in ticket
     discussion. The one exception is filing an initial bug report, which must
     disclose that it comes from a bot and then leave the thread to humans.
+    Humans may submit AI-assisted work; the human who submits it does the
+    talking.
 
     These rules exist to serve one goal: the humans who maintain this code
     later must be able to understand it. They manage what an outside
@@ -70,6 +72,16 @@ Tickets and pull requests are for humans
     one, comment on one, or interact with a ticket. A maintainer who wants an
     agent's take can run their own agent against the discussion; they do not
     need one posting in the thread.
+
+    This is about who is in the conversation, not about what wrote the code. A
+    human may absolutely open a pull request containing AI/LLM-assisted work —
+    that is what the rest of this policy governs, and nothing here restricts
+    it. What the human cannot do is hand the conversation off. If you submit
+    it, you answer for it: you respond to review, you explain the decisions,
+    and you make the corrections. The same assist-versus-replace line applies
+    here as everywhere else in this policy — use whatever tools help you write
+    a reply, but the reply has to be one you understand and stand behind, not
+    one you relayed.
 
     There is one exception: an initial bug report may be filed by a bot, AI, or
     LLM account. That is welcome, and especially so for security issues. When

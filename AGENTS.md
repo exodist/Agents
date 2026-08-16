@@ -525,4 +525,5 @@ The short version, which agents must honor:
   comment on them from a bot or agent account. The sole exception is filing an
   initial bug report — security issues included — which must state that it
   comes from a bot, carry everything needed to debug the issue, and then leave
-  the thread alone.
+  the thread alone. This restricts who takes part, not what wrote the code: a
+  human may submit AI-assisted work, and then does the discussing themselves.
