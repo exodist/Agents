@@ -49,11 +49,14 @@ takes part in the discussion, and the human who submits does the discussing.
 
 **Action: re-copy `AI_AND_LLM_POLICY.txt` from this repository.**
 
-"Who these rules are for, and how strict they are" now states that the policy
-manages what an outside contribution asks of the core maintainers rather than
-setting a standard the repository is held to, and that a maintainer working
-differently is not being a hypocrite. A project that declares its own policy
-should decide whether it wants the same framing.
+The policy now names two goals rather than one: the humans who maintain the
+code later must be able to understand it, and the burden that externally
+submitted AI/LLM work places on the core maintainers must stay manageable.
+"Who these rules are for, and how strict they are" states that this manages
+what an outside contribution asks of the maintainers rather than setting a
+standard the repository is held to, and that a maintainer working differently
+is not being a hypocrite. A project that declares its own policy should decide
+whether it wants the same framing.
 
 ## 2026-08-15 — Bot accounts are barred from tickets and pull requests
 
