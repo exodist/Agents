@@ -37,6 +37,16 @@ The session-start check and the procedure for applying a pending sync are in
 the short form. A project adopting this repository for the first time records
 the current commit and has nothing to apply.
 
+## 2026-08-15 — The policy says whose burden it manages
+
+**Action: re-copy `AI_AND_LLM_POLICY.txt` from this repository.**
+
+"Who these rules are for, and how strict they are" now states that the policy
+manages what an outside contribution asks of the core maintainers rather than
+setting a standard the repository is held to, and that a maintainer working
+differently is not being a hypocrite. A project that declares its own policy
+should decide whether it wants the same framing.
+
 ## 2026-08-15 — Bot accounts are barred from tickets and pull requests
 
 **Action: re-copy `AI_AND_LLM_POLICY.txt` from this repository.**
