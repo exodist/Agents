@@ -15,11 +15,13 @@ that adopt it reference it; no project is required to do so. Project-local
 documents always take priority.
 
 - Clone URL: `git@github.com:exodist/Agents.git`
-- Expected location: `~/projects/Agents`
+- Default location: `~/projects/Agents`, or whatever the project's
+  `AGENTS_OVERRIDE.md` declares under "Agents repository location"
 
-```
-[ -d ~/projects/Agents ] || git clone git@github.com:exodist/Agents.git ~/projects/Agents
-```
+Shared paths are written against the default; read them against a declared
+location where there is one. When no checkout exists, ask the user whether to
+clone it and where — never clone it for them, and never pick the location
+yourself. Record a non-default answer in `AGENTS_OVERRIDE.md`.
 
 Three files per project:
 
@@ -27,7 +29,7 @@ Three files per project:
 |---|---|
 | `CLAUDE.md` | Points at the project's `AGENTS.md`. Nothing else, ever. |
 | `AGENTS.md` | Bootstrap stanza (verbatim), then project-specific context. |
-| `AGENTS_OVERRIDE.md` | Ledger for declarations and explicit shared-rule overrides. |
+| `AGENTS_OVERRIDE.md` | Ledger for declarations, shared-rule overrides, and a non-default checkout location. |
 
 ## The five declarations
 
@@ -80,7 +82,12 @@ Then by hand:
 
 - Does `CLAUDE.md` do anything besides point at `AGENTS.md`? Move that content
   into `AGENTS.md`.
-- Does `AGENTS.md` open with the bootstrap stanza?
+- Does `AGENTS.md` open with the current bootstrap stanza? An older one clones
+  the repository on its own initiative and names no override — replace it.
+- If the checkout is not at `~/projects/Agents`, does `AGENTS_OVERRIDE.md`
+  declare where it is, and do the project's own absolute paths match? A
+  checkout inside the project must be gitignored and excluded from the
+  distribution.
 - Does `AGENTS.md` follow `~/projects/Agents/DOCUMENTATION.md` under
   "AI/agent-facing material", especially the rule against copying universal
   guidance? Replace each copy with a pointer. Move real drift to

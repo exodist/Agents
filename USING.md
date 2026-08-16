@@ -18,7 +18,7 @@ guidance. Adoption supplies defaults; it does not transfer ownership of the
 project's architecture or policy.
 
 - **Clone URL:** `git@github.com:exodist/Agents.git`
-- **Expected location:** `~/projects/Agents`
+- **Default location:** `~/projects/Agents`, overridable per project
 
 The main files in a consuming project are:
 
@@ -26,7 +26,7 @@ The main files in a consuming project are:
 |---|---|
 | `CODEX.md` / `CLAUDE.md` | Optional harness entry points that direct the agent to the project's `AGENTS.md`. |
 | `AGENTS.md` | Opens with the bootstrap stanza pointing here, then carries project-specific context. |
-| `AGENTS_OVERRIDE.md` | A convenient ledger for declarations and explicit shared-rule overrides. |
+| `AGENTS_OVERRIDE.md` | A convenient ledger for declarations and explicit shared-rule overrides, and where a non-default checkout location is declared. |
 | `RULINGS.md` | Optional. Durable record of owner decisions, read only when a decision is needed. |
 
 Copying rules into a project is the failure mode this structure exists to
@@ -38,12 +38,29 @@ which is current.
 ## Bootstrap
 
 An agent working in a consuming project starts with `CODEX.md` and/or
-`AGENTS.md`, as directed by its harness. If that entry point opts into Agents
-and `~/projects/Agents` is not present, clone it:
+`AGENTS.md`, as directed by its harness. If that entry point opts into Agents,
+it resolves the checkout in this order:
+
+1. The location `AGENTS_OVERRIDE.md` declares under "Agents repository
+   location", when it declares one.
+2. `~/projects/Agents`, the default.
+
+**When neither is there, the agent stops and asks the user** whether to clone
+the repository and where. It does not clone on the user's behalf and does not
+choose a location — a sandbox may have no access to `~/projects` at all, and
+where a rules repository lands on someone's disk is theirs to decide. Suggest
+the default, and offer a path inside the project when nothing outside it is
+writable. Recording the answer in `AGENTS_OVERRIDE.md` is what makes the next
+session find it.
 
 ```
-[ -d ~/projects/Agents ] || git clone git@github.com:exodist/Agents.git ~/projects/Agents
+git clone git@github.com:exodist/Agents.git ~/projects/Agents
 ```
+
+Shared documents write their paths against the default location. Where a
+project declares another, read every `~/projects/Agents/...` path against the
+declared one — including the `bin/agent-test-lock` command in the project's
+own `AGENTS.md`, which is spelled out there and needs rewriting to match.
 
 **Cloning is the whole setup.** There is no install step: `AGENTS.md` there
 points at critical documents and says when to use each tool, auditor, and
@@ -60,10 +77,15 @@ directory from the working directory up to the repository root and follows
 skill-directory symlinks. This remains optional project wiring, not an Agents
 adoption requirement.
 
-The canonical path may be a checkout or a symlink to one. The checkout is
-read-only from a project's point of view. **Never edit
-`~/projects/Agents` as a side effect of project work** — a rule change is its
-own task, in its own commit, in that repository.
+Whichever location is used may be a checkout or a symlink to one. The checkout
+is read-only from a project's point of view. **Never edit it as a side effect
+of project work** — a rule change is its own task, in its own commit, in that
+repository.
+
+A checkout kept inside a project needs a `.gitignore` entry and, for a
+distribution, a packaging exclusion. The project picks the path; shared
+guidance deliberately does not name one, because a sandbox that cannot use the
+default location usually cannot use a prescribed alternative either.
 
 If the clone looks stale and the work is substantial, `git -C ~/projects/Agents
 pull` first. Do not pull mid-task; a rule changing under you halfway through is
@@ -148,13 +170,18 @@ This project opts into shared agent guidance while keeping its own documents
 authoritative for project-specific rules and design.
 
 - Repository: `git@github.com:exodist/Agents.git`
-- Expected location: `~/projects/Agents`
+- Default location: `~/projects/Agents`
+- This project's location: as declared in `AGENTS_OVERRIDE.md` under "Agents
+  repository location", when that section is present.
 
-If `~/projects/Agents` does not exist, clone it before doing anything else:
+Use the declared location when there is one, otherwise the default. If no
+checkout is there, **stop and ask the user** whether to clone it and where.
+Never clone it for them, and never guess a location.
 
-    git clone git@github.com:exodist/Agents.git ~/projects/Agents
+Shared documents spell their paths against the default location. When this
+project declares another, read every such path against the declared one.
 
-Then read `~/projects/Agents/AGENTS.md` and follow the shared guidance this
+Then read `AGENTS.md` in that checkout and follow the shared guidance this
 project has adopted. It points at task-specific guides and procedures.
 
 All documents in THIS repository take priority over the shared repository.
@@ -184,7 +211,14 @@ Its writing follows `DOCUMENTATION.md` under "AI/agent-facing material".
 
 Scaffold: `~/projects/Agents/templates/AGENTS_OVERRIDE.md`.
 
-Two jobs.
+Three jobs, one of them optional.
+
+**0. Declare the Agents location, only when it is not the default.** An
+optional `## Agents repository location` section pins where the checkout is,
+for projects that cannot or do not use `~/projects/Agents`. Its absence means
+the default, so nearly every project leaves it out. It is deliberately not a
+sixth mandatory declaration: the other five exist because no answer suits all
+projects, and this one has a perfectly good default.
 
 **1. Answer every project-declared choice.** The universal docs deliberately
 leave some rules open because there is no right answer for all projects. Each
@@ -228,8 +262,10 @@ decisions belong there at all. Most do not.
 
 ## Setting up a new project
 
+With the checkout in place (see "Bootstrap" — ask the user before creating
+one, and substitute its location throughout if it is not the default):
+
 ```
-[ -d ~/projects/Agents ] || git clone git@github.com:exodist/Agents.git ~/projects/Agents
 cd /path/to/project
 
 cp ~/projects/Agents/templates/CLAUDE.md            CLAUDE.md
@@ -315,7 +351,13 @@ By hand:
 - Does `CLAUDE.md` or `CODEX.md` do anything besides point at `AGENTS.md`?
   Harvest that content into the appropriate project document before replacing
   the entry point.
-- Does `AGENTS.md` open with the bootstrap stanza?
+- Does `AGENTS.md` open with the current bootstrap stanza? An older one tells
+  the agent to clone the repository itself and names no override — replace it.
+- Is the checkout somewhere other than `~/projects/Agents`? Then
+  `AGENTS_OVERRIDE.md` needs its location section, and any absolute path the
+  project spells out for itself — the `agent-test-lock` command in its
+  `AGENTS.md`, most often — needs to match. If it sits inside the project, is
+  it gitignored and excluded from the distribution?
 - Does `AGENTS.md` follow `DOCUMENTATION.md` under "AI/agent-facing material",
   especially the rule against copying universal guidance? Replace each copy
   with a pointer, keeping only the project-specific parts. If a copy has

@@ -7,6 +7,24 @@ Universal rules live in `~/projects/Agents` (see `AGENTS.md` for the clone
 URL). Every project-local document already takes priority over shared rules;
 this file keeps declarations and explicit overrides easy to find.
 
+<!--
+## Agents repository location
+
+  Optional, and absent in nearly every project. Add this section only when the
+  checkout is NOT at the default `~/projects/Agents` -- a sandbox with no
+  access to `~/projects`, or a machine that keeps it elsewhere. Its absence
+  means the default.
+
+> **Location: _____**
+
+  Read every `~/projects/Agents/...` path in the shared documents against this
+  location instead.
+
+  A checkout kept inside this project must be ignored by git and excluded from
+  the distribution. Say here which .gitignore entry and packaging exclusion
+  cover it.
+-->
+
 ---
 
 ## Declarations

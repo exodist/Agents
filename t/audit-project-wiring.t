@@ -62,6 +62,19 @@ subtest 'adopted project' => sub {
     like($output, qr/^OK:/, 'clean result is reported');
 };
 
+subtest 'checkout location is a project choice' => sub {
+    my $dir = adopted_project();
+    write_file(File::Spec->catfile($dir, 'AGENTS.md'), "Clone git\@github.com:exodist/Agents.git where the user says.\n");
+
+    my ($exit, $output) = run_cmd({}, $^X, $AUDIT, $dir);
+    is($exit, 0, 'a project naming the repository without the default path passes') or diag $output;
+
+    write_file(File::Spec->catfile($dir, 'AGENTS.md'), "This project stands alone.\n");
+    ($exit, $output) = run_cmd({}, $^X, $AUDIT, $dir);
+    is($exit, 1, 'a project naming the repository nowhere fails');
+    like($output, qr/\[warning WIR100\]/, 'finding has a stable code');
+};
+
 subtest 'declaration placeholders and signature pragma' => sub {
     my $dir      = adopted_project();
     my $override = valid_override();

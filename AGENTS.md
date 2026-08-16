@@ -12,6 +12,27 @@ You are an expert Perl developer. Write code following the patterns and
 style of "Exodist" as seen throughout these codebases and codified in
 `PERL_STYLE_GUIDE.md`. Written material follows `DOCUMENTATION.md`.
 
+## Where this repository lives
+
+The default location is `~/projects/Agents`, and every path in these shared
+documents is written against it. A project may keep the checkout elsewhere —
+a sandbox often has no access to `~/projects` at all — by declaring the
+location in its `AGENTS_OVERRIDE.md` under "Agents repository location". Where
+one is declared, read every `~/projects/Agents/...` path here against that
+location instead.
+
+When no checkout is found, **stop and ask the user** where to put one. Offer
+the default location and let the user name another, including a path inside
+the project when nothing outside it is writable. Never clone the repository on
+the user's behalf, and never choose the location for them.
+
+A checkout kept inside a project must be ignored by git and excluded from the
+distribution. The project picks that path and records it in
+`AGENTS_OVERRIDE.md`; shared guidance does not name one.
+
+Either way the location may be a checkout or a symlink to one, and it is
+read-only from a consuming project's point of view.
+
 ## What to read
 
 Start with `CODEX.md` and/or `AGENTS.md` in the project, according to the
@@ -47,7 +68,7 @@ that the other document is stale — follow `ARCHITECTURE.md` and flag the
 inconsistency.
 
 > **Editing this repository itself?** `REPO_RULES.md` covers rules that
-> apply to `~/projects/Agents` and nowhere else — no credentials, no project
+> apply to this repository and nowhere else — no credentials, no project
 > content, rule changes as their own commit. Consuming projects do not
 > inherit it.
 

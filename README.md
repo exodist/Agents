@@ -13,7 +13,13 @@ The shared files provide defaults and reusable procedures; they do not replace
 project architecture, policy, or context.
 
 - **Clone URL:** `git@github.com:exodist/Agents.git`
-- **Expected location:** `~/projects/Agents`
+- **Default location:** `~/projects/Agents`
+
+Every path in these documents is written against that default. A project that
+keeps its checkout elsewhere — a sandbox with no access to `~/projects`, say —
+declares the location in its `AGENTS_OVERRIDE.md`, and paths are read against
+it. An agent that finds no checkout asks where to put one rather than cloning
+into a directory nobody chose.
 
 **Setting a project up? Read [`USING.md`](USING.md).** It covers the whole
 wiring: the bootstrap stanza, what goes in which file, and how to audit a
@@ -34,6 +40,7 @@ project for drift.
 | [`CPAN_TESTERS.md`](CPAN_TESTERS.md) | Task-specific procedure for querying and analyzing public CPAN Testers reports. |
 | [`AI_AND_LLM_POLICY.txt`](AI_AND_LLM_POLICY.txt) | Canonical contributor-facing AI/LLM policy. Adopting projects ship one synchronized copy unless they declare a replacement policy. |
 | [`REPO_RULES.md`](REPO_RULES.md) | Rules for editing **this** repository. Consuming projects do not inherit them. |
+| [`RULINGS.md`](RULINGS.md) | Owner decisions already made about these rules. Read it when a decision is in front of you, not for context. |
 | [`CLAUDE.md`](CLAUDE.md) | Points at `AGENTS.md`. That is its entire job. |
 
 ## Per-project files
@@ -42,7 +49,7 @@ project for drift.
 |---|---|
 | `CLAUDE.md` | Points at the project's `AGENTS.md`. Nothing else, ever. |
 | `AGENTS.md` | Bootstrap stanza pointing here, then project-specific context. |
-| `AGENTS_OVERRIDE.md` | A ledger for project declarations and explicit shared-rule overrides. |
+| `AGENTS_OVERRIDE.md` | A ledger for project declarations, explicit shared-rule overrides, and a non-default checkout location. |
 | `AI_AND_LLM_POLICY.txt` | The sole contributor-facing AI/LLM policy, included in the distribution. |
 
 `CODEX.md` and `CLAUDE.md` are optional harness entry points. When present,
@@ -136,6 +143,8 @@ path. Nothing is installed, and nothing breaks if it never is.
 ```
 git clone git@github.com:exodist/Agents.git ~/projects/Agents
 ```
+
+Any location works; that one is the default the documents are written against.
 
 `./install` is a convenience for per-user skill discovery. It links skills
 into `~/.claude/skills` for Claude Code and `~/.agents/skills` for Codex.

@@ -1,5 +1,7 @@
 {{$NEXT}}
 
+    - Let a project declare where the Agents checkout lives, and require agents to ask the user rather than clone into a location nobody chose.
+
     - Limit RULINGS.md to decisions that could be raised again, keeping routine calls nobody will question out of every future reader's context.
 
     - Define an optional project RULINGS.md recording owner decisions, read only when a decision is needed, with recorded rulings flagged for the owner rather than overturned.
