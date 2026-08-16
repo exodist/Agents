@@ -83,7 +83,13 @@ project-local authoritative document or `AGENTS_OVERRIDE.md`.
 - Be self-explanatory. Do not refer to plan or review documents, finding
   numbers, or other AI/agent-only context.
 - Do not reference a `.md` file or any AI/agent document.
-- Never write `#` followed by digits; GitHub interprets it as an issue link.
+- Write `#` followed by digits **only** to reference a GitHub issue or pull
+  request on purpose — `Fixes #1086`, `related to #926`. GitHub renders it as
+  a link to that issue, which is exactly what a deliberate reference wants.
+- Never write it any other way. `#` before a count, an ordinal, a column, or a
+  version (`fixed #3 of the failures`, `RFC #2119`) becomes a link to an
+  unrelated issue and stays wrong forever. Write `number 3`, `test 3`, or
+  reword.
 
 ## `Changes` entries
 
