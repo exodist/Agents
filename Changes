@@ -1,5 +1,7 @@
 {{$NEXT}}
 
+    - Move AI-use notes to the commit, pull request, or ticket instead of a BOT username, and state that they exist to give maintainers a rough sense of how much incoming work is AI generated.
+
     - Give the AI/LLM policy two stated goals: maintainer understanding, and keeping the burden of externally submitted AI/LLM work manageable.
 
     - Clarify that barring bot accounts from tickets and pull requests restricts who takes part, not whether submitted code was AI-assisted.

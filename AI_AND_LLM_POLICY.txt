@@ -131,35 +131,41 @@ Documentation follows the project's documentation policy
     documentation. It must be concise, natural to read, useful to its audience,
     and free of needless repetition.
 
-Significant AI/LLM code MUST be noted as such.
+Significant AI/LLM use MUST be noted
 
-    Code from an LLM/AI should be noted as such, either in the commit, the
-    description of the author (having BOT in the username), etc.
+    Say so in the commit message, the pull request description, or the ticket.
+    A plain sentence is enough.
 
-    If the code seems like it is AI, but indicates it was written by a human,
-    you will be asked to correct this.
+    The reason is mundane. The maintainers want a rough sense of how much of
+    what comes in is AI/LLM generated or assisted, and how much is purely
+    human. That is tracked loosely and mentally, from what the pull requests
+    and tickets happen to say over time. It is not counted, not audited, not
+    recorded anywhere in the code, and no number it produces triggers
+    anything. A secondary benefit: it tells us later whether there is a human
+    who understood the change well enough to be asked about it.
 
-    Note that this does not apply to code-review or "trivial" use of AI/LLM.
-    You do not need to note that AI was used for code review. You do not need
-    to note when AI is used to correct minor syntax issue or to translate/write
-    small code snippets.
+    What to note is work written primarily by or with an LLM, as opposed to
+    work a human wrote with a little AI help or input. We are not concerned
+    with the middle ground, only with cases where there is significant AI/LLM
+    content.
 
-    A good rule to go by: If it is something small enough that you can
+    You do not need to note:
+
+        - Using AI for code review.
+
+        - Using AI to correct a minor syntax issue.
+
+        - Using AI to translate or write small code snippets.
+
+    A good rule to go by: if it is something small enough that you could
     reasonably ask a peer to help with on short notice, or find quickly with a
-    google search, it probably does not need to be noted as AI.
+    search, it probably does not need to be noted as AI.
 
-    The main goal of this rule is that we want to note code that is written
-    primarily by or with an LLM as opposed to written by a human with a little
-    AI help/input. We are not concerned with the middle ground, just cases
-    where there is significant AI/LLM content.
+    If code reads as AI-written but is presented as written by a human, you
+    will be asked to correct that.
 
-    The reason for noting it is so that we know if there is a human who
-    understands it that can be asked questions about the code later. Such a
-    human does exist when AI is an assistant, it does not exist when AI is the
-    primary author.
-
-    This is entirely due to maintainer preference, it is not intended for an
-    exhaustive audit or to single-out contributors who use or reject AI
-    assistance. Using this rule as an excuse to troll or attack a contributor
-    will not be tolerated. If you think someone missed the mark on noting AI
-    contributions, kindly ask them to clarify and potentially update their PR.
+    This is not an exhaustive audit and not a way to single out contributors
+    who use or reject AI assistance. Using this rule as an excuse to troll or
+    attack a contributor will not be tolerated. If you think someone missed
+    the mark on noting AI use, kindly ask them to clarify and potentially
+    update their PR.

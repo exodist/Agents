@@ -519,8 +519,8 @@ The short version, which agents must honor:
 - Generated code is **human-vetted** before merge.
 - **No 'vibe' coding** in final product — a human understands the change end
   to end.
-- Significant AI/LLM-authored code is **noted as such** in the commit or
-  author metadata.
+- Significant AI/LLM-authored code is **noted as such** in the commit message,
+  the pull request description, or the ticket.
 - **Tickets and pull requests are for humans.** Do not open, review, or
   comment on them from a bot or agent account. The sole exception is filing an
   initial bug report — security issues included — which must state that it

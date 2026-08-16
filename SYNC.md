@@ -37,6 +37,19 @@ The session-start check and the procedure for applying a pending sync are in
 the short form. A project adopting this repository for the first time records
 the current commit and has nothing to apply.
 
+## 2026-08-15 — Noting AI use no longer points at bot usernames
+
+**Action: re-copy `AI_AND_LLM_POLICY.txt` from this repository.**
+
+"Significant AI/LLM use MUST be noted" told contributors to signal AI
+authorship with BOT in the username, which contradicts barring bot accounts
+from the discussion. Notes now go in the commit message, pull request
+description, or ticket. The section also states its actual purpose — giving
+maintainers a rough, unmeasured sense of how much incoming work is AI
+generated or assisted — and keeps the existing thresholds for what does and
+does not need noting, along with the rule against using any of it to attack a
+contributor.
+
 ## 2026-08-15 — The bot rule restricts participants, not tooling
 
 **Action: re-copy `AI_AND_LLM_POLICY.txt` from this repository.**
