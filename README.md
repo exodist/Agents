@@ -125,6 +125,7 @@ copy here first, then re-copy — the project copies are expected to match.
 | `perl-pre-review` | The three mandatory passes before announcing work ready for review. |
 | `perl-test-run` | Running a suite correctly; diagnosing hangs, leaks, and OOMs. |
 | `decision-discussion` | Walking pending decisions past the user, one item at a time. |
+| `complexity-audit` | Watching large work for unnecessary complexity and scope growth. |
 | `dzil-audit` | Checking or changing a distribution's packaging and release setup. |
 | `perl-project-align` | Bootstrapping a new project, or auditing an existing one for drift. |
 

@@ -1,5 +1,7 @@
 {{$NEXT}}
 
+    - Run a persistent complexity auditor alongside work the worktree rule covers, flagging unnecessary complexity and scope growth for the user to decide.
+
     - Rewrite the AI/LLM policy as AI_AND_LLM_POLICY.md, shipped as the one internal Markdown file a distribution gathers back by name.
 
     - Move AI-use notes to the commit, pull request, or ticket instead of a BOT username, and state that they exist to give maintainers a rough sense of how much incoming work is AI generated.

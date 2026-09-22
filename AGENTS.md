@@ -161,6 +161,7 @@ that kind of work**, the same way you would read a runbook:
 | `~/projects/Agents/skills/perl-pre-review/SKILL.md` | Announcing any work ready for review. |
 | `~/projects/Agents/skills/perl-test-run/SKILL.md` | Running a suite, or diagnosing a hang, leak, or OOM. |
 | `~/projects/Agents/skills/decision-discussion/SKILL.md` | Walking pending decisions past the user. |
+| `~/projects/Agents/skills/complexity-audit/SKILL.md` | Starting work the worktree rule covers. |
 | `~/projects/Agents/skills/dzil-audit/SKILL.md` | Touching `dist.ini`, packaging, or adding a dependency. |
 | `~/projects/Agents/skills/perl-project-align/SKILL.md` | Setting up a new project or auditing one for drift. |
 | `~/projects/Agents/CPAN_TESTERS.md` | Querying or analyzing CPAN Testers reports. |
@@ -298,6 +299,16 @@ it is never worth a complicated engine.
 This covers making real use cases easy, not covering every call shape someone
 might prefer. Sugar with no known use is speculative flexibility under a nicer
 name.
+
+### Complexity auditor
+
+Work the worktree rule covers runs with a persistent complexity auditor: a
+separate agent, spawned once per session, that watches the user's
+instructions, recorded rulings, the planned approach, each commit, and each
+review fix list, and flags unnecessary complexity or scope growth. This
+applies even where a project suspends the worktree rule for a foundations
+phase. The auditor is advisory; every flag either changes course or goes to
+the user. Read `skills/complexity-audit/SKILL.md` before starting such work.
 
 ---
 
