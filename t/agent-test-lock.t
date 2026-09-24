@@ -41,7 +41,7 @@ is($exit, 0, 'help succeeds');
 like($output, qr/default 900 for serial,\s+300 for concurrent/, 'help documents derived defaults');
 like($output, qr/default 75% of RAM/,                           'help documents the memory cap default');
 
-for my $size (qw/lots 64m 150% 0 0%/) {
+for my $size (qw/lots 64m 150% 0 0% 12.345% 300K/) {
     ($exit, $output) = run_cmd({}, $^X, $LOCK, '--jobs', 1, '--memory-max', $size, '--', $^X, '-e', '1');
     isnt($exit, 0, "memory cap '$size' is rejected");
     like($output, qr/--memory-max takes a systemd size/, "rejection of '$size' names the expected format");
@@ -64,7 +64,7 @@ subtest 'memory cap under user systemd' => sub {
     like($output, qr/memory capped at 75%/,           'cap is announced');
     like($output, qr/agent-test-lock-\d+-\d+\.scope/, 'command runs inside the transient scope');
 
-    ($exit, $output) = run_cmd({}, @fresh, $^X, $LOCK, '--jobs', 1, '--', $^X, '-e', 'select(undef, undef, undef, 0.6)');
+    ($exit, $output) = run_cmd({}, @fresh, $^X, $LOCK, '--jobs', 1, '--', $^X, '-MTime::HiRes=sleep', '-e', 'sleep 0.6');
     like($output, qr/memory peak \S+ \(cap 75%\)/, 'the run reports its memory peak');
 
     ($exit, $output) = run_cmd(

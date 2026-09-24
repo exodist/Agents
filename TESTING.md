@@ -101,9 +101,12 @@ suites from stacking; the cap stops one runaway process — a leaking test that
 grows until the machine has nothing left — from taking the whole box into a
 global OOM. `RULINGS.md` (2026-09-23) records the evidence.
 
-At the end of each capped run the tool prints **`memory peak`**: the most the
-run's processes and tmpfs files used at once. That number is the measurement
-for sizing a project's cap.
+At the end of each capped run the tool prints **`memory peak`**, the scope's
+high-water mark. It counts process memory and tmpfs files, and also
+reclaimable page cache, so treat it as an upper bound when sizing a project's
+cap. It is sampled every quarter second, so a run that finishes sooner may
+print none. A run killed by the cap prints no peak; to measure a suite that
+needs more than the cap, run it once with `--memory-max 100%`.
 
 When a run crosses the cap the kernel kills inside the scope, systemd stops
 the rest of it, and the tool reports **"the run hit the memory cap"**. That
@@ -114,7 +117,8 @@ need, and record that value in the project's test instructions.
 The run goes ahead uncapped, with a warning naming the reason, where no user
 systemd is reachable (sandboxes, containers) or the memory controller is not
 enabled for user scopes. An `agent-test-lock` run nested inside another stays
-in the outer scope, under the outer cap.
+in the outer scope, under the outer cap; give the nested run `--no-lock` if it
+runs above four jobs, or it waits on the lock its parent holds.
 
 ### Capping other commands
 

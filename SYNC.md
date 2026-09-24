@@ -28,7 +28,8 @@ its cap in the project's test instructions.**
 `agent-test-lock` now runs every command under a memory cap of 75% of RAM
 with swap off. A project that opts into `DATABASES.md` keeps temporary
 database files on tmpfs, and those pages count against the cap. Every capped
-run now reports its memory peak: take it from one full run, then add
+run now reports its memory peak: take it from one full run (with
+`--memory-max 100%` if the default cap kills it), then add
 `--memory-max SIZE` (peak plus headroom) to the project's `agent-test-lock`
 commands, or `--no-memory-cap` with the reason. Other projects need no action.
 

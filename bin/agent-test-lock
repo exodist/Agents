@@ -45,6 +45,7 @@ use warnings;
 use Fcntl qw/:flock O_RDWR O_CREAT/;
 use IO::Handle ();
 use POSIX qw/:sys_wait_h strftime/;
+use Time::HiRes ();
 use Sys::Hostname qw/hostname/;
 use Cwd qw/getcwd/;
 
@@ -121,13 +122,16 @@ exit(run_command($timeout, $scope, @cmd));
 
 # {{{ Memory cap
 
-# systemd's own MemoryMax syntax: 1-100%, or a non-zero byte count with an
-# optional upper-case K/M/G/T suffix. Anything else fails inside systemd-run.
+# A subset of systemd's MemoryMax syntax: a percentage up to 100 with at most
+# two decimals, or a byte count with an optional upper-case K/M/G/T suffix. A
+# floor of 1M keeps the cap above what a shell needs to start at all.
 sub valid_size {
     my ($size) = @_;
     return 0 unless defined $size;
-    return $1 > 0 && $1 <= 100 if $size =~ /^(\d+(?:\.\d+)?)%$/;
-    return $1 > 0              if $size =~ /^(\d+(?:\.\d+)?)[KMGT]?$/;
+    return $1 > 0 && $1 <= 100 if $size =~ /^(\d+(?:\.\d{1,2})?)%$/;
+
+    my %mult = ('' => 1, K => 1024, M => 1024**2, G => 1024**3, T => 1024**4);
+    return $1 * $mult{$2} >= $mult{M} if $size =~ /^(\d+(?:\.\d+)?)([KMGT]?)$/;
     return 0;
 }
 
@@ -154,14 +158,17 @@ sub memory_scope {
         return undef;
     }
 
-    my @probe = (
-        scope_command("agent-test-lock-probe-$$", $size),
+    my $probe_unit = "agent-test-lock-probe-$$";
+    my @probe      = (
+        scope_command($probe_unit, $size),
         'sh', '-c', 'test -e "/sys/fs/cgroup$(sed -n "s/^0:://p" /proc/self/cgroup)/memory.max"',
     );
     my $error = capture_stderr(@probe);
 
     if (defined $error) {
+        my $killed = report_memory_kill($probe_unit, 1);
         $error =~ s/\s+\z//;
+        $error = "a $size cap is too small to start the command" if $killed;
         $error = 'the memory controller is not enabled for user scopes' unless length $error;
         print STDERR "agent-test-lock: WARNING: running without the memory cap: $error\n";
         return undef;
@@ -228,10 +235,13 @@ sub human_size {
 # A cgroup OOM kill looks like any other killed test from the outside. The
 # scope records why it failed, so name it and clear the failed unit.
 sub report_memory_kill {
-    my ($unit) = @_;
+    my ($unit, $silent) = @_;
 
     my $result = `systemctl --user show -p Result --value $unit.scope 2>/dev/null`;
     return 0 unless defined $result && $result =~ /^oom-kill/;
+
+    system('systemctl', '--user', 'reset-failed', "$unit.scope") if $silent;
+    return 1                                                     if $silent;
 
     print STDERR "agent-test-lock: the run hit the memory cap ($opt{memory_max}) and was killed. This is not an ordinary test failure.\n";
     system('systemctl', '--user', 'reset-failed', "$unit.scope");
@@ -334,19 +344,23 @@ sub run_command {
 
     alarm($timeout) if $timeout;
     my $peak;
-    while (1) {
-        my $done = waitpid($pid, WNOHANG);
-        last                                   if $done == $pid || $done < 0;
-        $peak = read_peak($pid, $scope, $peak) if $scope;
-        select(undef, undef, undef, 0.25);
+    if ($scope) {
+        while (1) {
+            my $done = waitpid($pid, WNOHANG);
+            last if $done == $pid || $done < 0;
+            $peak = read_peak($pid, $scope, $peak);
+            Time::HiRes::sleep(0.25);
+        }
+    }
+    else {
+        waitpid($pid, 0);
     }
     my $status = $?;
     alarm(0) if $timeout;
 
     if ($scope) {
-        my $killed = $status && report_memory_kill($scope);
-        print STDERR "agent-test-lock: memory peak " . human_size($peak) . " (cap $opt{memory_max})\n"
-            if defined $peak && !$killed && !$opt{quiet};
+        report_memory_kill($scope)                                                                     if $status;
+        print STDERR "agent-test-lock: memory peak " . human_size($peak) . " (cap $opt{memory_max})\n" if defined $peak;
     }
 
     return $EXIT_TIMEOUT if $timed_out;
