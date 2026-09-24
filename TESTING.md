@@ -27,9 +27,9 @@ The canonical command:
 ~/projects/Agents/bin/agent-test-lock -- prove --timer -Ilib -j16 -r t/
 ```
 
-`agent-test-lock` sets `AUTHOR_TESTING=1`, takes the shared lock, applies the
-timeout, runs the command in its own process group, and releases on exit —
-including on signal. Where the project uses `yath`:
+`agent-test-lock` sets `AUTHOR_TESTING=1`, takes the shared lock, caps the
+run's memory, applies the timeout, runs the command in its own process group,
+and releases on exit — including on signal. Where the project uses `yath`:
 
 ```
 ~/projects/Agents/bin/agent-test-lock -- yath test -D -T -j16
@@ -85,17 +85,66 @@ agent-test-lock [options] -- <command...>
   --no-lock       Run without taking the lock. For a genuinely serial run.
   --no-author     Force AUTHOR_TESTING=0. The sole opt-out, for deliberately
                   checking that author-gated tests skip.
+  --memory-max S  Memory cap for the whole run, as a systemd MemoryMax value
+                  (75%, 48G, ...). Default 75% of RAM.
+  --no-memory-cap Run without the memory cap.
 ```
 
 While waiting, it reports who holds the lock (pid, working directory,
 command, held-since) so a stale holder is obvious.
 
+### The memory cap
+
+Every `agent-test-lock` run executes in a transient systemd user scope with
+`MemoryMax` (default **75% of RAM**) and swap disabled. The lock stops two
+suites from stacking; the cap stops one runaway process — a leaking test that
+grows until the machine has nothing left — from taking the whole box into a
+global OOM. On this machine those runaways reached 80–118 GiB before the
+kernel killed them, and swap only delayed the kill.
+
+When a run crosses the cap the kernel kills inside the scope, systemd stops
+the rest of it, and the tool reports **"the run hit the memory cap"**. That
+is a resource failure, not a test failure: find which process grew, and fix
+the leak or the fan-out. Raise `--memory-max` only for a suite with a measured
+need, and record that value in the project's test instructions.
+
+Where no user systemd is reachable (sandboxes, containers), the run goes ahead
+uncapped with a warning.
+
+### Capping other commands
+
+Anything else an agent runs that can balloon memory — a build, a benchmark, a
+data load, a one-off script over a large input, a local model — gets the same
+cap. Tests go through `agent-test-lock`; for everything else, use `systemd-run`
+directly:
+
+```
+systemd-run --user --scope --quiet -p MemoryMax=75% -p MemorySwapMax=0 -- <command...>
+```
+
+or define the equivalent shell alias:
+
+```
+alias capped='systemd-run --user --scope --quiet -p MemoryMax=75% -p MemorySwapMax=0 --'
+capped make -j16
+```
+
+An exit status of 137 from a capped command means the cap killed it. To
+measure what a command actually needs before choosing a cap, run it once as a
+transient service, which prints the peak on exit:
+
+```
+systemd-run --user --wait --pipe --same-dir -p MemorySwapMax=0 -- <command...>
+```
+
 ### Resource failures
 
-Investigate the processes and storage the project actually uses rather than
-adding an arbitrary memory cap or relocating temporary storage. Database
-suites have measured tmpfs, fan-out, watcher, and debris-cleanup constraints;
-those live in `DATABASES.md` and apply only when the project opts in.
+The memory cap is a backstop, not a diagnosis. When a run hits it, or fails
+for any other resource reason, investigate the processes and storage the
+project actually uses before raising the cap or relocating temporary storage.
+Database suites have measured tmpfs, fan-out, watcher, and debris-cleanup
+constraints; those live in `DATABASES.md` and apply only when the project
+opts in.
 
 ### Who runs the suite
 

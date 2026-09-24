@@ -20,6 +20,18 @@ Present those actions to the user; do not apply them unasked.
 
 ---
 
+## 2026-09-23 — Test runs are memory-capped
+
+**Action, database projects only: measure the suite's peak memory and state
+its cap in the project's test instructions.**
+
+`agent-test-lock` now runs every command under a memory cap of 75% of RAM
+with swap off. A project that opts into `DATABASES.md` keeps temporary
+database files on tmpfs, and those pages count against the cap. Measure once
+with the command in `TESTING.md` under "Capping other commands", then add
+`--memory-max SIZE` (peak plus headroom) to the project's `agent-test-lock`
+commands, or `--no-memory-cap` with the reason. Other projects need no action.
+
 ## 2026-08-15 — Record the commit you last synced with
 
 **Action: add a `Last synced` line to the bootstrap stanza in the project's

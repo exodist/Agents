@@ -126,7 +126,7 @@ they live.
 
 | Tool | For |
 |---|---|
-| `~/projects/Agents/bin/agent-test-lock` | Every test run. Takes the shared concurrency lock, sets `AUTHOR_TESTING=1`, enforces a timeout. |
+| `~/projects/Agents/bin/agent-test-lock` | Every test run. Takes the shared concurrency lock, caps memory, sets `AUTHOR_TESTING=1`, enforces a timeout. |
 | `~/projects/Agents/bin/sweep-test-debris` | Finding and removing database test debris left in `/tmp` by a crashed run. |
 
 ### Code auditors — pre-review gates when applicable

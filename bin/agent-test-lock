@@ -26,10 +26,18 @@ use warnings;
 #   --no-author     Force AUTHOR_TESTING=0 (for checking skip behavior).
 #   --lock-file P   Override the lock path (default $AGENT_TEST_LOCK or
 #                   ~/projects/.agent-test-lock).
+#   --memory-max S  Memory cap for the whole run, as a systemd MemoryMax
+#                   value (75%, 48G, ...). Default 75% of RAM.
+#   --no-memory-cap Run without the memory cap.
 #   --quiet         Do not narrate lock acquisition.
 #
 # AUTHOR_TESTING=1 is forced unless --no-author is given. The explicit flag
 # forces AUTHOR_TESTING=0 for a deliberate check of skip behavior.
+#
+# The memory cap runs the command in a transient systemd user scope with
+# MemoryMax set and swap disabled, so a runaway test is killed on its own
+# instead of taking the machine into a global OOM. Where no user systemd is
+# reachable (sandboxes, containers) the run goes ahead uncapped with a warning.
 #
 # Exit status is the command's own. A timeout exits 124, matching timeout(1).
 # Failure to acquire the lock within --wait exits 125.
@@ -45,13 +53,15 @@ my $EXIT_TIMEOUT  = 124;
 my $EXIT_NO_LOCK  = 125;
 
 my %opt = (
-    timeout     => undef,
-    wait        => 3600,
-    'no-lock'   => 0,
-    'no-author' => 0,
-    quiet       => 0,
-    jobs        => undef,
-    lock_file   => $ENV{AGENT_TEST_LOCK} || join('/', $ENV{HOME} // '', 'projects', '.agent-test-lock'),
+    timeout         => undef,
+    wait            => 3600,
+    'no-lock'       => 0,
+    'no-author'     => 0,
+    'no-memory-cap' => 0,
+    memory_max      => '75%',
+    quiet           => 0,
+    jobs            => undef,
+    lock_file       => $ENV{AGENT_TEST_LOCK} || join('/', $ENV{HOME} // '', 'projects', '.agent-test-lock'),
 );
 
 my @cmd;
@@ -67,17 +77,23 @@ my @cmd;
         elsif ($arg eq '--lock-file')            { $opt{lock_file}   = shift @args }
         elsif ($arg eq '--no-lock')              { $opt{'no-lock'}   = 1 }
         elsif ($arg eq '--no-author')            { $opt{'no-author'} = 1 }
+        elsif ($arg eq '--memory-max')           { $opt{memory_max}  = shift @args }
+        elsif ($arg eq '--no-memory-cap')        { $opt{'no-memory-cap'} = 1 }
         elsif ($arg eq '--quiet')                { $opt{quiet}       = 1 }
         elsif ($arg eq '--help' || $arg eq '-h') { usage(0) }
-        elsif ($arg =~ /^--jobs=(.+)$/)          { $opt{jobs}      = $1 }
-        elsif ($arg =~ /^--timeout=(.+)$/)       { $opt{timeout}   = $1 }
-        elsif ($arg =~ /^--wait=(.+)$/)          { $opt{wait}      = $1 }
-        elsif ($arg =~ /^--lock-file=(.+)$/)     { $opt{lock_file} = $1 }
+        elsif ($arg =~ /^--jobs=(.+)$/)          { $opt{jobs}       = $1 }
+        elsif ($arg =~ /^--timeout=(.+)$/)       { $opt{timeout}    = $1 }
+        elsif ($arg =~ /^--wait=(.+)$/)          { $opt{wait}       = $1 }
+        elsif ($arg =~ /^--lock-file=(.+)$/)     { $opt{lock_file}  = $1 }
+        elsif ($arg =~ /^--memory-max=(.+)$/)    { $opt{memory_max} = $1 }
         else                                     { die "Unknown option '$arg'. Put the command after '--'.\n" }
     }
 }
 
 usage(1) unless @cmd;
+
+die "agent-test-lock: --memory-max takes a systemd size such as 75% or 48G, got '" . ($opt{memory_max} // '') . "'\n"
+    unless defined $opt{memory_max} && $opt{memory_max} =~ /^(?:\d+(?:\.\d+)?%|\d+[KMGT]?)$/i;
 
 my $jobs    = defined $opt{jobs}    ? $opt{jobs}    : jobs_from_command(@cmd);
 my $timeout = defined $opt{timeout} ? $opt{timeout} : $jobs <= 1 ? 900 : 300;
@@ -99,7 +115,55 @@ elsif (!$opt{quiet}) {
     print STDERR "agent-test-lock: running without the shared lock ($why)\n";
 }
 
-exit(run_command($timeout, @cmd));
+my $scope = $opt{'no-memory-cap'} ? undef : memory_scope($opt{memory_max});
+
+exit(run_command($timeout, $scope, @cmd));
+
+# {{{ Memory cap
+
+# Returns the transient scope name to run under, or undef when user systemd
+# cannot create one. A throwaway probe scope tells the two apart without
+# risking the real command on a half-working setup.
+sub memory_scope {
+    my ($size) = @_;
+
+    my @probe = (scope_command("agent-test-lock-probe-$$", $size), 'true');
+    open(my $saved, '>&', \*STDERR) or die "agent-test-lock: cannot dup STDERR: $!\n";
+    open(STDERR, '>', '/dev/null');
+    my $ok = system(@probe) == 0;
+    open(STDERR, '>&', $saved);
+
+    unless ($ok) {
+        print STDERR "agent-test-lock: WARNING: cannot create a systemd user scope, running without the memory cap\n";
+        return undef;
+    }
+
+    print STDERR "agent-test-lock: memory capped at $size (swap off)\n" unless $opt{quiet};
+    return join('-', 'agent-test-lock', $$, time);
+}
+
+sub scope_command {
+    my ($unit, $size) = @_;
+    return (
+        'systemd-run', '--user', '--scope', '--quiet', "--unit=$unit",
+        '-p', "MemoryMax=$size", '-p', 'MemorySwapMax=0', '--',
+    );
+}
+
+# A cgroup OOM kill looks like any other killed test from the outside. The
+# scope records why it failed, so name it and clear the failed unit.
+sub report_memory_kill {
+    my ($unit) = @_;
+
+    my $result = `systemctl --user show -p Result --value $unit.scope 2>/dev/null`;
+    return unless defined $result && $result =~ /^oom-kill/;
+
+    print STDERR "agent-test-lock: the run hit the memory cap ($opt{memory_max}) and was killed. This is not an ordinary test failure.\n";
+    system('systemctl', '--user', 'reset-failed', "$unit.scope");
+    return;
+}
+
+# }}} Memory cap
 
 # {{{ Lock handling
 
@@ -164,7 +228,11 @@ sub read_holder {
 # whole tree -- a stuck suite usually has children (servers, watchers,
 # nested runners) that outlive the harness itself.
 sub run_command {
-    my ($timeout, @command) = @_;
+    my ($timeout, $scope, @command) = @_;
+
+    # systemd-run --scope execs the command in place, so it stays in the
+    # process group the timeout kills.
+    unshift @command => scope_command($scope, $opt{memory_max}) if $scope;
 
     my $pid = fork // die "agent-test-lock: fork failed: $!\n";
 
@@ -193,6 +261,8 @@ sub run_command {
     waitpid($pid, 0);
     my $status = $?;
     alarm(0) if $timeout;
+
+    report_memory_kill($scope) if $scope && $status;
 
     return $EXIT_TIMEOUT if $timed_out;
     return $status >> 8  if ($status & 127) == 0;
@@ -241,10 +311,16 @@ Usage: agent-test-lock [options] -- <command...>
   --no-lock       Run without taking the lock.
   --no-author     Force AUTHOR_TESTING=0.
   --lock-file P   Override the lock path.
+  --memory-max S  Memory cap for the run, as a systemd MemoryMax value
+                  (default 75% of RAM; e.g. 48G). Swap is off inside the cap.
+  --no-memory-cap Run without the memory cap.
   --quiet         Do not narrate lock acquisition.
 
 AUTHOR_TESTING=1 is forced unless --no-author is given. --no-author forces
 AUTHOR_TESTING=0.
+
+The memory cap needs a user systemd session. Without one the run goes ahead
+uncapped with a warning.
 
 Example:
   agent-test-lock -- prove --timer -Ilib -j16 -r t/

@@ -1,5 +1,7 @@
 {{$NEXT}}
 
+    - Cap each agent-test-lock run at 75% of RAM with swap off, adjustable with --memory-max, and report a run killed by the cap as such rather than as a test failure.
+
     - Run a persistent complexity auditor alongside work the worktree rule covers, flagging unnecessary complexity and scope growth for the user to decide.
 
     - Rewrite the AI/LLM policy as AI_AND_LLM_POLICY.md, shipped as the one internal Markdown file a distribution gathers back by name.

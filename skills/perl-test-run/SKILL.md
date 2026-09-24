@@ -62,9 +62,14 @@ debris cleanup rather than applying those operations to every project.
 
 ## Memory
 
-Do not improvise a memory cgroup or relocate temporary storage without first
-identifying which project resource is exhausted. For opted-in database
-projects, the measured constraints and controls are in `DATABASES.md`.
+`agent-test-lock` caps every run at 75% of RAM with swap off. A run it reports
+as having hit the memory cap is a resource failure: identify which process
+grew before changing anything. Raise the cap with `--memory-max` only for a
+measured need recorded in the project's test instructions, and never relocate
+temporary storage as a workaround. Cap other memory-heavy commands the same
+way; `TESTING.md`, "Capping other commands", has the command. For opted-in
+database projects, the measured constraints and controls are in
+`DATABASES.md`.
 
 ## Database projects
 

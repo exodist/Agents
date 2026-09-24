@@ -13,7 +13,25 @@ for the next reader to judge whether the situation has changed.
 
 ---
 
-## 2026-08-15 — Sync-worthy changes are found by path, plus a ledger
+## 2026-09-23 — Every test run is memory-capped by default
+
+**Ruling: `agent-test-lock` runs every command in a systemd user scope with
+`MemoryMax=75%` and swap off. Projects override with `--memory-max` or
+`--no-memory-cap` in their test instructions; database suites get the same
+default. Without user systemd the run proceeds uncapped with a warning.
+Agents cap other memory-heavy commands the same way.**
+
+This replaces the earlier guidance against "an arbitrary memory cap". The
+shared lock stops suites stacking, but every OOM kill on the primary machine
+between April and August 2026 was a single runaway process (80–118 GiB), which
+the lock does not prevent; one of them coincided with filesystem checksum
+errors. 75% was chosen over 50% for suite headroom. Database suites were not
+exempted because they are the heaviest runs; their tmpfs usage is handled by a
+measured per-project cap instead.
+
+Revisit if: capped runs routinely hit the cap for legitimate suites, or agents
+run mostly where user systemd is unavailable and the cap silently never
+applies.
 
 **Ruling: a project detects pending syncs with one `git log` over the
 artifacts it copies — `AI_AND_LLM_POLICY.md`, `templates/`, `agent_scripts/`
