@@ -93,7 +93,7 @@ my @cmd;
 
 usage(1) unless @cmd;
 
-die "agent-test-lock: --memory-max takes a systemd size such as 75% or 48G, got '" . ($opt{memory_max} // '') . "'\n"
+die "agent-test-lock: --memory-max takes 1-100% or a size of at least 1M (e.g. 75% or 48G), got '" . ($opt{memory_max} // '') . "'\n"
     unless valid_size($opt{memory_max});
 
 my $jobs    = defined $opt{jobs}    ? $opt{jobs}    : jobs_from_command(@cmd);
@@ -408,8 +408,8 @@ Usage: agent-test-lock [options] -- <command...>
   --no-lock       Run without taking the lock.
   --no-author     Force AUTHOR_TESTING=0.
   --lock-file P   Override the lock path.
-  --memory-max S  Memory cap for the run, as a systemd MemoryMax value
-                  (default 75% of RAM; e.g. 48G). Swap is off inside the cap.
+  --memory-max S  Memory cap for the run: 1-100% of RAM or a size of at least
+                  1M (default 75%; e.g. 48G). Swap is off inside the cap.
   --no-memory-cap Run without the memory cap.
   --quiet         Do not narrate lock acquisition.
 

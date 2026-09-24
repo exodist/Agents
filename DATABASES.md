@@ -60,8 +60,8 @@ alongside its servers. A capped suite run reports its memory peak at the end,
 an upper bound that includes page cache. Take it from a full run (with
 `--memory-max 100%` if the default cap kills the suite), then state the cap in
 the project's test instructions: `--memory-max SIZE` with headroom over the
-peak, or `--no-memory-cap` with the reason. A cap kill is reported by the tool as hitting the memory cap; do not
-debug it as an ordinary test failure.
+peak, or `--no-memory-cap` with the reason. A cap kill is reported by the
+tool as hitting the memory cap; do not debug it as an ordinary test failure.
 
 Do not move database `TMPDIR` off tmpfs as an unmeasured workaround. The
 shared lock, lower harness/per-install fan-out, and cleanup after a crash are

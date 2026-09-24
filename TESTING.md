@@ -85,8 +85,8 @@ agent-test-lock [options] -- <command...>
   --no-lock       Run without taking the lock. For a genuinely serial run.
   --no-author     Force AUTHOR_TESTING=0. The sole opt-out, for deliberately
                   checking that author-gated tests skip.
-  --memory-max S  Memory cap for the whole run, as a systemd MemoryMax value
-                  (75%, 48G, ...). Default 75% of RAM.
+  --memory-max S  Memory cap for the whole run: 1-100% of RAM or a size of at
+                  least 1M (75%, 48G, ...). Default 75%.
   --no-memory-cap Run without the memory cap.
 ```
 

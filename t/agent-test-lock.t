@@ -39,12 +39,12 @@ like($output, qr/0\z/, 'no-author forces author tests off');
 ($exit, $output) = run_cmd({}, $^X, $LOCK, '--help');
 is($exit, 0, 'help succeeds');
 like($output, qr/default 900 for serial,\s+300 for concurrent/, 'help documents derived defaults');
-like($output, qr/default 75% of RAM/,                           'help documents the memory cap default');
+like($output, qr/1M \(default 75%/,                             'help documents the memory cap default');
 
 for my $size (qw/lots 64m 150% 0 0% 0.5% 12.345% 300K/) {
     ($exit, $output) = run_cmd({}, $^X, $LOCK, '--jobs', 1, '--memory-max', $size, '--', $^X, '-e', '1');
     isnt($exit, 0, "memory cap '$size' is rejected");
-    like($output, qr/--memory-max takes a systemd size/, "rejection of '$size' names the expected format");
+    like($output, qr/--memory-max takes 1-100% or a size of at least 1M/, "rejection of '$size' names the expected format");
 }
 
 ($exit, $output) = run_cmd({}, $^X, $LOCK, '--jobs', 1, '--no-memory-cap', '--', $^X, '-e', 'exit 3');
