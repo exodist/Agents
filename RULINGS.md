@@ -18,8 +18,10 @@ for the next reader to judge whether the situation has changed.
 **Ruling: `agent-test-lock` runs every command in a systemd user scope with
 `MemoryMax=75%` and swap off. Projects override with `--memory-max` or
 `--no-memory-cap` in their test instructions; database suites get the same
-default. Without user systemd the run proceeds uncapped with a warning.
-Agents cap other memory-heavy commands the same way.**
+default, and every capped run reports its memory peak so a project can size
+its override. Without user systemd, or without the memory controller, the run
+proceeds uncapped with a warning. A nested run keeps the enclosing cap. Agents
+cap other memory-heavy commands the same way.**
 
 This replaces the earlier guidance against "an arbitrary memory cap". The
 shared lock stops suites stacking, but every OOM kill on the primary machine
@@ -32,6 +34,8 @@ measured per-project cap instead.
 Revisit if: capped runs routinely hit the cap for legitimate suites, or agents
 run mostly where user systemd is unavailable and the cap silently never
 applies.
+
+## 2026-08-15 — Sync-worthy changes are found by path, plus a ledger
 
 **Ruling: a project detects pending syncs with one `git log` over the
 artifacts it copies — `AI_AND_LLM_POLICY.md`, `templates/`, `agent_scripts/`

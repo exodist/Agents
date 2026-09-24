@@ -56,10 +56,11 @@ resource use.
 `agent-test-lock` caps every run at 75% of RAM by default (`TESTING.md`,
 "The memory cap"). `MemoryMax` counts tmpfs pages as well as process memory,
 so a database suite's temporary data files on tmpfs count against the cap
-alongside its servers. Measure the suite's peak once, then state the cap in
-the project's test instructions: `--memory-max SIZE` with headroom over the
-peak, or `--no-memory-cap` with the reason. A cap kill is reported by the tool
-as hitting the memory cap; do not debug it as an ordinary test failure.
+alongside its servers. Every capped run reports its memory peak; take it from
+a full run, then state the cap in the project's test instructions:
+`--memory-max SIZE` with headroom over the peak, or `--no-memory-cap` with the
+reason. A cap kill is reported by the tool as hitting the memory cap; do not
+debug it as an ordinary test failure.
 
 Do not move database `TMPDIR` off tmpfs as an unmeasured workaround. The
 shared lock, lower harness/per-install fan-out, and cleanup after a crash are

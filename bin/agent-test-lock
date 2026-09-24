@@ -71,15 +71,15 @@ my @cmd;
         my $arg = shift @args;
         if ($arg eq '--') { @cmd = @args; last }
 
-        if    ($arg eq '--jobs')                 { $opt{jobs}        = shift @args }
-        elsif ($arg eq '--timeout')              { $opt{timeout}     = shift @args }
-        elsif ($arg eq '--wait')                 { $opt{wait}        = shift @args }
-        elsif ($arg eq '--lock-file')            { $opt{lock_file}   = shift @args }
-        elsif ($arg eq '--no-lock')              { $opt{'no-lock'}   = 1 }
-        elsif ($arg eq '--no-author')            { $opt{'no-author'} = 1 }
-        elsif ($arg eq '--memory-max')           { $opt{memory_max}  = shift @args }
+        if    ($arg eq '--jobs')                 { $opt{jobs}            = shift @args }
+        elsif ($arg eq '--timeout')              { $opt{timeout}         = shift @args }
+        elsif ($arg eq '--wait')                 { $opt{wait}            = shift @args }
+        elsif ($arg eq '--lock-file')            { $opt{lock_file}       = shift @args }
+        elsif ($arg eq '--no-lock')              { $opt{'no-lock'}       = 1 }
+        elsif ($arg eq '--no-author')            { $opt{'no-author'}     = 1 }
+        elsif ($arg eq '--memory-max')           { $opt{memory_max}      = shift @args }
         elsif ($arg eq '--no-memory-cap')        { $opt{'no-memory-cap'} = 1 }
-        elsif ($arg eq '--quiet')                { $opt{quiet}       = 1 }
+        elsif ($arg eq '--quiet')                { $opt{quiet}           = 1 }
         elsif ($arg eq '--help' || $arg eq '-h') { usage(0) }
         elsif ($arg =~ /^--jobs=(.+)$/)          { $opt{jobs}       = $1 }
         elsif ($arg =~ /^--timeout=(.+)$/)       { $opt{timeout}    = $1 }
@@ -93,7 +93,7 @@ my @cmd;
 usage(1) unless @cmd;
 
 die "agent-test-lock: --memory-max takes a systemd size such as 75% or 48G, got '" . ($opt{memory_max} // '') . "'\n"
-    unless defined $opt{memory_max} && $opt{memory_max} =~ /^(?:\d+(?:\.\d+)?%|\d+[KMGT]?)$/i;
+    unless valid_size($opt{memory_max});
 
 my $jobs    = defined $opt{jobs}    ? $opt{jobs}    : jobs_from_command(@cmd);
 my $timeout = defined $opt{timeout} ? $opt{timeout} : $jobs <= 1 ? 900 : 300;
@@ -121,20 +121,49 @@ exit(run_command($timeout, $scope, @cmd));
 
 # {{{ Memory cap
 
-# Returns the transient scope name to run under, or undef when user systemd
-# cannot create one. A throwaway probe scope tells the two apart without
-# risking the real command on a half-working setup.
+# systemd's own MemoryMax syntax: 1-100%, or a non-zero byte count with an
+# optional upper-case K/M/G/T suffix. Anything else fails inside systemd-run.
+sub valid_size {
+    my ($size) = @_;
+    return 0 unless defined $size;
+    return $1 > 0 && $1 <= 100 if $size =~ /^(\d+(?:\.\d+)?)%$/;
+    return $1 > 0              if $size =~ /^(\d+(?:\.\d+)?)[KMGT]?$/;
+    return 0;
+}
+
+sub own_cgroup {
+    my ($pid) = @_;
+    open(my $fh, '<', "/proc/$pid/cgroup") or return undef;
+    while (my $line = <$fh>) {
+        return $1 if $line =~ m{^0::(/.*)$};
+    }
+    return undef;
+}
+
+# Returns the transient scope name to run under, or undef when the run goes
+# uncapped. A throwaway probe scope proves systemd can create one and that the
+# memory controller is enforced there, without risking the real command.
 sub memory_scope {
     my ($size) = @_;
 
-    my @probe = (scope_command("agent-test-lock-probe-$$", $size), 'true');
-    open(my $saved, '>&', \*STDERR) or die "agent-test-lock: cannot dup STDERR: $!\n";
-    open(STDERR, '>', '/dev/null');
-    my $ok = system(@probe) == 0;
-    open(STDERR, '>&', $saved);
+    # A new scope would move the command out of the enclosing one and escape
+    # its cap, so a nested run stays where it is.
+    my $cgroup = own_cgroup($$) // '';
+    if ($cgroup =~ m{/(agent-test-lock-\d+-\d+\.scope)$}) {
+        print STDERR "agent-test-lock: already inside $1, its memory cap applies\n" unless $opt{quiet};
+        return undef;
+    }
 
-    unless ($ok) {
-        print STDERR "agent-test-lock: WARNING: cannot create a systemd user scope, running without the memory cap\n";
+    my @probe = (
+        scope_command("agent-test-lock-probe-$$", $size),
+        'sh', '-c', 'test -e "/sys/fs/cgroup$(sed -n "s/^0:://p" /proc/self/cgroup)/memory.max"',
+    );
+    my $error = capture_stderr(@probe);
+
+    if (defined $error) {
+        $error =~ s/\s+\z//;
+        $error = 'the memory controller is not enabled for user scopes' unless length $error;
+        print STDERR "agent-test-lock: WARNING: running without the memory cap: $error\n";
         return undef;
     }
 
@@ -142,12 +171,58 @@ sub memory_scope {
     return join('-', 'agent-test-lock', $$, time);
 }
 
+# Runs a command with STDERR captured. Returns undef on success, or the
+# captured STDERR (possibly empty) on failure.
+sub capture_stderr {
+    my (@command) = @_;
+
+    pipe(my $reader, my $writer) or die "agent-test-lock: pipe failed: $!\n";
+    my $pid = fork // die "agent-test-lock: fork failed: $!\n";
+
+    unless ($pid) {
+        close($reader);
+        open(STDOUT, '>',  '/dev/null') or POSIX::_exit(127);
+        open(STDERR, '>&', $writer)     or POSIX::_exit(127);
+        no warnings 'exec';
+        exec {$command[0]} @command;
+        print STDERR "cannot run $command[0]: $!\n";
+        POSIX::_exit(127);
+    }
+
+    close($writer);
+    my $error = do { local $/; <$reader> }
+        // '';
+    close($reader);
+    waitpid($pid, 0);
+
+    return $? ? $error : undef;
+}
+
 sub scope_command {
     my ($unit, $size) = @_;
-    return (
-        'systemd-run', '--user', '--scope', '--quiet', "--unit=$unit",
-        '-p', "MemoryMax=$size", '-p', 'MemorySwapMax=0', '--',
-    );
+    return ('systemd-run', '--user', '--scope', '--quiet', "--unit=$unit", '-p', "MemoryMax=$size", '-p', 'MemorySwapMax=0', '--');
+}
+
+# memory.peak is a high-water mark, so the last read before the scope
+# disappears is the run's peak, short only of growth in the final interval.
+sub read_peak {
+    my ($pid, $unit, $peak) = @_;
+
+    my $cgroup = own_cgroup($pid) // return $peak;
+    return $peak unless $cgroup =~ m{/\Q$unit\E\.scope$};
+
+    open(my $fh, '<', "/sys/fs/cgroup$cgroup/memory.peak") or return $peak;
+    my $value = <$fh>;
+    return $peak unless defined $value && $value =~ /^(\d+)/;
+    return $1 > ($peak // 0) ? $1 : $peak;
+}
+
+sub human_size {
+    my ($bytes) = @_;
+    my @units   = qw/B K M G T/;
+    my $i       = 0;
+    while ($bytes >= 1024 && $i < $#units) { $bytes /= 1024; $i++ }
+    return sprintf($i ? '%.1f%s' : '%d%s', $bytes, $units[$i]);
 }
 
 # A cgroup OOM kill looks like any other killed test from the outside. The
@@ -156,11 +231,11 @@ sub report_memory_kill {
     my ($unit) = @_;
 
     my $result = `systemctl --user show -p Result --value $unit.scope 2>/dev/null`;
-    return unless defined $result && $result =~ /^oom-kill/;
+    return 0 unless defined $result && $result =~ /^oom-kill/;
 
     print STDERR "agent-test-lock: the run hit the memory cap ($opt{memory_max}) and was killed. This is not an ordinary test failure.\n";
     system('systemctl', '--user', 'reset-failed', "$unit.scope");
-    return;
+    return 1;
 }
 
 # }}} Memory cap
@@ -258,11 +333,21 @@ sub run_command {
     }
 
     alarm($timeout) if $timeout;
-    waitpid($pid, 0);
+    my $peak;
+    while (1) {
+        my $done = waitpid($pid, WNOHANG);
+        last                                   if $done == $pid || $done < 0;
+        $peak = read_peak($pid, $scope, $peak) if $scope;
+        select(undef, undef, undef, 0.25);
+    }
     my $status = $?;
     alarm(0) if $timeout;
 
-    report_memory_kill($scope) if $scope && $status;
+    if ($scope) {
+        my $killed = $status && report_memory_kill($scope);
+        print STDERR "agent-test-lock: memory peak " . human_size($peak) . " (cap $opt{memory_max})\n"
+            if defined $peak && !$killed && !$opt{quiet};
+    }
 
     return $EXIT_TIMEOUT if $timed_out;
     return $status >> 8  if ($status & 127) == 0;

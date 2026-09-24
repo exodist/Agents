@@ -1,6 +1,6 @@
 {{$NEXT}}
 
-    - Cap each agent-test-lock run at 75% of RAM with swap off, adjustable with --memory-max, and report a run killed by the cap as such rather than as a test failure.
+    - Cap each agent-test-lock run at 75% of RAM with swap off, adjustable with --memory-max, and report the run's memory peak and any kill by the cap.
 
     - Run a persistent complexity auditor alongside work the worktree rule covers, flagging unnecessary complexity and scope growth for the user to decide.
 

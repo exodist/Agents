@@ -99,8 +99,11 @@ Every `agent-test-lock` run executes in a transient systemd user scope with
 `MemoryMax` (default **75% of RAM**) and swap disabled. The lock stops two
 suites from stacking; the cap stops one runaway process — a leaking test that
 grows until the machine has nothing left — from taking the whole box into a
-global OOM. On this machine those runaways reached 80–118 GiB before the
-kernel killed them, and swap only delayed the kill.
+global OOM. `RULINGS.md` (2026-09-23) records the evidence.
+
+At the end of each capped run the tool prints **`memory peak`**: the most the
+run's processes and tmpfs files used at once. That number is the measurement
+for sizing a project's cap.
 
 When a run crosses the cap the kernel kills inside the scope, systemd stops
 the rest of it, and the tool reports **"the run hit the memory cap"**. That
@@ -108,8 +111,10 @@ is a resource failure, not a test failure: find which process grew, and fix
 the leak or the fan-out. Raise `--memory-max` only for a suite with a measured
 need, and record that value in the project's test instructions.
 
-Where no user systemd is reachable (sandboxes, containers), the run goes ahead
-uncapped with a warning.
+The run goes ahead uncapped, with a warning naming the reason, where no user
+systemd is reachable (sandboxes, containers) or the memory controller is not
+enabled for user scopes. An `agent-test-lock` run nested inside another stays
+in the outer scope, under the outer cap.
 
 ### Capping other commands
 
@@ -122,24 +127,24 @@ directly:
 systemd-run --user --scope --quiet -p MemoryMax=75% -p MemorySwapMax=0 -- <command...>
 ```
 
-or define the equivalent shell alias:
+The same as a shell function, which works in interactive and non-interactive
+shells alike (an alias only works interactively):
 
 ```
-alias capped='systemd-run --user --scope --quiet -p MemoryMax=75% -p MemorySwapMax=0 --'
+capped() { systemd-run --user --scope --quiet -p MemoryMax=75% -p MemorySwapMax=0 -- "$@"; }
 capped make -j16
 ```
 
-An exit status of 137 from a capped command means the cap killed it. To
-measure what a command actually needs before choosing a cap, run it once as a
-transient service, which prints the peak on exit:
-
-```
-systemd-run --user --wait --pipe --same-dir -p MemorySwapMax=0 -- <command...>
-```
+A cap kill leaves the scope in a failed state. After a capped command exits
+non-zero, `systemctl --user list-units --failed '*.scope'` shows it, and
+`systemctl --user show -p Result <unit>` reads `oom-kill` when the cap was the
+cause; clear it with `systemctl --user reset-failed <unit>`. The exit status
+alone cannot tell you: it is 137 when the top-level process was killed and
+usually 143 when a child was, as systemd then stops the rest of the scope.
 
 ### Resource failures
 
-The memory cap is a backstop, not a diagnosis. When a run hits it, or fails
+The memory cap is a safeguard, not a diagnosis. When a run hits it, or fails
 for any other resource reason, investigate the processes and storage the
 project actually uses before raising the cap or relocating temporary storage.
 Database suites have measured tmpfs, fan-out, watcher, and debris-cleanup

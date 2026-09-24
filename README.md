@@ -72,7 +72,7 @@ answer, and each project's `AGENTS_OVERRIDE.md` must pin them:
 
 ```
 bin/agent-test-lock      Serialize high-concurrency test runs machine-wide,
-                         set AUTHOR_TESTING=1, enforce a timeout.
+                         cap memory, set AUTHOR_TESTING=1, enforce a timeout.
 bin/sweep-test-debris    Find and remove QuickDB data dirs left in /tmp by a
                          crashed run.
 ```
