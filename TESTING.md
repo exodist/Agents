@@ -117,8 +117,9 @@ need, and record that value in the project's test instructions.
 The run goes ahead uncapped, with a warning naming the reason, where no user
 systemd is reachable (sandboxes, containers) or the memory controller is not
 enabled for user scopes. An `agent-test-lock` run nested inside another stays
-in the outer scope, under the outer cap; give the nested run `--no-lock` if it
-runs above four jobs, or it waits on the lock its parent holds.
+in the outer scope, under the outer cap. When both the outer and the nested
+run are above four jobs, give the nested one `--no-lock`, or it waits on the
+lock its parent holds.
 
 ### Capping other commands
 
