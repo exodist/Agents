@@ -92,7 +92,8 @@ For a project that opts into this repository:
    the Perl guide for Perl edits, `TESTING.md` before test work,
    `CODE_REVIEW.md` before announcing a completed change,
    `DZIL_GUIDE.md` before packaging work, `DATABASES.md` only when a database
-   project's entry documents opt into it, and the matching procedure under
+   project's entry documents opt into it, `LAB.md` when work needs another
+   platform, and the matching procedure under
    `skills/` before carrying it out.
 4. Read the project documents its entry point names, including its
    `ARCHITECTURE.md`, test instructions, and declarations.
@@ -165,6 +166,7 @@ that kind of work**, the same way you would read a runbook:
 | `~/projects/Agents/skills/dzil-audit/SKILL.md` | Touching `dist.ini`, packaging, or adding a dependency. |
 | `~/projects/Agents/skills/perl-project-align/SKILL.md` | Setting up a new project or auditing one for drift. |
 | `~/projects/Agents/CPAN_TESTERS.md` | Querying or analyzing CPAN Testers reports. |
+| `~/projects/Agents/LAB.md` | Testing on another platform. The lab exists only on some machines; the file says how to tell. |
 
 *(These files are also valid Claude Code / Codex skills.
 `~/projects/Agents/install` optionally links them into the per-user discovery

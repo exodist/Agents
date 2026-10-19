@@ -77,6 +77,12 @@ Read `~/projects/Agents/DATABASES.md` only when the project's entry documents
 opt into that database-testing guidance. Backend choice and dependency
 classification remain project decisions.
 
+## Other platforms
+
+For a platform-specific failure or a portability change, read
+`~/projects/Agents/LAB.md`. It says how to tell whether this machine has the
+cross-platform lab; most do not, so check before planning around it.
+
 ## A slow file
 
 A file over 60 seconds in a concurrent run gets investigated, not ignored.

@@ -26,7 +26,9 @@ through an available MCP-capable client. It exposes these report operations:
    prerequisites, supported Perl floor, and platform promises. A smoker
    failure is evidence to investigate, not authority to change a project
    contract.
-6. Report the affected versions and environments, the common failure text in
+6. When `LAB.md` finds the lab available on this machine, reproduce on the
+   matching guest and perl before proposing a fix.
+7. Report the affected versions and environments, the common failure text in
    paraphrase, representative GUIDs, and the narrowest plausible local
    reproduction. Do not make a release or support-policy decision silently.
 

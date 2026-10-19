@@ -38,6 +38,7 @@ project for drift.
 | [`DATABASES.md`](DATABASES.md) | Optional database-test operations, developer installs, and per-install isolation. |
 | [`DZIL_GUIDE.md`](DZIL_GUIDE.md) | An optional shared `dist.ini` profile and manual release procedure. |
 | [`CPAN_TESTERS.md`](CPAN_TESTERS.md) | Task-specific procedure for querying and analyzing public CPAN Testers reports. |
+| [`LAB.md`](LAB.md) | The optional cross-platform test lab: how to tell whether this machine has it, and when to use it. |
 | [`AI_AND_LLM_POLICY.md`](AI_AND_LLM_POLICY.md) | Canonical contributor-facing AI/LLM policy. Adopting projects ship one synchronized copy unless they declare a replacement policy. |
 | [`SYNC.md`](SYNC.md) | Ledger of changes that require an adopting project to do something. Checked against the commit it last synced with. |
 | [`REPO_RULES.md`](REPO_RULES.md) | Rules for editing **this** repository. Consuming projects do not inherit them. |

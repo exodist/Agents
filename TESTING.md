@@ -237,6 +237,14 @@ against it.
 
 ---
 
+## Other platforms
+
+Some machines have a cross-platform test lab; most do not. `LAB.md` says
+how to tell and when to use it. Without it, other platforms are covered by
+CPAN Testers reports.
+
+---
+
 ## Test layout and provenance **[project-declared]**
 
 There is no single universal layout. Each project declares its own in its
