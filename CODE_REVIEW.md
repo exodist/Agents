@@ -44,6 +44,10 @@ value may be disproportionate to their complexity and maintenance burden, but
 not as binding precedent. A comparable tradeoff is an owner decision to flag,
 not permission for the reviewer to remove requested behavior by analogy.
 
+In a project that follows [`IPX.md`](IPX.md), the reviewer also checks new
+and moved modules against it: module type, when work became a Process module,
+and layout.
+
 Apply [`AGENTS.md`](AGENTS.md) under "Engineering judgment: value against
 cost" whenever a finding concerns added behavior or support. Report the
 evidence and expected frequency, concrete benefit and affected users,

@@ -13,6 +13,35 @@ for the next reader to judge whether the situation has changed.
 
 ---
 
+## 2026-10-23 — IPX is opted into from a project's `AGENTS.md`
+
+**Ruling: `IPX.md` is optional, adopted by a line in a project's `AGENTS.md`
+as `DATABASES.md` is. Departures from its recommendations go in
+`AGENTS_OVERRIDE.md`. There is no declaration section, no wiring-audit check,
+and no `SYNC.md` entry. Agents read it before adding a module, moving logic
+between modules, or writing a requested plan; in an adopting project, code
+review checks new and moved modules against it.**
+
+A mandatory or audited declaration was rejected for the reason the repository
+location is optional: most projects will not adopt IPX, and a required entry
+would flag every one of them.
+
+## 2026-10-23 — IPX: where Process modules live
+
+**Ruling: recommended layout, which projects may vary. A small process used by
+one Interface class lives under it (`Foo::Thing::Proc`), with roles only it
+uses under the process (`Foo::Thing::Proc::SomeRole`). A process shared by
+several classes, or meant for public use, lives under `Foo::Process::`, again
+with its own roles beneath it. Shared roles keep the project's usual role
+location. Process modules rarely sit directly under the main namespace, so
+they are not mistaken for Interface objects. A process both private to one
+class and public goes under `Foo::Process::`.**
+
+Flat naming by task was proposed and rejected: telling process modules from
+Interface objects at a glance was judged worth the longer names. The
+DBIx-QuickORM MVP's ad-hoc layout prompted this, and the owner intends to
+bring it up to this standard.
+
 ## 2026-10-23 — `confess` over `@CARP_NOT`; validate where it adds value
 
 **Ruling: the Perl style guide's error rules gain a third case. `die` for
@@ -33,6 +62,80 @@ though none is known.
 
 Revisit if: a concrete case appears where `confess` output is worse than an
 aimed `croak`.
+
+## 2026-10-23 — IPX: Process modules use Interface objects through methods
+
+**Ruling: a Process module never reads or writes an Interface object's slots;
+the Interface object provides the accessors and mutators the process needs.
+Distribution-internal `_methods` may be called across classes in the same
+distribution — except where a process or its component roles are meant for
+third-party use, where every method a role requires is public. A role
+describes a Process module's inputs only when unrelated types can stand in;
+one class and its subclasses need none. Loading runs one way: an Interface
+module that delegates loads the Process module; the Process module takes
+instances through `new`. A Process module may also be a public, documented
+entry point in its own right, with no Interface method calling it.**
+
+Requiring public methods for all in-distribution collaboration was rejected:
+each would become a compatibility promise. The third-party exception exists so
+an extension never has to define an underscore method to fit.
+
+**Ruling: IPX recommends two Process forms as guides, not rules — depart
+where a case does not fit. A task takes its inputs at construction, keeps
+scratch state in its own slots, exposes one domain-verb entry method, and is
+discarded. An accumulator takes optional seed values, is fed through
+`add`-style methods, and its result method never consumes state, so more
+values can be added and the result read again. An Interface object may be an
+immutable value whose refining methods return copies; building one by
+refinement is not Process aggregation.**
+
+A hard contract was rejected so exceptions are not fought. `Digest::SHA`,
+whose result methods reset the object, is the accumulator counterexample. The
+value-object case was settled against `DBIx::QuickORM::Handle`: every
+refinement is a query the caller can use, while an accumulator's intermediate
+state is meaningful only to the process. A separate builder Process for such
+objects was rejected as splitting the main interface for no gain over
+immutability.
+
+## 2026-10-23 — IPX: when work becomes a Process module
+
+**Ruling: a method on the Interface object is the default. Work becomes a
+Process module when either holds: (1) it spans several subs sharing
+significant process-specific state — state that would otherwise sit in scratch
+slots on the Interface object or be threaded through every helper; or (2) it
+mutates objects in more than one ownership tree. A tree is an object and what
+it contains, at any depth; a reference such as a foreign key does not make a
+parent, and a link row belongs to the side that owns the relationship's API.**
+
+Size and replaceability were proposed as triggers and rejected: a long
+stateless algorithm splits into private methods or Utility functions, and
+replaceability is speculative. Rule 2 follows the domain-driven-design
+aggregate boundary — a cross-tree mutation has no natural owner. It will
+produce some very small Process modules; that is accepted over picking an
+arbitrary owner.
+
+Revisit if: rule 2 produces Process modules reviewers consistently judge
+pointless, or the ownership-tree test proves ambiguous in practice.
+
+## 2026-10-23 — IPX: Interface and Process, with X left undefined
+
+**Ruling: the optional methodology is named IPX — Interface and Process, then
+X for whatever a project builds on top. It covers Utility, Interface,
+Utiliface, and Process modules only. Presentation layers — CLI, web, TUI —
+are the X; their structure is out of scope.**
+
+"Interface/Process" with no acronym was weighed and rejected. Collision with
+Novell's IPX protocol was judged irrelevant: the protocol is obsolete, and the
+term is used only inside these agent documents.
+
+The first draft named UX as a third, optional focus without defining it. No
+adopting project needed one, and web projects already bring a framework with
+its own structure. A reserved empty section was rejected because agents fill
+gaps with invented rules; adding a defined layer later is cheap, withdrawing
+one projects built against is not.
+
+Revisit if: several adopting projects grow presentation layers with a shared
+shape worth codifying.
 
 ## 2026-09-23 — Every test run is memory-capped by default
 

@@ -1,5 +1,7 @@
 {{$NEXT}}
 
+    - Add IPX.md, an optional methodology separating thin interface objects from process modules that hold algorithm state.
+
     - Use confess when a mistake was made further up the stack, avoid @CARP_NOT, and validate arguments only where a wrong value would not fail loudly.
 
     - Add LAB.md for the optional cross-platform test lab, used only on machines that have it.
