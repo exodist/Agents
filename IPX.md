@@ -113,6 +113,54 @@ Errors and argument validation follow `PERL_STYLE_GUIDE.md` under "Error
 handling". Public entry points and role-defined inputs are where input checks
 most often earn their place.
 
+### Reporting a caller's mistake
+
+A Process module built by an Interface method finds the user's mistakes two or
+more frames from the user, which the style guide answers with `confess`: a
+full trace where a `croak` from the Interface method would have given one
+line. Where that matters, the process may take an optional `trace` input
+instead and die at it.
+
+- The Interface method that builds the process passes `trace => [caller]`.
+  That is the user only when the method is public and called directly; a
+  public method reached through another of the distribution's methods passes
+  the trace it was given. The trace is an input like any other, given once at
+  construction, never threaded through internal subs.
+- The process's checks of the caller's mistakes call `$self->throw($msg)`.
+  With a trace it dies with `croak`'s one-line form at the trace's file and
+  line; without one it confesses, so a process built any other way still
+  reports correctly.
+- Failures internal to the process still `die`, and argument checks on its
+  internal methods still `croak`. Errors from code the process calls keep
+  that code's own policy.
+- Never count, skip, or walk frames to find the user. Pass the frame down
+  from where it is in hand.
+
+A role is the recommended shape once more than one process in a project
+reports this way; `requires` documents the input and marks which processes do.
+A single process can define `throw` itself.
+
+```perl
+package Foo::Role::TracedProcess;
+use Role::Tiny;
+use Carp qw/confess/;
+
+requires 'trace';    # [package, file, line], or undef
+
+sub throw {
+    my $self = shift;
+    my ($msg) = @_;
+    my $trace = $self->trace or confess $msg;
+    die "$msg at $trace->[1] line $trace->[2].\n";
+}
+```
+
+The process declares `<trace` in its `Object::HashBase` list and composes the
+role. A process built inside an `Object::HashBase` `init` cannot get the
+user's frame from `[caller]`, which there is the generated `new`; it falls
+back to `confess` unless its builder captures the caller honestly, such as a
+hand-written `new` taking `[caller]` before calling the generated one.
+
 ## Process modules and Interface objects
 
 - A Process module never reads or writes an Interface object's slots. The

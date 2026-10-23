@@ -1,5 +1,7 @@
 {{$NEXT}}
 
+    - Let IPX process modules report a caller's mistake at a trace passed in by the interface method, instead of confessing.
+
     - Add IPX.md, an optional methodology separating thin interface objects from process modules that hold algorithm state.
 
     - Use confess when a mistake was made further up the stack, avoid @CARP_NOT, and validate arguments only where a wrong value would not fail loudly.

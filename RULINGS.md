@@ -13,6 +13,26 @@ for the next reader to judge whether the situation has changed.
 
 ---
 
+## 2026-10-23 — IPX: Processes may report at a given trace
+
+**Ruling: a Process module may take an optional `trace` input, the `[caller]`
+of the Interface method that builds it, and report the caller's mistakes
+through `throw`, which dies at the trace with `croak`'s one-line form and
+confesses when there is none. Internal failures still `die`. Nothing counts,
+skips, or walks frames. IPX shows a role as the recommended shape, inline;
+there is no template file and no warning counterpart.**
+
+Under the style guide's rules a mistake caught inside a process is a
+`confess`, which hands the user a trace where an Interface method's `croak`
+gave one line; the trace is the frame in hand one hop away, passed down once,
+as Test2's context does. A template file was rejected because the sync check
+tracks templates and every adopting project would keep a copy in step. A
+warning counterpart waits for a process that needs one. The pattern was
+adopted first in DBIx-QuickORM (`Handle::BulkWrite`, `Handle::BulkInsert`).
+
+Revisit if: a process needs to warn at the caller, or processes built inside
+`init` turn out common enough that the `confess` fallback hurts.
+
 ## 2026-10-23 — IPX is opted into from a project's `AGENTS.md`
 
 **Ruling: `IPX.md` is optional, adopted by a line in a project's `AGENTS.md`

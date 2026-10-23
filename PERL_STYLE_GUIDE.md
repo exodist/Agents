@@ -206,7 +206,9 @@ grouping.
   - **`confess`** when stack levels sit between the check and the code that
     made the mistake — a module validating input that reached it through
     another module's method, for example. The full trace always contains the
-    frame at fault.
+    frame at fault. Where that frame is already in hand, passing it down and
+    dying at it is the alternative; `IPX.md` under "Reporting a caller's
+    mistake" shows it for Process modules.
 - **Avoid `@CARP_NOT`.** Aiming `croak` by listing packages to skip guesses
   which frame to blame and hides the rest; when it guesses wrong the message
   points somewhere misleading. Use `confess` instead. This is a strong
