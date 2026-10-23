@@ -107,6 +107,10 @@ edit set cannot hide a hit.
       parameters, caller-supplied data that turns out invalid).
 - [ ] `die` where the failure is internal (a file the code itself created,
       a violated invariant the caller could not control, a re-throw).
+- [ ] `confess` where stack levels separate the check from the mistake.
+      No new `@CARP_NOT` without a stated reason.
+- [ ] Arguments are validated where a wrong value would give a wrong result
+      or a distant error, and not where it would simply die at the call.
 - [ ] No exception is silently suppressed. Every caught error is rethrown or
       warned — except `viable()`-style feature detection and optional module
       loading where failure is expected.

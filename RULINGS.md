@@ -13,6 +13,27 @@ for the next reader to judge whether the situation has changed.
 
 ---
 
+## 2026-10-23 — `confess` over `@CARP_NOT`; validate where it adds value
+
+**Ruling: the Perl style guide's error rules gain a third case. `die` for
+errors in this code; `croak` when the immediate caller used it wrong;
+`confess` when the misuse happened further up, with stack levels between the
+mistake and the check. Managing `@CARP_NOT` to aim `croak` is strongly
+discouraged, not banned. The same section states when to validate arguments:
+where a wrong value would produce a wrong result rather than an error, or
+where the error would surface far from the mistake. Input that simply dies
+when wrong — a missing method, say — needs no check. IPX refers to this rather
+than restating it.**
+
+A full trace always contains the frame that erred; `@CARP_NOT` guesses which
+frame to blame, skips the rest, and confuses when it guesses wrong. The
+DBIx-QuickORM MVP's `@CARP_NOT` use prompted the change, and the owner intends
+to remove it there. It is not banned outright because a good use may exist,
+though none is known.
+
+Revisit if: a concrete case appears where `confess` output is worse than an
+aimed `croak`.
+
 ## 2026-09-23 — Every test run is memory-capped by default
 
 **Ruling: `agent-test-lock` runs every command in a systemd user scope with

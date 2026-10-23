@@ -190,7 +190,8 @@ grouping.
 ## Error handling
 
 - Use `Carp qw/croak/` when the problem is in the caller; use `die` when the
-  problem is in the current scope. Rule of thumb:
+  problem is in the current scope; use `Carp qw/confess/` when the mistake was
+  made further up the stack. Rule of thumb:
   - **`croak`** for interface misuse — bad arguments, missing required
     parameters, or operations on caller-provided data that turns out to be
     invalid (e.g. `do_thing_to(file => 'blah')` where the caller's path does
@@ -202,6 +203,21 @@ grouping.
     `die "Failed to write temp file: $!"` (internal failure). A failed
     `open` on a path the caller passed in: `croak`. A failed `open` on a
     path the code constructed for its own use: `die`.
+  - **`confess`** when stack levels sit between the check and the code that
+    made the mistake — a module validating input that reached it through
+    another module's method, for example. The full trace always contains the
+    frame at fault.
+- **Avoid `@CARP_NOT`.** Aiming `croak` by listing packages to skip guesses
+  which frame to blame and hides the rest; when it guesses wrong the message
+  points somewhere misleading. Use `confess` instead. This is a strong
+  default, not a ban, for the rare case where an aimed `croak` is clearly
+  better.
+- **Validate arguments where it adds value.** Check an input when a wrong
+  value would produce a wrong result rather than an error, or when the error
+  would surface far from the mistake. Skip the check when wrong input fails
+  loudly on its own — an object missing a required method dies at the call.
+  Public entry points and role-defined inputs are where checks most often
+  earn their place.
 - **Never suppress or discard exceptions.** Always rethrow (`die $@`) or
   warn (`warn $@`). The only exceptions are `viable()`-style feature
   detection and optional module loading where failure is expected.
