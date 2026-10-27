@@ -52,11 +52,28 @@ It is not part of the routine suite run. Local testing under
 coverage, not a replacement. Lab runs execute on the lab hosts, so they do
 not take the local test lock.
 
+### Which lab: the owner's workstation or the distributed one
+
+The owner's workstation is a lab of its own, beside the distributed lab of
+other machines. When `sys-lab` runs on the workstation, its own lab is the
+default (`--where abydos`); the distributed lab is `--where lab`.
+
+- **On the workstation, test there by default**, on its own VMs and on its
+  emulated devices rather than the real phone, tablet, or ARM board
+  (`--real-devices`), unless the owner asks for the real ones. Those devices
+  smoke CPAN uploads, and a lab run holds them up.
+- **Use the distributed lab** when the owner asks for it, or when the run
+  needs a platform the workstation lacks (the lab's README lists them).
+- **When the task does not say which, ask** the owner "the workstation or
+  distributed?" before the first run.
+
 Rules from the lab's README that matter most:
 
 - **Run from inside the dist checkout.** `~/systems/bin/sys-lab run GUEST`
-  copies the current directory to a fresh guest. `sys-lab list` shows the
-  guests; `--perl` narrows the perl set.
+  copies the current directory to a guest. `sys-lab list` shows the
+  guests; `--perl` narrows the perl set. On the workstation a guest's VM is
+  kept for the next run and each run gets its own deps; `--fresh` asks for
+  a throwaway copy.
 - **Identify yourself.** Every guest is tagged with its owner. Run
   `sys-lab whoami` first; if it shows a plain `user@host` rather than a name
   for your session, set `SYS_LAB_OWNER=<agent>-<session>` (for example

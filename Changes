@@ -1,5 +1,7 @@
 {{$NEXT}}
 
+    - Test on the owner's workstation lab by default when working there, using the distributed lab when asked or when a platform is missing.
+
     - Let IPX process modules report a caller's mistake at a trace passed in by the interface method, instead of confessing.
 
     - Add IPX.md, an optional methodology separating thin interface objects from process modules that hold algorithm state.
